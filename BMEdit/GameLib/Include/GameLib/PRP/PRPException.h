@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-#include <GameLib/PRPRegionID.h>
+#include <GameLib/PRP/PRPRegionID.h>
 
 
 namespace gamelib::prp

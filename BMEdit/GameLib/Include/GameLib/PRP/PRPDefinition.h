@@ -3,7 +3,7 @@
 #include <string>
 #include <variant>
 #include <vector>
-#include <GameLib/PRPDefinitionType.h>
+#include <GameLib/PRP/PRPDefinitionType.h>
 
 
 namespace gamelib::prp

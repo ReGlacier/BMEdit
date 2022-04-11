@@ -4,8 +4,8 @@
 #include <variant>
 #include <vector>
 
-#include <GameLib/PRPOpCode.h>
-#include <GameLib/PRPTokenTable.h>
+#include <GameLib/PRP/PRPOpCode.h>
+#include <GameLib/PRP/PRPTokenTable.h>
 
 
 namespace gamelib::prp

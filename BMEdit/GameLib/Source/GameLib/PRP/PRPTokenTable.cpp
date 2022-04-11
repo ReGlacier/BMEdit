@@ -1,4 +1,4 @@
-#include <GameLib/PRPTokenTable.h>
+#include <GameLib/PRP/PRPTokenTable.h>
 #include <ZBinaryWriter.hpp>
 #include <ZBinaryReader.hpp>
 

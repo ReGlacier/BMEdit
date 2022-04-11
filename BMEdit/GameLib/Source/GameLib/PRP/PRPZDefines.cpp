@@ -1,8 +1,8 @@
-#include <GameLib/PRPZDefines.h>
-#include <GameLib/PRPOpCode.h>
-#include <GameLib/PRPStructureError.h>
-#include <GameLib/PRPBadStringReference.h>
-#include <GameLib/PRPDefinitionType.h>
+#include <GameLib/PRP/PRPZDefines.h>
+#include <GameLib/PRP/PRPOpCode.h>
+#include <GameLib/PRP/PRPStructureError.h>
+#include <GameLib/PRP/PRPBadStringReference.h>
+#include <GameLib/PRP/PRPDefinitionType.h>
 #include <ZBinaryReader.hpp>
 #include <ZBinaryWriter.hpp>
 

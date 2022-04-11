@@ -1,8 +1,8 @@
-#include <GameLib/PRPByteCode.h>
-#include <GameLib/PRPStructureError.h>
-#include <GameLib/PRPBadInstruction.h>
-#include <GameLib/PRPOpCodeNotImplemented.h>
-#include <GameLib/PRPBadStringReference.h>
+#include <GameLib/PRP/PRPByteCode.h>
+#include <GameLib/PRP/PRPStructureError.h>
+#include <GameLib/PRP/PRPBadInstruction.h>
+#include <GameLib/PRP/PRPOpCodeNotImplemented.h>
+#include <GameLib/PRP/PRPBadStringReference.h>
 #include <ZBinaryReader.hpp>
 #include <ZBinaryWriter.hpp>
 #include <cassert>

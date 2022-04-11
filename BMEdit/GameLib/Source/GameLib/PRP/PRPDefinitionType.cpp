@@ -1,4 +1,4 @@
-#include <GameLib/PRPDefinitionType.h>
+#include <GameLib/PRP/PRPDefinitionType.h>
 
 namespace gamelib {
 	prp::PRPDefinitionType FromBytes<prp::PRPDefinitionType>::operator()(uint8_t byte)

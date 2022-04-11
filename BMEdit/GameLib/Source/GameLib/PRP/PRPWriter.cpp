@@ -1,6 +1,6 @@
-#include <GameLib/PRPWriter.h>
-#include <GameLib/PRPHeader.h>
-#include <GameLib/PRPByteCode.h>
+#include <GameLib/PRP/PRPWriter.h>
+#include <GameLib/PRP/PRPHeader.h>
+#include <GameLib/PRP/PRPByteCode.h>
 #include <ZBinaryWriter.hpp>
 #include <type_traits>
 

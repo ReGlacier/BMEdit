@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GameLib/PRPOpCode.h>
+#include <GameLib/PRP/PRPOpCode.h>
 
 
 namespace gamelib::prp

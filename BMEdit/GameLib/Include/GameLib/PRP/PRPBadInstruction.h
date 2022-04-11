@@ -1,7 +1,7 @@
 #pragma once
 
-#include <GameLib/PRPRegionID.h>
-#include <GameLib/PRPException.h>
+#include <GameLib/PRP/PRPRegionID.h>
+#include <GameLib/PRP/PRPException.h>
 
 
 namespace gamelib::prp

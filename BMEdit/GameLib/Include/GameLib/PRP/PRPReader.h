@@ -1,9 +1,9 @@
 #pragma once
 
-#include <GameLib/PRPHeader.h>
-#include <GameLib/PRPTokenTable.h>
-#include <GameLib/PRPZDefines.h>
-#include <GameLib/PRPByteCode.h>
+#include <GameLib/PRP/PRPHeader.h>
+#include <GameLib/PRP/PRPTokenTable.h>
+#include <GameLib/PRP/PRPZDefines.h>
+#include <GameLib/PRP/PRPByteCode.h>
 #include <cstdint>
 #include <vector>
 

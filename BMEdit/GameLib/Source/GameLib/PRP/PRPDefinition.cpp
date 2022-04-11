@@ -1,4 +1,4 @@
-#include <GameLib/PRPDefinition.h>
+#include <GameLib/PRP/PRPDefinition.h>
 #include <ZBinaryWriter.hpp>
 
 #include <utility>

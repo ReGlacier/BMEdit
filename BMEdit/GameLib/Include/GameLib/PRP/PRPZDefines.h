@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <vector>
 
-#include <GameLib/PRPDefinition.h>
-#include <GameLib/PRPDefinitionType.h>
-#include <GameLib/PRPTokenTable.h>
+#include <GameLib/PRP/PRPDefinition.h>
+#include <GameLib/PRP/PRPDefinitionType.h>
+#include <GameLib/PRP/PRPTokenTable.h>
 
 
 namespace ZBio::ZBinaryWriter

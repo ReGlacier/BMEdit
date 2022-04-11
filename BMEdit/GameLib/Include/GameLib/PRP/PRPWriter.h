@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <vector>
 
-#include <GameLib/PRPInstruction.h>
-#include <GameLib/PRPZDefines.h>
+#include <GameLib/PRP/PRPInstruction.h>
+#include <GameLib/PRP/PRPZDefines.h>
 
 
 namespace gamelib::prp

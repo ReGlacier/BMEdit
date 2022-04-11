@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GameLib/PRPException.h>
+#include <GameLib/PRP/PRPException.h>
 
 
 namespace gamelib::prp

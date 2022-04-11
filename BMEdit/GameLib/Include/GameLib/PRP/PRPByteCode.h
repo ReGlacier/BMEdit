@@ -4,10 +4,10 @@
 #include <vector>
 
 #include <GameLib/Span.h>
-#include <GameLib/PRPHeader.h>
-#include <GameLib/PRPTokenTable.h>
-#include <GameLib/PRPInstruction.h>
-#include <GameLib/PRPByteCodeContext.h>
+#include <GameLib/PRP/PRPHeader.h>
+#include <GameLib/PRP/PRPTokenTable.h>
+#include <GameLib/PRP/PRPInstruction.h>
+#include <GameLib/PRP/PRPByteCodeContext.h>
 
 
 namespace ZBio::ZBinaryWriter
