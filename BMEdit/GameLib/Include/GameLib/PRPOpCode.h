@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <GameLib/FromBytes.h>
 
 
@@ -45,6 +46,8 @@ namespace gamelib::prp {
 		ERR_UNKNOWN = 0xFFFD,
 		ERR_NO_TAG = 0xFFFE
 	};
+
+	std::string to_string(PRPOpCode opCode);
 }
 
 namespace gamelib {

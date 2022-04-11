@@ -29,6 +29,7 @@ namespace gamelib::prp
 		[[nodiscard]] PRPDefinitionType getType() const;
 		[[nodiscard]] const PRPDefinitionValue &getValue() const;
 
+		void setName(const std::string &newName);
 		void setValue(const PRPDefinitionValue &value);
 		void setValue(const PRPDefinitionValue &value, PRPDefinitionType type);
 

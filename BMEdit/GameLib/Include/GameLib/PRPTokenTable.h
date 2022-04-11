@@ -10,10 +10,12 @@ namespace gamelib::prp
 	{
 	public:
 		PRPTokenTable() = default;
-		explicit PRPTokenTable(const std::vector<std::string>& tokenList);
+		PRPTokenTable(const uint8_t *data, int64_t size, int tokenCount);
 
 		[[nodiscard]] bool hasToken(const std::string &token) const;
 		[[nodiscard]] int indexOf(const std::string &token) const;
+		[[nodiscard]] bool hasIndex(int index) const;
+		[[nodiscard]] const std::string& tokenAt(uint32_t index) const;
 
 		void addToken(const std::string &token);
 		void removeToken(const std::string &token);

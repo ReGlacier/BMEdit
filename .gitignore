@@ -1,3 +1,4 @@
 .idea
 cmake-build-*
 BMEdit/Editor/UI/UI/*.autosave
+Test

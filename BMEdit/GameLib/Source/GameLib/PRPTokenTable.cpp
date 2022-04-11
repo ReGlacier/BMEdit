@@ -6,13 +6,11 @@
 
 
 namespace gamelib::prp {
-	PRPTokenTable::PRPTokenTable(const std::vector<std::string> &tokenList)
+	PRPTokenTable::PRPTokenTable(const uint8_t *data, int64_t size, int tokenCount)
 	{
-		m_tokenList.reserve(tokenList.size());
-
-		//That's not good enough but who cares
-		//TODO: Optimize if it will be required
-		for (const auto &token: tokenList) {
+		ZBio::ZBinaryReader::BinaryReader binaryReader { reinterpret_cast<const char*>(data), size };
+		for (int i = 0; i <= tokenCount; i++) {
+			std::string token = binaryReader.readCString();
 			addToken(token);
 		}
 	}
@@ -31,6 +29,22 @@ namespace gamelib::prp {
 		}
 
 		return static_cast<int>(it - m_tokenList.begin());
+	}
+
+	bool PRPTokenTable::hasIndex(int index) const
+	{
+		return index >= 0 && index < m_tokenList.size();
+	}
+
+	const std::string &PRPTokenTable::tokenAt(uint32_t index) const
+	{
+		static std::string kInvalidStr;
+
+		if (index < m_tokenList.size()) {
+			return m_tokenList[index];
+		}
+
+		return kInvalidStr;
 	}
 
 	void PRPTokenTable::addToken(const std::string &token)

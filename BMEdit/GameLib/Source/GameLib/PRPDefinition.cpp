@@ -30,6 +30,11 @@ namespace gamelib::prp
 		return m_value;
 	}
 
+	void PRPDefinition::setName(const std::string &newName)
+	{
+		m_name = newName;
+	}
+
 	void PRPDefinition::setValue(const PRPDefinitionValue &value)
 	{
 		m_value = value;
