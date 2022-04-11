@@ -1,4 +1,5 @@
 #include <GameLib/PRPByteCodeContext.h>
+#include <cassert>
 
 
 namespace gamelib::prp
@@ -68,5 +69,32 @@ namespace gamelib::prp
 	{
 		m_instructionIndex -= off;
 		return *this;
+	}
+
+	PRPByteCodeContext & PRPByteCodeContext::operator++()
+	{
+		++m_instructionIndex;
+		return *this;
+	}
+
+	PRPByteCodeContext PRPByteCodeContext::operator++(int)
+	{
+		PRPByteCodeContext tmp { *this };
+		++*this;
+		return tmp;
+	}
+
+	PRPByteCodeContext & PRPByteCodeContext::operator--()
+	{
+		--m_instructionIndex;
+		assert(m_instructionIndex >= 0); // Invalid IP
+		return *this;
+	}
+
+	PRPByteCodeContext PRPByteCodeContext::operator--(int)
+	{
+		PRPByteCodeContext tmp { *this };
+		--*this;
+		return tmp;
 	}
 }

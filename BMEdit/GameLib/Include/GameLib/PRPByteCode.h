@@ -10,6 +10,11 @@
 #include <GameLib/PRPByteCodeContext.h>
 
 
+namespace ZBio::ZBinaryWriter
+{
+	class BinaryWriter;
+}
+
 namespace gamelib::prp
 {
 	class PRPByteCode
@@ -21,8 +26,14 @@ namespace gamelib::prp
 
 		[[nodiscard]] const std::vector<PRPInstruction> &getInstructions() const;
 
+		static void serialize(
+			const std::vector<PRPInstruction> &instructions,
+			const PRPHeader *header,
+			const PRPTokenTable *tokenTable,
+			ZBio::ZBinaryWriter::BinaryWriter *binaryWriter);
+
 	private:
-		void prepareOpCode(PRPByteCodeContext& context, const PRPHeader *header, const PRPTokenTable *tokenTable);
+		void prepareOpCode(PRPByteCodeContext &context, const PRPHeader *header, const PRPTokenTable *tokenTable);
 
 	private:
 		Span<uint8_t> m_buffer;

@@ -4,6 +4,11 @@
 #include <vector>
 
 
+namespace ZBio::ZBinaryWriter
+{
+	class BinaryWriter;
+}
+
 namespace gamelib::prp
 {
 	class PRPTokenTable
@@ -16,11 +21,13 @@ namespace gamelib::prp
 		[[nodiscard]] int indexOf(const std::string &token) const;
 		[[nodiscard]] bool hasIndex(int index) const;
 		[[nodiscard]] const std::string& tokenAt(uint32_t index) const;
+		[[nodiscard]] int getTokenCount() const;
+		[[nodiscard]] int getNonEmptyTokenCount() const;
 
-		void addToken(const std::string &token);
+		bool addToken(const std::string &token);
 		void removeToken(const std::string &token);
 
-		static void serialize(const PRPTokenTable& tokenTable, std::vector<uint8_t> &destination);
+		static void serialize(const PRPTokenTable& tokenTable, ZBio::ZBinaryWriter::BinaryWriter *writerStream);
 		static void deserialize(PRPTokenTable& tokenTable, const std::vector<uint8_t> &source, unsigned int expectedTokensCount);
 
 	private:

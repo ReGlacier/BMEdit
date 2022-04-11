@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <GameLib/PRPOpCode.h>
+#include <GameLib/PRPTokenTable.h>
 
 
 namespace gamelib::prp
@@ -75,6 +76,7 @@ namespace gamelib::prp
 		[[nodiscard]] bool isNumber() const;
 		[[nodiscard]] bool isEnum() const;
 		[[nodiscard]] bool hasValue() const;
+		[[nodiscard]] PRPOpCode getOpCode() const;
 		[[nodiscard]] const PRPOperandVal &getOperand() const;
 
 	private:

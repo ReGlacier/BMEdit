@@ -32,6 +32,10 @@ namespace gamelib::prp
 
 		PRPByteCodeContext& operator+=(int off);
 		PRPByteCodeContext& operator-=(int off);
+		PRPByteCodeContext& operator++();
+		PRPByteCodeContext  operator++(int);
+		PRPByteCodeContext& operator--();
+		PRPByteCodeContext  operator--(int);
 	private:
 		int m_flags            :  4 { 0 }; //See ContextFlags for details
 		int m_instructionIndex : 28 { 0 }; //That should be enough

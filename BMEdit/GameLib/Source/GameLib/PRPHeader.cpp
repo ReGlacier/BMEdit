@@ -1,5 +1,6 @@
 #include <GameLib/PRPHeader.h>
 #include <ZBinaryReader.hpp>
+#include <ZBinaryWriter.hpp>
 #include <array>
 
 
@@ -82,5 +83,26 @@ namespace gamelib::prp
 	PRPHeader::operator bool() const noexcept
 	{
 		return m_isMagicBytesValid;
+	}
+
+	void PRPHeader::serialize(const PRPHeader &header, uint32_t dataOffset, ZBio::ZBinaryWriter::BinaryWriter *writerStream)
+	{
+		// Write magic bytes
+		writerStream->writeCString<ZBio::Endianness::BE>("IOPacked v0.1");
+
+		// IsRaw
+		writerStream->write<bool, ZBio::Endianness::LE>(header.isRaw());
+
+		// Flags
+		writerStream->write<uint32_t, ZBio::Endianness::LE>(header.getFlags());
+
+		// Zeroed region
+		writerStream->write<uint32_t, ZBio::Endianness::LE>(0);
+
+		// TokenCount
+		writerStream->write<uint32_t, ZBio::Endianness::LE>(header.getTotalKeys());
+
+		// Data offset (keep zeroed?)
+		writerStream->write<uint32_t, ZBio::Endianness::LE>(dataOffset);
 	}
 }

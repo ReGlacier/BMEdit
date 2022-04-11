@@ -3,6 +3,10 @@
 #include <cstdint>
 #include <vector>
 
+namespace ZBio::ZBinaryWriter
+{
+	class BinaryWriter;
+}
 
 namespace gamelib::prp {
 	class PRPHeader
@@ -21,6 +25,8 @@ namespace gamelib::prp {
 		[[nodiscard]] uint32_t getZDefinesOffset() const;
 
 		[[nodiscard]] explicit operator bool() const noexcept;
+
+		static void serialize(const PRPHeader &header, uint32_t dataOffset, ZBio::ZBinaryWriter::BinaryWriter *writerStream);
 
 	private:
 		uint8_t m_isMagicBytesValid { 0 };

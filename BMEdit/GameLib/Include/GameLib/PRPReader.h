@@ -19,6 +19,7 @@ namespace gamelib::prp {
 		[[nodiscard]] const PRPHeader &getHeader() const;
 		[[nodiscard]] const PRPTokenTable &getTokenTable() const;
 		[[nodiscard]] uint32_t getObjectsCount() const;
+		[[nodiscard]] const PRPZDefines &getDefinitions() const;
 		[[nodiscard]] const PRPByteCode &getByteCode() const;
 
 	private:

@@ -1,6 +1,7 @@
 #include <GameLib/PRPTokenTable.h>
 #include <ZBinaryWriter.hpp>
 #include <ZBinaryReader.hpp>
+
 #include <algorithm>
 #include <utility>
 
@@ -47,13 +48,29 @@ namespace gamelib::prp {
 		return kInvalidStr;
 	}
 
-	void PRPTokenTable::addToken(const std::string &token)
+	int PRPTokenTable::getTokenCount() const
+	{
+		return static_cast<int>(m_tokenList.size());
+	}
+
+	int PRPTokenTable::getNonEmptyTokenCount() const
+	{
+		int result = 0;
+		for (const auto &tok: m_tokenList)
+		{
+			result += 1 * (!tok.empty());
+		}
+		return result;
+	}
+
+	bool PRPTokenTable::addToken(const std::string &token)
 	{
 		if (hasToken(token)) {
-			return;
+			return false;
 		}
 
 		m_tokenList.push_back(token);
+		return true;
 	}
 
 	void PRPTokenTable::removeToken(const std::string &token)
@@ -67,22 +84,11 @@ namespace gamelib::prp {
 		m_tokenList.erase(m_tokenList.begin() + tokenIndex);
 	}
 
-	void PRPTokenTable::serialize(const PRPTokenTable &tokenTable, std::vector<uint8_t> &destination)
+	void PRPTokenTable::serialize(const PRPTokenTable &tokenTable, ZBio::ZBinaryWriter::BinaryWriter *writerStream)
 	{
-		using namespace ZBio;
-
-		auto bufferSink = std::make_unique<ZBinaryWriter::BufferSink>();
-		ZBinaryWriter::BinaryWriter writer { std::move(bufferSink) };
-
-		for (const auto& token: tokenTable.m_tokenList) {
-			writer.writeCString(token);
-		}
-
-		auto serializedData = writer.release();
-
-		if (serializedData.has_value()) {
-			auto &data = serializedData.value();
-			std::copy(data.begin(), data.end(), std::back_inserter(destination));
+		for (const auto &token: tokenTable.m_tokenList)
+		{
+			writerStream->writeCString(token);
 		}
 	}
 

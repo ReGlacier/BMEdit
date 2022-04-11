@@ -8,6 +8,11 @@
 #include <GameLib/PRPTokenTable.h>
 
 
+namespace ZBio::ZBinaryWriter
+{
+	class BinaryWriter;
+}
+
 namespace gamelib::prp {
 	class PRPZDefines {
 	public:
@@ -23,6 +28,8 @@ namespace gamelib::prp {
 		void read(const uint8_t *data, int64_t size, const PRPTokenTable *tokenTable, ReadResult& result);
 
 		[[nodiscard]] const std::vector<PRPDefinition> &getDefinitions() const;
+
+		static void serialize(const PRPZDefines &defines, const PRPTokenTable *tokenTable, ZBio::ZBinaryWriter::BinaryWriter *binaryWriter);
 
 	private:
 		std::vector<PRPDefinition> m_definitions;

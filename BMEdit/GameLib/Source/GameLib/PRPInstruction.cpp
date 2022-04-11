@@ -143,6 +143,11 @@ namespace gamelib::prp
 		return m_isSet && !m_isDeclarator;
 	}
 
+	PRPOpCode PRPInstruction::getOpCode() const
+	{
+		return m_opCode;
+	}
+
 	const PRPOperandVal &PRPInstruction::getOperand() const
 	{
 		return m_operand;

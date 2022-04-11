@@ -51,8 +51,7 @@ namespace gamelib::prp
 				&prpFile[zDefinesReadResult.lastOffset],
 				prpFileSize - zDefinesReadResult.lastOffset,
 				&m_header,
-				&m_tokenTable))
-			{
+				&m_tokenTable)) {
 				return false;
 			}
 		}
@@ -73,6 +72,11 @@ namespace gamelib::prp
 	uint32_t PRPReader::getObjectsCount() const
 	{
 		return m_objectsCount;
+	}
+
+	const PRPZDefines &PRPReader::getDefinitions() const
+	{
+		return m_ZDefines;
 	}
 
 	const PRPByteCode &PRPReader::getByteCode() const
