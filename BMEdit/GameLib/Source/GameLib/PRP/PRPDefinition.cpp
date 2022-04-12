@@ -95,18 +95,3 @@ namespace gamelib::prp
 		m_isSet = valueToType(m_value) != PRPDefinitionType::ERR_UNKNOWN;
 	}
 }
-
-//To Bytes impl: https://github.com/ReGlacier/HBM_GMSTool/blob/main/PRP/PRPDefinition.py#L35
-//namespace gamelib
-//{
-//	bool ToBytes<prp::PRPDefinition>::operator()(const prp::PRPDefinition &definition, std::vector<uint8_t> &bytes)
-//	{
-//		std::unique_ptr<ZBio::ZBinaryWriter::BufferSink> bufferSink = std::make_unique<ZBio::ZBinaryWriter::BufferSink>();
-//		ZBio::ZBinaryWriter::BinaryWriter writer { std::move(bufferSink) };
-//
-//
-//		writer.write<uint8_t, ZBio::Endianness::LE>(static_cast<uint8_t>(de
-//		finition.getType()));
-//		writer.write<uint32_t, ZBio::Endianness::LE>(4); // TODO: Index of definition name in string table
-//	}
-//}
