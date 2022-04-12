@@ -15,10 +15,18 @@ namespace gamelib
 		Span(const T *d, int64_t s) : data(d), size(s)
 		{
 		}
+		explicit Span(const std::vector<T> &vector)
+		{
+			if (!vector.empty())
+			{
+				data = vector.data();
+				size = static_cast<int64_t>(vector.size());
+			}
+		}
 
 		[[nodiscard]] explicit operator bool() const noexcept
 		{
-			return (data != nullptr) && (size > 0);
+			return (data != nullptr);
 		}
 
 		[[nodiscard]] const T& operator[](int idx) const
@@ -30,6 +38,15 @@ namespace gamelib
 		{
 			data = nullptr;
 			size = 0;
+		}
+
+		Span<T> slice(int64_t offset, int64_t sliceSize) const
+		{
+			if (offset >= size || offset + sliceSize >= size) {
+				return Span<T> { nullptr, 0 };
+			}
+
+			return Span<T> { data + offset, sliceSize };
 		}
 	};
 }

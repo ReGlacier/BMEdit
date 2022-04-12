@@ -177,7 +177,7 @@ namespace gamelib::prp
 	                                const PRPTokenTable *tokenTable)
 	{
 		auto opCode = FromBytes<PRPOpCode>()(m_buffer[context.getIndex()]);
-		if (opCode == PRPOpCode::ERR_UNKNOWN || opCode == PRPOpCode::ERR_NO_TAG)
+		if (!OPCODE_VALID(opCode))
 		{
 			throw PRPBadInstruction("Invalid instruction", PRPRegionID::INSTRUCTIONS, context.getIndex());
 		}

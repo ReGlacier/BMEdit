@@ -1,3 +1,6 @@
 [submodule "BMEdit/GameLib/ThirdParty/ZBinaryIO"]
 	path = BMEdit/GameLib/ThirdParty/ZBinaryIO
 	url = https://github.com/pawREP/ZBinaryIO
+[submodule "BMEdit/GameLib/ThirdParty/json"]
+	path = BMEdit/GameLib/ThirdParty/json
+	url = https://github.com/nlohmann/json

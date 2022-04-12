@@ -48,6 +48,8 @@ namespace gamelib::prp {
 	};
 
 	std::string to_string(PRPOpCode opCode);
+	PRPOpCode fromString(const std::string &asString);
+	bool areOpCodesHasSameKind(PRPOpCode first, PRPOpCode second);
 }
 
 namespace gamelib {
@@ -57,3 +59,5 @@ namespace gamelib {
 		prp::PRPOpCode operator()(uint8_t bytes);
 	};
 }
+
+#define OPCODE_VALID(opc) ((opc) != prp::PRPOpCode::ERR_UNKNOWN && (opc) != prp::PRPOpCode::ERR_NO_TAG)

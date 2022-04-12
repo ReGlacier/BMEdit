@@ -45,6 +45,74 @@ namespace gamelib
 			return "Undefined";
 #undef OPC
 		}
+		bool areOpCodesHasSameKind(PRPOpCode first, PRPOpCode second)
+		{
+			if (first == second)
+			{
+				return true;
+			}
+
+#define SAME(a, b) if ((first == (a)) && (second == (b)) || (first == (b)) && (second == (a))) { return true; }
+			SAME(PRPOpCode::Array, PRPOpCode::NamedArray);
+			SAME(PRPOpCode::BeginObject, PRPOpCode::BeginNamedObject);
+			SAME(PRPOpCode::Container, PRPOpCode::NamedContainer);
+			SAME(PRPOpCode::Char, PRPOpCode::NamedChar);
+			SAME(PRPOpCode::Bool, PRPOpCode::NamedBool);
+			SAME(PRPOpCode::Int8, PRPOpCode::NamedInt8);
+			SAME(PRPOpCode::Int16, PRPOpCode::NamedInt16);
+			SAME(PRPOpCode::Int32, PRPOpCode::NamedInt32);
+			SAME(PRPOpCode::Float32, PRPOpCode::NamedFloat32);
+			SAME(PRPOpCode::Float64, PRPOpCode::NamedFloat64);
+			SAME(PRPOpCode::String, PRPOpCode::NamedString);
+			SAME(PRPOpCode::RawData, PRPOpCode::NamedRawData);
+			SAME(PRPOpCode::Reference, PRPOpCode::NamedReference);
+			SAME(PRPOpCode::Bitfield, PRPOpCode::NameBitfield);
+			SAME(PRPOpCode::StringOrArray_E, PRPOpCode::StringOrArray_8E);
+#undef SAME
+			return false;
+		}
+
+		PRPOpCode fromString(const std::string &asString)
+		{
+#define OPSW(x) if (asString.find(#x) != std::string::npos) return PRPOpCode::x;
+			OPSW(Array)
+			OPSW(BeginObject)
+			OPSW(Reference)
+			OPSW(Container)
+			OPSW(Char)
+			OPSW(Bool)
+			OPSW(Int8)
+			OPSW(Int16)
+			OPSW(Int32)
+			OPSW(Float32)
+			OPSW(Float64)
+			OPSW(String)
+			OPSW(RawData)
+			OPSW(Bitfield)
+			OPSW(EndArray)
+			OPSW(SkipMark)
+			OPSW(EndObject)
+			OPSW(EndOfStream)
+			OPSW(NamedArray)
+			OPSW(BeginNamedObject)
+			OPSW(NamedReference)
+			OPSW(NamedContainer)
+			OPSW(NamedChar)
+			OPSW(NamedBool)
+			OPSW(NamedInt8)
+			OPSW(NamedInt16)
+			OPSW(NamedInt32)
+			OPSW(NamedFloat32)
+			OPSW(NamedFloat64)
+			OPSW(NamedString)
+			OPSW(NamedRawData)
+			OPSW(NameBitfield)
+			OPSW(StringOrArray_E)
+			OPSW(StringOrArray_8E)
+			OPSW(StringArray)
+#undef OPSW
+			return PRPOpCode::ERR_UNKNOWN;
+		}
 	}
 
 	prp::PRPOpCode FromBytes<prp::PRPOpCode>::operator()(uint8_t byte)
