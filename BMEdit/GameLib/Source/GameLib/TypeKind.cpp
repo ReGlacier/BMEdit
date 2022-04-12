@@ -1,5 +1,6 @@
 #include <GameLib/TypeKind.h>
 #include <algorithm>
+#include <iterator>
 
 
 namespace gamelib
@@ -11,7 +12,7 @@ namespace gamelib
 		std::transform(
 			typeKindStr.begin(),
 			typeKindStr.end(),
-			str.begin(),
+			std::back_inserter(str),
 			[&isBeforeDot](char ch)
 			{
 				if (ch == '.')

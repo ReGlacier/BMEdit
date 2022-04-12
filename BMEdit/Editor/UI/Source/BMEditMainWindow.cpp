@@ -1,5 +1,23 @@
-#include "BMEditMainWindow.h"
 #include "ui_BMEditMainWindow.h"
+#include "BMEditMainWindow.h"
+
+#include <QFile>
+#include <QDir>
+#include <QDirIterator>
+
+#include <GameLib/TypeRegistry.h>
+#include <nlohmann/json.hpp>
+
+
+enum OperationToProgress : int
+{
+	DISCOVER_TYPES_DATABASE = 5,
+	PARSE_DATABASE = 7,
+	DATABASE_PARSED = 10,
+	TYPE_DESCRIPTIONS_FOUND = 15,
+	LOADING_TYPE_DESCRIPTORS = 20
+};
+
 
 BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -10,6 +28,7 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 	initStatusBar();
 	connectActions();
 	connectDockWidgetActions();
+	loadTypesDataBase();
 }
 
 BMEditMainWindow::~BMEditMainWindow()
@@ -103,4 +122,80 @@ void BMEditMainWindow::onRestoreLayout() {
 	ui->propertiesDock->setVisible(true);
 	ui->sceneDock->setVisible(true);
 	ui->propertiesDock->setVisible(true);
+}
+
+void BMEditMainWindow::loadTypesDataBase()
+{
+	m_operationProgress->setValue(OperationToProgress::DISCOVER_TYPES_DATABASE);
+
+	gamelib::TypeRegistry::getInstance().reset();
+
+	QFile typeRegistryFile("TypesRegistry.json");
+	if (!typeRegistryFile.open(QIODevice::ReadOnly))
+	{
+		m_operationCommentLabel->setText("Load 'TypesRegistry.json' failed. File not found");
+		return;
+	}
+
+	m_operationProgress->setValue(OperationToProgress::PARSE_DATABASE);
+	auto contents = typeRegistryFile.readAll().toStdString();
+	typeRegistryFile.close();
+
+	auto registryFile = nlohmann::json::parse(contents, nullptr, false, true);
+	if (registryFile.is_discarded()) {
+		m_operationCommentLabel->setText("Failed to load types database: invalid JSON format");
+		return;
+	}
+
+	m_operationProgress->setValue(OperationToProgress::DATABASE_PARSED);
+
+	if (!registryFile.contains("inc") || !registryFile.contains("db"))
+	{
+		m_operationCommentLabel->setText("Invalid types database format");
+		return;
+	}
+
+	m_operationProgress->setValue(OperationToProgress::TYPE_DESCRIPTIONS_FOUND);
+	auto &registry = gamelib::TypeRegistry::getInstance();
+
+	std::unordered_map<std::string, std::string> typesToHashes;
+	for (const auto &[hash, typeNameObj]: registryFile["db"].items())
+	{
+		typesToHashes[typeNameObj.get<std::string>()] = hash;
+	}
+
+	const auto incPath = registryFile["inc"].get<std::string>();
+
+	m_operationProgress->setValue(OperationToProgress::LOADING_TYPE_DESCRIPTORS);
+	m_operationCommentLabel->setText(QString("Hash indices loaded (%1), loading types from '%2' folder").arg(typesToHashes.size()).arg(QString::fromStdString(incPath)));
+
+	// Here we need to scan for all .json files in 'inc' folder and parse 'em all
+	std::vector<nlohmann::json> typeInfos;
+	QDirIterator typesFolderIterator(QString::fromStdString(incPath), { "*.json" }, QDir::Files);
+	while (typesFolderIterator.hasNext())
+	{
+		auto path = typesFolderIterator.next();
+
+		// TODO: It's better to do in multiple threads but who cares?)
+		QFile typeDescriptionFile(path);
+		if (!typeDescriptionFile.open(QIODevice::ReadOnly))
+		{
+			m_operationCommentLabel->setText(QString("ERROR: Failed to open file '%1'").arg(path));
+			return;
+		}
+
+		auto typeInfoContents = typeDescriptionFile.readAll().toStdString();
+		typeDescriptionFile.close();
+
+
+		auto &jsonContents = typeInfos.emplace_back();
+		jsonContents = nlohmann::json::parse(typeInfoContents, nullptr, false, true);
+		if (jsonContents.is_discarded())
+		{
+			m_operationCommentLabel->setText(QString("ERROR: Failed to parse file '%1'").arg(path));
+			return;
+		}
+	}
+
+	registry.registerTypes(std::move(typeInfos), std::move(typesToHashes));
 }

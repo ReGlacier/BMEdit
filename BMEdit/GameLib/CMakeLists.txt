@@ -14,4 +14,5 @@ file(GLOB_RECURSE GAME_LIB_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp)
 
 add_library(GameLib STATIC ${GAME_LIB_SOURCES})
 target_include_directories(GameLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Include)
-target_link_libraries(GameLib PRIVATE ZBinaryReader nlohmann_json::nlohmann_json)
+target_link_libraries(GameLib PRIVATE ZBinaryReader)
+target_link_libraries(GameLib PUBLIC nlohmann_json::nlohmann_json)

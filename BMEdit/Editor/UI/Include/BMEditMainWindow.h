@@ -22,6 +22,7 @@ private:
 	void initStatusBar();
 	void connectActions();
 	void connectDockWidgetActions();
+	void loadTypesDataBase();
 
 public slots:
 	void onExit();
