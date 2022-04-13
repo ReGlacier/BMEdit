@@ -1,5 +1,6 @@
 #include "ui_BMEditMainWindow.h"
 #include "BMEditMainWindow.h"
+#include "TypeViewerWindow.h"
 
 #include <QFile>
 #include <QDir>
@@ -58,6 +59,7 @@ void BMEditMainWindow::connectActions()
 	connect(ui->actionExit, &QAction::triggered, [=]() { onExit(); });
 	connect(ui->actionOpen_level, &QAction::triggered, [=]() { onOpenLevel(); });
 	connect(ui->actionRestore_layout, &QAction::triggered, [=]() { onRestoreLayout(); });
+	connect(ui->actionTypes_Viewer, &QAction::triggered, [=]() { onShowTypesViewer(); });
 }
 
 void BMEditMainWindow::connectDockWidgetActions()
@@ -122,6 +124,13 @@ void BMEditMainWindow::onRestoreLayout() {
 	ui->propertiesDock->setVisible(true);
 	ui->sceneDock->setVisible(true);
 	ui->propertiesDock->setVisible(true);
+}
+
+void BMEditMainWindow::onShowTypesViewer()
+{
+	TypeViewerWindow viewerWindow(this);
+	viewerWindow.setModal(true);
+	viewerWindow.exec();
 }
 
 void BMEditMainWindow::loadTypesDataBase()

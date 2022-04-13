@@ -143,4 +143,17 @@ namespace gamelib
 
 		return it->second;
 	}
+
+	void TypeRegistry::forEachType(const std::function<void(const Type *)> &predicate)
+	{
+		if (!predicate)
+		{
+			return;
+		}
+
+		for (const auto& type: m_types)
+		{
+			predicate(type.get());
+		}
+	}
 }

@@ -54,4 +54,9 @@ namespace gamelib
 		std::vector<prp::PRPInstruction> valueData { instructions[0] };
 		return Type::DataMappingResult(Value(this, std::move(valueData)), instructions.slice(1, instructions.size - 1));
 	}
+
+	const TypeEnum::Entries &TypeEnum::getPossibleValues() const
+	{
+		return m_possibleValues;
+	}
 }

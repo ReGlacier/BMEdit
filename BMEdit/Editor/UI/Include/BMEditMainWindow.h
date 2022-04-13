@@ -28,6 +28,7 @@ public slots:
 	void onExit();
 	void onOpenLevel();
 	void onRestoreLayout();
+	void onShowTypesViewer();
 
 private:
     Ui::BMEditMainWindow *ui;

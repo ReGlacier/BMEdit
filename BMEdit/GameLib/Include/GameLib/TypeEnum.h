@@ -22,6 +22,8 @@ namespace gamelib
 
 		[[nodiscard]] Span<prp::PRPInstruction> verifyInstructionSet(const Span<prp::PRPInstruction> &instructions) const override;
 		[[nodiscard]] Type::DataMappingResult map(const Span<prp::PRPInstruction> &instructions) const override;
+
+		[[nodiscard]] const Entries &getPossibleValues() const;
 	private:
 		Entries m_possibleValues;
 	};

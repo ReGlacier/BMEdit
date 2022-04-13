@@ -33,6 +33,8 @@ namespace gamelib
 		[[nodiscard]] const Type *findTypeByName(const std::string &typeName) const;
 		[[nodiscard]] const Type *findTypeByHash(const std::string &hash) const;
 
+		void forEachType(const std::function<void(const Type *)> &predicate);
+
 	private:
 		std::vector<std::unique_ptr<Type>> m_types;
 		std::unordered_map<std::string, Type*> m_typesByHash;

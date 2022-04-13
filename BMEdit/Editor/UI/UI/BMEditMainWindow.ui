@@ -55,6 +55,8 @@
     <addaction name="actionProperties"/>
     <addaction name="separator"/>
     <addaction name="actionRestore_layout"/>
+    <addaction name="separator"/>
+    <addaction name="actionTypes_Viewer"/>
    </widget>
    <widget class="QMenu" name="menuScene">
     <property name="title">
@@ -178,6 +180,16 @@
   <action name="actionRestore_layout">
    <property name="text">
     <string>Restore layout</string>
+   </property>
+  </action>
+  <action name="actionTypes_list">
+   <property name="text">
+    <string>Types list</string>
+   </property>
+  </action>
+  <action name="actionTypes_Viewer">
+   <property name="text">
+    <string>Types Viewer</string>
    </property>
   </action>
  </widget>
