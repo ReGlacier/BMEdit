@@ -1,5 +1,5 @@
 .idea
 cmake-build-*
 BMEdit/Editor/UI/UI/*.autosave
-BMEdit/GameLib/ThirdParty/zlib/zconf.h.included
+ThirdParty/zlib/zconf.h.included
 Test

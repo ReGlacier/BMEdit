@@ -1,6 +1,8 @@
 #pragma once
 
 #include <GameLib/IO/AssetKind.h>
+#include <string>
+#include <memory>
 
 
 namespace gamelib::io
@@ -10,7 +12,7 @@ namespace gamelib::io
 	public:
 		virtual ~IOLevelAssetsProvider() noexcept = default;
 
-		virtual std::string getLevelName() const = 0;
-		virtual std::unique_ptr<uint8_t[]> getAsset(AssetKind kind) const = 0;
+		[[nodiscard]] virtual std::string getLevelName() const = 0;
+		[[nodiscard]] virtual std::unique_ptr<uint8_t[]> getAsset(AssetKind kind, int64_t &bufferSize) const = 0;
 	};
 }

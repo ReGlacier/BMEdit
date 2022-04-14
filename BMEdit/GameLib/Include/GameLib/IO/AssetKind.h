@@ -3,9 +3,9 @@
 
 namespace gamelib::io
 {
-	enum class AssetKind
+	enum AssetKind : int
 	{
-		SCENE,  ///< GMS
+		SCENE = 0,  ///< GMS
 		PROPERTIES, ///< PRP
 		TEXTURES, ///< TEX
 		GEOMETRY, ///< PRM
@@ -17,5 +17,9 @@ namespace gamelib::io
 		ANIMATION, ///< ANM
 		SOUND, ///< SND
 		BUFFER, ///< BUF
+		ZGF, ///< ZGF (dummy file)
+
+
+		LAST_ASSET_KIND
 	};
 }

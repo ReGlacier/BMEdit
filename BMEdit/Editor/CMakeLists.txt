@@ -26,7 +26,9 @@ file(GLOB_RECURSE EDITOR_AUTOGEN_UI_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/UI/Sourc
 file(
         GLOB_RECURSE
         EDITOR_UI_HEADERS
+        # --- UI
         ${CMAKE_CURRENT_SOURCE_DIR}/UI/Include/*.h
+        # --- Qt based code
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Models/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Delegates/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Widgets/*.h
@@ -38,9 +40,7 @@ qt6_wrap_ui(EDITOR_AUTOGEN_UI_HEADERS ${EDITOR_AUTOGEN_UI_FILES})
 qt6_wrap_cpp(EDITOR_PREPARED_HEADERS ${EDITOR_UI_HEADERS})
 
 # --- Dependencies
-#add_subdirectory(ThirdParty/libzip)
-#option(BUILD_SHARED_LIBS OFF)
-#option(LIBZIP_DO_INSTALL OFF)
+add_subdirectory(ThirdParty/minizip)
 
 # --- Editor is a library
 add_library(Editor STATIC ${EDITOR_SOURCES} ${EDITOR_AUTOGEN_UI_SOURCES} ${EDITOR_AUTOGEN_UI_HEADERS} ${EDITOR_PREPARED_HEADERS})
@@ -51,4 +51,5 @@ target_include_directories(Editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/UI/Include
 # --- Required GameLib & Qt6
 target_link_libraries(Editor PRIVATE Qt6::Widgets OpenGL::GL Qt6::OpenGL Qt6::OpenGLWidgets)
 target_link_libraries(Editor PRIVATE GameLib)
-#target_link_libraries(Editor PRIVATE zip)
+target_link_libraries(Editor PRIVATE zlibstatic)
+target_link_libraries(Editor PRIVATE minizip)

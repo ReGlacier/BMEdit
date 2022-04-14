@@ -3,6 +3,10 @@ project(BMEdit)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# --- Global dependencies
+add_subdirectory(ThirdParty/zlib)
+
+# --- Project modules
 add_subdirectory(BMEdit/Editor)
 add_subdirectory(BMEdit/GameLib)
 
