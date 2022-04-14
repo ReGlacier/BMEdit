@@ -5,6 +5,7 @@
 namespace gamelib::prp
 {
 	constexpr std::size_t kHeaderOffset = 0x1F;
+	constexpr std::size_t kObjectsCountSize = 0x4;
 
 	bool PRPReader::parse(const uint8_t *prpFile, int64_t prpFileSize)
 	{
@@ -21,8 +22,12 @@ namespace gamelib::prp
 		{
 			using namespace ZBio;
 
-			ZBinaryReader::BinaryReader reader
-				{reinterpret_cast<const char *>(&prpFile[kHeaderOffset]), (int64_t) (prpFileSize - kHeaderOffset)};
+			const std::size_t objectsCountOffset = kHeaderOffset + m_header.getZDefinesOffset();
+
+			ZBinaryReader::BinaryReader reader {
+				reinterpret_cast<const char *>(&prpFile[objectsCountOffset]),
+				(int64_t) (prpFileSize - objectsCountOffset)
+			};
 			m_objectsCount = reader.read<uint32_t, Endianness::LE>();
 		}
 
@@ -31,7 +36,7 @@ namespace gamelib::prp
 		{
 			m_ZDefines = PRPZDefines();
 			// 1F - header, 4 - counter
-			const auto zDefinesOffset = 0x1F + 0x4 + m_header.getZDefinesOffset();
+			const auto zDefinesOffset = kHeaderOffset + kObjectsCountSize + m_header.getZDefinesOffset();
 			const uint8_t *data = &prpFile[zDefinesOffset];
 			const auto size = (int64_t) (prpFileSize - zDefinesOffset);
 			const PRPTokenTable *tokenTable = m_header.isTokenTablePresented() ? &m_tokenTable : nullptr;

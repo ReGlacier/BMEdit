@@ -133,12 +133,15 @@ void BMEditMainWindow::onOpenLevel()
 
 	auto selectedLevel = openLevelDialog.selectedFiles().first().toStdString();
 
+	//TODO: Do it in another thread to avoid UI-freeze
 	if (!editor::EditorInstance::getInstance().openLevelFromZIP(selectedLevel))
 	{
 		m_operationCommentLabel->setText(QString("Failed to open level '%1'").arg(QString::fromStdString(selectedLevel)));
 	} else {
 		auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
 		setWindowTitle(QString("BMEdit - %1").arg(QString::fromStdString(currentLevel->getLevelName())));
+
+		// Level is loaded?
 	}
 }
 

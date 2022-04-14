@@ -35,6 +35,17 @@ namespace editor {
 		}
 
 		m_currentLevel = std::make_unique<gamelib::Level>(std::move(provider));
+		if (!m_currentLevel)
+		{
+			return false;
+		}
+
+		if (!m_currentLevel->loadSceneData())
+		{
+			m_currentLevel = nullptr; // cleanup level to avoid work with invalid level instance
+			return false;
+		}
+
 		return true;
 	}
 
