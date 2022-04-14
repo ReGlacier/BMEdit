@@ -56,7 +56,7 @@ namespace editor
 			{
 				// File found, need to take filename, save it as level name and read contents
 				std::filesystem::path currentFilePath { currentFileName };
-				m_levelName = currentFilePath.filename().string();
+				m_levelName = currentFilePath.stem().string();
 
 				// Switch to current file
 				ret = unzOpenCurrentFile(m_zipHandle);
@@ -92,7 +92,7 @@ namespace editor
 		while (true);
 	}
 
-	std::string ZIPLevelAssetProvider::getLevelName() const
+	const std::string &ZIPLevelAssetProvider::getLevelName() const
 	{
 		if (m_levelName.empty() && m_zipHandle)
 		{
@@ -102,5 +102,55 @@ namespace editor
 		}
 
 		return m_levelName;
+	}
+
+	bool ZIPLevelAssetProvider::hasAssetOfKind(gamelib::io::AssetKind kind) const
+	{
+		if (!m_zipHandle)
+		{
+			return false;
+		}
+
+		if (unzGoToFirstFile(m_zipHandle) != UNZ_OK)
+		{
+			return false;
+		}
+
+		do
+		{
+			static constexpr int kMaxFileNameLength = 256;
+			char fileName[kMaxFileNameLength] = { 0 };
+			unz_file_info fileInfo;
+
+			auto ret = unzGetCurrentFileInfo(m_zipHandle, &fileInfo, fileName, kMaxFileNameLength, nullptr, 0, nullptr, 0);
+			if (ret != UNZ_OK)
+			{
+				return false;
+			}
+
+			/**
+			 * Here we have a filename and we would like to check that our 'filename' ends with our extension.
+			 * In most cases our extensions are in upper case and this function wants to work with upper case
+			 */
+			std::string_view currentFileName { fileName };
+			if (currentFileName.ends_with(kAssetExtensions[kind]))
+			{
+				return true;
+			}
+
+			ret = unzGoToNextFile(m_zipHandle);
+			if (ret != UNZ_OK)
+			{
+				return false;
+			}
+		}
+		while (true);
+
+		return false;
+	}
+
+	bool ZIPLevelAssetProvider::isValid() const
+	{
+		return m_zipHandle != nullptr;
 	}
 }

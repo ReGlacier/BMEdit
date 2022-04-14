@@ -1,9 +1,16 @@
 #include <Editor/EditorInstance.h>
+#include <Editor/ZIPLevelAssetProvider.h>
 #include <BMEditMainWindow.h>
 #include <QApplication>
 
 
 namespace editor {
+	EditorInstance &EditorInstance::getInstance()
+	{
+		static EditorInstance g_editor;
+		return g_editor;
+	}
+
 	int EditorInstance::run(int argc, char **argv)
 	{
 		//TODO: Support no-gui mode here
@@ -12,5 +19,32 @@ namespace editor {
 
 		mainWindow->show();
 		return app->exec();
+	}
+
+	bool EditorInstance::openLevelFromZIP(const std::string &path)
+	{
+		auto provider = std::make_unique<ZIPLevelAssetProvider>(path);
+		if (!provider)
+		{
+			return false;
+		}
+
+		if (!provider->isValid())
+		{
+			return false;
+		}
+
+		m_currentLevel = std::make_unique<gamelib::Level>(std::move(provider));
+		return true;
+	}
+
+	const gamelib::Level *EditorInstance::getActiveLevel()
+	{
+		return m_currentLevel.get();
+	}
+
+	void EditorInstance::closeLevel()
+	{
+		m_currentLevel = nullptr;
 	}
 }

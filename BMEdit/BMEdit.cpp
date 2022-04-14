@@ -1,6 +1,6 @@
 #include <Editor/EditorInstance.h>
+#include <memory>
 
 int main(int argc, char** argv) {
-	editor::EditorInstance instance {};
-	return instance.run(argc, argv);
+	return editor::EditorInstance::getInstance().run(argc, argv);
 }

@@ -6,9 +6,12 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include <GameLib/TypeRegistry.h>
 #include <GameLib/TypeNotFoundException.h>
+
+#include <Editor/EditorInstance.h>
 
 #include <nlohmann/json.hpp>
 
@@ -120,7 +123,23 @@ void BMEditMainWindow::onExit()
 
 void BMEditMainWindow::onOpenLevel()
 {
-	// TODO: Implement open level
+	QFileDialog openLevelDialog(this, QString("Open Level"), QString(), QString("Hitman Blood Money level package (*.ZIP)"));
+	openLevelDialog.setViewMode(QFileDialog::Detail);
+	openLevelDialog.setFileMode(QFileDialog::ExistingFile);
+	if (!openLevelDialog.exec())
+	{
+		return;
+	}
+
+	auto selectedLevel = openLevelDialog.selectedFiles().first().toStdString();
+
+	if (!editor::EditorInstance::getInstance().openLevelFromZIP(selectedLevel))
+	{
+		m_operationCommentLabel->setText(QString("Failed to open level '%1'").arg(QString::fromStdString(selectedLevel)));
+	} else {
+		auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
+		setWindowTitle(QString("BMEdit - %1").arg(QString::fromStdString(currentLevel->getLevelName())));
+	}
 }
 
 void BMEditMainWindow::onRestoreLayout() {

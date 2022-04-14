@@ -15,8 +15,10 @@ namespace editor
 		explicit ZIPLevelAssetProvider(std::string containerPath);
 		~ZIPLevelAssetProvider() override;
 
-		[[nodiscard]] std::string getLevelName() const override;
+		[[nodiscard]] const std::string &getLevelName() const override;
 		[[nodiscard]] std::unique_ptr<uint8_t[]> getAsset(gamelib::io::AssetKind kind, int64_t &bufferSize) const override;
+		[[nodiscard]] bool hasAssetOfKind(gamelib::io::AssetKind kind) const override;
+		[[nodiscard]] bool isValid() const override;
 
 	private:
 		std::string m_path {};
