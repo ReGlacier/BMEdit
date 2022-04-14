@@ -1,5 +1,6 @@
 #include <GameLib/Level.h>
 #include <GameLib/PRP/PRPReader.h>
+#include <GameLib/GMS/GMSReader.h>
 
 
 namespace gamelib
@@ -21,9 +22,12 @@ namespace gamelib
 			return false;
 		}
 
+		if (!loadLevelScene())
+		{
+			return false;
+		}
+
 		// TODO: Load things (it's time to combine GMS, PRP & BUF files)
-
-
 		m_isLevelLoaded = true;
 		return true;
 	}
@@ -68,6 +72,24 @@ namespace gamelib
 		m_levelProperties.objectsCount = reader.getObjectsCount();
 		m_levelProperties.rawProperties = reader.getByteCode().getInstructions();
 		m_levelProperties.ZDefines = reader.getDefinitions();
+		return true;
+	}
+
+	bool Level::loadLevelScene()
+	{
+		int64_t gmsFileSize = 0;
+		auto gmsFileBuffer = m_assetProvider->getAsset(io::AssetKind::SCENE, gmsFileSize);
+		if (!gmsFileBuffer || !gmsFileSize)
+		{
+			return false;
+		}
+
+		gms::GMSReader reader;
+		if (!reader.parse(gmsFileBuffer.get(), gmsFileSize))
+		{
+			return false;
+		}
+
 		return true;
 	}
 }
