@@ -1,0 +1,6 @@
+{
+    "typename": "ZFadeFullScreen",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

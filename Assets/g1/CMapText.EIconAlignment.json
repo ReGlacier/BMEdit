@@ -1,0 +1,12 @@
+{
+    "typename": "CMapText.EIconAlignment",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "left_legend" : 5,
+        "bottom" : 4,
+        "top" : 3,
+        "right" : 2,
+        "left" : 1,
+        "center" : 0
+    }
+}

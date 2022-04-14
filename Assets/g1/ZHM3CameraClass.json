@@ -1,0 +1,6 @@
+{
+    "typename": "ZHM3CameraClass",
+    "parent": "ZHM3CameraClassBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

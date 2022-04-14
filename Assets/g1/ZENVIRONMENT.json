@@ -1,0 +1,15 @@
+{
+    "typename": "ZENVIRONMENT",
+    "parent": "ZLIGHT",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "AmbientEnable", "typename": "PRPOpCode.Bool" },
+        { "name": "CharacterLight", "typename": "PRPOpCode.Bool" },
+        { "name": "CharacterShadow", "typename": "PRPOpCode.Bool" },
+        { "name": "FogEnable", "typename": "PRPOpCode.Bool" },
+        { "name": "property_24", "typename": "ZCOLOR", "offset": 36 },
+        { "name": "property_28", "typename": "ZCOLOR", "offset": 40 },
+        { "name": "property_2C", "typename": "ZCOLOR", "offset": 44 },
+        { "name": "property_30", "typename": "ZCOLOR", "offset": 48 }
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "typename": "ZItemTemplateWeapon.WEAPONTYPE",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "WT_FORCE32": 2147483647,
+        "WT_CLOSECOMBAT": 13,
+        "WT_MOLOTOV": 12,
+        "WT_GRENADE": 11,
+        "WT_OTHER": 10,
+        "WT_PIANO": 9,
+        "WT_KNIFE": 8,
+        "WT_ROCKETLAUNCHER": 7,
+        "WT_SHOTGUN": 6,
+        "WT_PUMPGUN": 5,
+        "WT_RIFLE": 4,
+        "WT_MACHINEGUN": 3,
+        "WT_SUBMACHINEGUN": 2,
+        "WT_REVOLVER": 1,
+        "WT_PISTOL": 0
+    }
+}

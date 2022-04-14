@@ -1,0 +1,6 @@
+{
+    "typename": "ZCheckVisible",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

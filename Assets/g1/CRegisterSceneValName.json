@@ -1,0 +1,8 @@
+{
+    "typename": "CRegisterSceneValName",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Name", "typename": "PRPOpCode.String" }
+    ]
+}

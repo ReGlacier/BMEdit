@@ -1,0 +1,8 @@
+{
+    "typename": "ZHitman3",
+    "parent": "ZPlayer",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_12CC",  "typename": "ZGEOMREF", "offset": 4812, "comment": "Active room?" }
+    ]
+}

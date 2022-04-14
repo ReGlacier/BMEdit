@@ -1,0 +1,10 @@
+{
+    "typename": "ZHM3WeaponUpgradeProperty",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Type",  "typename": "ZHM3WeaponUpgradeProperty.EPropertyType", "offset": 44 },
+        { "name": "Func",  "typename": "ZHM3WeaponUpgradeProperty.EPropertyFunc", "offset": 48 },
+        { "name": "Value", "typename": "PRPOpCode.Float32", "offset": 52 }
+    ]
+}

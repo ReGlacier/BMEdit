@@ -1,0 +1,8 @@
+{
+    "typename": "CTimeOutDelete.EOperation",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "TO_DELETE" : 1,
+        "TO_DEACTIVATE" : 0
+    }
+}

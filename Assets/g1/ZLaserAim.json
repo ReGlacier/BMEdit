@@ -1,0 +1,6 @@
+{
+    "typename": "ZLaserAim",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

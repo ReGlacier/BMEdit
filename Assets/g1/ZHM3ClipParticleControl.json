@@ -1,0 +1,6 @@
+{
+    "typename": "ZHM3ClipParticleControl",
+    "parent": "ZAllocMany",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

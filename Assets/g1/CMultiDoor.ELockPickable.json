@@ -1,0 +1,9 @@
+{
+    "typename": "CMultiDoor.ELockPickable",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "EASY" : 2,
+        "HARD" : 1,
+        "IMPOSSIBLE" : 0
+    }
+}

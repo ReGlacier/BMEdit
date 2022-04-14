@@ -1,0 +1,10 @@
+{
+    "typename": "ZFRAME",
+    "parent": "ZWINOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_AC", "typename": "PRPOpCode.Int32", "offset": 172 },
+        { "name": "property_B0", "typename": "PRPOpCode.Int32", "offset": 176 },
+        { "name": "Pieces",      "typename": "ZREFTAB32" }
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "typename": "ZMatrix34F",
+    "kind": "TypeKind.ARRAY",
+    "array": {
+        "expected_length": 12,
+        "inner_opcode_type": "PRPOpCode.Float32"
+    }
+}

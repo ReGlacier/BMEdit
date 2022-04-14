@@ -1,0 +1,5 @@
+{
+    "typename": "ZMsg",
+    "kind": "TypeKind.ALIAS",
+    "alias": "PRPOpCode.String"
+}

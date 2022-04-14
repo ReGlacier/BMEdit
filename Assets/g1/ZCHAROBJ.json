@@ -1,0 +1,10 @@
+{
+    "typename": "ZCHAROBJ",
+    "parent": "ZWINOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_90", "typename": "PRPOpCode.String", "offset": 144 },
+        { "name": "Font", "typename": "ZGEOMREF" },
+        { "name": "Color", "typename": "ZVector3F" }
+    ]
+}

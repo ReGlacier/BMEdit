@@ -1,0 +1,8 @@
+{
+    "typename": "ZAudio_AttachToGeom",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "AudioRef", "typename": "ZAUDIOREF", "offset": 44 }
+    ]
+}

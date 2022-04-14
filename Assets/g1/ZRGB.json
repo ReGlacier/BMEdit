@@ -1,0 +1,13 @@
+{
+    "typename": "ZRGB",
+    "kind": "TypeKind.ARRAY",
+    "array": {
+        "expected_length": 3,
+        "inner_opcode_type": "PRPOpCode.Int32"
+    },
+    "transform": {
+        "R": "$0",
+        "G": "$1",
+        "B": "$2"
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "typename": "ZHitmanAnim",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_C",  "typename": "ZANIM", "offset": 12 }
+    ]
+}

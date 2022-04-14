@@ -1,0 +1,8 @@
+{
+    "typename": "ZItemContainer",
+    "parent": "ZItem",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+         { "name": "property_88", "typename": "ZREFTAB32", "offset": 132 }
+    ]
+}

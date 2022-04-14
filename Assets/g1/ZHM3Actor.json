@@ -1,0 +1,10 @@
+{
+    "typename": "ZHM3Actor",
+    "parent": "ZActor",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_900", "typename": "ZGEOMREF", "offset": 2304 },
+        { "name": "OverrideHitpoints", "typename": "PRPOpCode.Int32" },
+        { "name": "property_9D8", "typename": "ZGEOMREF", "offset": 2520 }
+    ]
+}

@@ -1,0 +1,6 @@
+{
+    "typename": "ZTie",
+    "parent": "ZCloth",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

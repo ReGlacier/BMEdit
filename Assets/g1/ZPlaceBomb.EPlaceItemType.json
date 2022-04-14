@@ -1,0 +1,8 @@
+{
+    "typename": "ZPlaceBomb.EPlaceItemType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "PLACEITEMTYPE_SUITCASE": 1,
+        "PLACEITEMTYPE_BOMB": 0
+    }
+}

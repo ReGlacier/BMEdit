@@ -1,0 +1,9 @@
+{
+    "typename": "EBoundingBox",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "BOUNDING_DynamicAutoAssign": 2,
+        "BOUNDING_Dynamic": 1,
+        "BOUNDING_Static": 0
+    }
+}

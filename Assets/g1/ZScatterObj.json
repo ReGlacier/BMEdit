@@ -1,0 +1,6 @@
+{
+    "typename": "ZScatterObj",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

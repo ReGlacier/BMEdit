@@ -1,0 +1,14 @@
+{
+    "typename": "ZSlider",
+    "parent": "ZCONTROL",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_94",  "typename": "PRPOpCode.Int32", "offset": 148 },
+        { "name": "property_98",  "typename": "PRPOpCode.Int32", "offset": 152 },
+        { "name": "property_9C",  "typename": "PRPOpCode.Int32", "offset": 156 },
+        { "name": "property_A0",  "typename": "PRPOpCode.Int32", "offset": 160 },
+        { "name": "property_B0",  "typename": "ZGEOMREF",        "offset": 176 },
+        { "name": "property_B8",  "typename": "ZREFTAB32",       "offset": 184 },
+        { "name": "Width",  "typename": "PRPOpCode.Int32" }
+    ]
+}

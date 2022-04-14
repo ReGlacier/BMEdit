@@ -1,0 +1,10 @@
+{
+    "typename": "ZCloth.WindType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "MOVEMENTBASED": 3,
+        "PERLIN": 2,
+        "STATIC": 1,
+        "NO": 0
+    }
+}

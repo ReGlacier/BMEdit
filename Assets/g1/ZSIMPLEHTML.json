@@ -1,0 +1,8 @@
+{
+    "typename": "ZSIMPLEHTML",
+    "parent": "ZCHAROBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Fonts", "typename": "ZREFTAB32" }
+    ]
+}

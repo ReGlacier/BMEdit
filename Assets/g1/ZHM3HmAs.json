@@ -1,0 +1,16 @@
+{
+    "typename": "ZHM3HmAs",
+    "parent": "ZGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_48", "typename": "ZGEOMREF", "offset": 72 },
+        { "name": "property_4C", "typename": "ZAUDIOREF", "offset": 76 },
+        { "name": "property_50", "typename": "ZREFTAB32", "offset": 80 },
+        { "name": "DressQuality", "typename": "ZHM3HmAs.EDressQuality", "offset": 108 },
+        { "name": "SecurityZone", "typename": "ZHM3HmAs.ESecurityZone", "offset": 112 },
+        { "name": "property_74", "typename": "ZREFTAB32", "offset": 116 },
+        { "name": "property_90", "typename": "PRPOpCode.Int32", "offset": 144 },
+        { "name": "property_94", "typename": "PRPOpCode.Bool", "offset": 148 },
+        { "name": "property_98", "typename": "PRPOpCode.String", "offset": 152 }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "typename": "ZSoundSpline",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Property_58", "typename": "ZREFTAB32", "offset": 88 },
+        { "name": "Property_74", "typename": "PRPOpCode.Float32", "offset": 116 },
+        { "name": "Property_78", "typename": "PRPOpCode.Float32", "offset": 120 },
+        { "name": "Property_7C", "typename": "PRPOpCode.Float32", "offset": 124 },
+        { "name": "Property_80", "typename": "PRPOpCode.Float32", "offset": 128 }
+    ]
+}

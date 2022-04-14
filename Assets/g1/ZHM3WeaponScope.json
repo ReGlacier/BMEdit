@@ -1,0 +1,11 @@
+{
+    "typename": "ZHM3WeaponScope",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ScopeOverlay", "typename": "ZGEOMREF" },
+        { "name": "UpgradeScopeOverlay1", "typename": "ZGEOMREF" },
+        { "name": "UpgradeScopeOverlay2", "typename": "ZGEOMREF" },
+        { "name": "RedDotSightScopeOverlay", "typename": "ZGEOMREF" }
+    ]
+}

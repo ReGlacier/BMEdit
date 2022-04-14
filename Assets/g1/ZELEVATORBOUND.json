@@ -1,0 +1,6 @@
+{
+    "typename": "ZELEVATORBOUND",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

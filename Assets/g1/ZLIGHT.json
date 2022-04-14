@@ -1,0 +1,10 @@
+{
+    "typename": "ZLIGHT",
+    "parent": "ZGEOM",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ParentBound", "typename": "PRPOpCode.Bool" },
+        { "name": "ExcludeList", "typename": "ZREFTAB32" },
+        { "name": "StaticShadowList", "typename": "ZREFTAB32" }
+    ]
+}

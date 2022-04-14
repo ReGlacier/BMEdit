@@ -1,0 +1,12 @@
+{
+    "typename": "ENoiseLevel",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eNoEvents": 5,
+        "eVeryNoisy": 4,
+        "eNoisy": 3,
+        "eNormal": 2,
+        "eQuiet": 1,
+        "eSuperQuiet": 0
+    }
+}

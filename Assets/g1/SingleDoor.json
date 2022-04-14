@@ -1,0 +1,6 @@
+{
+    "typename": "SingleDoor",
+    "kind": "TypeKind.ALIAS",
+    "alias": "CDoor",
+    "__comment__": "This is untrivial alias to CDoor class"
+}

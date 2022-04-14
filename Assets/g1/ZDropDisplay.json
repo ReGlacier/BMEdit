@@ -1,0 +1,16 @@
+{
+    "typename": "ZDropDisplay",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_5C", "typename": "ZGEOMREF", "offset": 92 },
+        { "name": "property_60", "typename": "ZGEOMREF", "offset": 96 },
+        { "name": "property_64", "typename": "ZGEOMREF", "offset": 100 },
+        { "name": "property_68", "typename": "ZGEOMREF", "offset": 104 },
+        { "name": "property_6C", "typename": "ZGEOMREF", "offset": 108 },
+        { "name": "property_70", "typename": "ZGEOMREF", "offset": 112 },
+        { "name": "property_74", "typename": "ZGEOMREF", "offset": 116 },
+        { "name": "property_78", "typename": "PRPOpCode.Float32", "offset": 120 },
+        { "name": "property_7C", "typename": "PRPOpCode.Float32", "offset": 124 }
+    ]
+}

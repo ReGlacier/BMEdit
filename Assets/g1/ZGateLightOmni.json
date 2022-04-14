@@ -1,0 +1,12 @@
+{
+    "typename": "ZGateLightOmni",
+    "parent": "ZOMNILIGHT",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Type", "typename": "ZGateLightOmni.EType", "offset": 28 },
+        { "name": "property_20", "typename": "ZREFTAB32", "offset": 32 },
+        { "name": "FilterType", "typename": "ZGateLightOmni.EFilterType", "offset": 60 },
+        { "name": "property_40", "typename": "ZREFTAB32", "offset": 64 },
+        { "name": "property_5C", "typename": "ZREFTAB32", "offset": 92 }
+    ]
+}

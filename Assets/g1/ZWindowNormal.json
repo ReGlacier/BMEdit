@@ -1,0 +1,8 @@
+{
+    "typename": "ZWindowNormal",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_4C", "typename": "PRPOpCode.Bool", "offset": 64 }
+    ]
+}

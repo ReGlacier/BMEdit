@@ -1,0 +1,8 @@
+{
+    "typename": "ZWaterBox",
+    "parent": "ZBoxPrimitive",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_C4",  "typename": "ZVector3F", "offset": 196 }
+    ]
+}

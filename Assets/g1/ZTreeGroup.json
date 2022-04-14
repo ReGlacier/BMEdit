@@ -1,0 +1,10 @@
+{
+    "typename": "ZTreeGroup",
+    "parent": "ZGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "bIsDynamicContainer", "typename": "PRPOpCode.Bool" },
+        { "name": "bIsPrivate", "typename": "PRPOpCode.Bool" },
+        { "name": "bIsStaticContainer", "typename": "PRPOpCode.Bool" }
+    ]
+}

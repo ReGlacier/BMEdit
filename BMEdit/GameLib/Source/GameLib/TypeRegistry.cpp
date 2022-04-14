@@ -3,6 +3,7 @@
 #include <GameLib/TypeAlias.h>
 #include <GameLib/TypeArray.h>
 #include <GameLib/TypeComplex.h>
+#include <GameLib/TypeNotFoundException.h>
 
 
 namespace gamelib
@@ -65,7 +66,7 @@ namespace gamelib
 					auto typePtr = findTypeByName(*referenceStrPtr);
 					if (!typePtr)
 					{
-						throw std::runtime_error("Failed to resolve link to type '" + *referenceStrPtr + "' from type '" + alias->getName() + "'!");
+						throw TypeNotFoundException("Failed to resolve link to type '" + *referenceStrPtr + "' from type '" + alias->getName() + "'!");
 					}
 
 					alias->m_resultTypeInfo = reinterpret_cast<const Type *>(alias);
@@ -97,7 +98,7 @@ namespace gamelib
 
 						if (!newPropertyType)
 						{
-							throw std::runtime_error("Failed to resolve link to property type '" + *propertyTypeNamePtr + "' from type '" + complex->getName() + "'!");
+							throw TypeNotFoundException("Failed to resolve link to property type '" + *propertyTypeNamePtr + "' from type '" + complex->getName() + "'!");
 						}
 					}
 

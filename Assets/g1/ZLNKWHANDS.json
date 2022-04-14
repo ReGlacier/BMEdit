@@ -1,0 +1,10 @@
+{
+    "typename": "ZLNKWHANDS",
+    "parent": "ZCTRLIKLNKOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "rSpeechSound", "typename": "PRPOpCode.Int32", "offset": 520 },
+        { "name": "property_218", "typename": "PRPOpCode.Int32", "offset": 536 },
+        { "name": "property_228", "typename": "PRPOpCode.Float32", "offset": 552 }
+    ]
+}

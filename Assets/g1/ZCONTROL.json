@@ -1,0 +1,21 @@
+{
+    "typename": "ZCONTROL",
+    "parent": "ZWINGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_58", "typename": "PRPOpCode.Int32", "offset": 88 },
+        { "name": "property_68", "typename": "ZGEOMREF", "offset": 104 },
+        { "name": "property_6C", "typename": "ZGEOMREF", "offset": 108 },
+        { "name": "property_70", "typename": "ZGEOMREF", "offset": 112 },
+        { "name": "property_74", "typename": "ZGEOMREF", "offset": 116 },
+        { "name": "property_79", "typename": "PRPOpCode.Bool", "offset": 121 },
+        { "name": "property_7C", "typename": "PRPOpCode.Int32", "offset": 124 },
+        { "name": "property_80", "typename": "PRPOpCode.Int32", "offset": 128 },
+        { "name": "property_84", "typename": "PRPOpCode.Int32", "offset": 132 },
+        { "name": "property_88", "typename": "PRPOpCode.Int32", "offset": 136 },
+        { "name": "property_8C", "typename": "PRPOpCode.Int32", "offset": 140 },
+        { "name": "property_90", "typename": "PRPOpCode.Int32", "offset": 144 },
+        { "name": "Disabled", "typename": "PRPOpCode.Bool" },
+        { "name": "Visible", "typename": "PRPOpCode.Bool" }
+    ]
+}

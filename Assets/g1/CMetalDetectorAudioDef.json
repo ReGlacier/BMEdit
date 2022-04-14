@@ -1,0 +1,9 @@
+{
+    "typename": "CMetalDetectorAudioDef",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZAUDIOREF", "offset": 44 },
+        { "name": "property_30", "typename": "ZAUDIOREF", "offset": 48 }
+    ]
+}

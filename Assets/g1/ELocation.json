@@ -1,0 +1,10 @@
+{
+    "typename": "ELocation",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eBOTH": 3,
+        "eINSIDE": 2,
+        "eOUTSIDE": 1,
+        "eUNDEFINED": 0
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "typename": "ZWINOBJ.EType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "TYPE_Background": 7,
+        "TYPE_Invisible": 6,
+        "TYPE_Disabled": 5,
+        "TYPE_Checked": 4,
+        "TYPE_Focused": 3,
+        "TYPE_Hover": 2,
+        "TYPE_Pushed": 1,
+        "TYPE_Normal": 0
+    }
+}

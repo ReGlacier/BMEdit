@@ -1,0 +1,10 @@
+{
+    "typename": "ZHM3ItemTemplateContainer",
+    "parent": "ZItemTemplateContainer",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_98", "typename": "PRPOpCode.String", "offset": 152 },
+        { "name": "property_9C", "typename": "PRPOpCode.String", "offset": 156 },
+        { "name": "property_A0", "typename": "PRPOpCode.String", "offset": 160 }
+    ]
+}

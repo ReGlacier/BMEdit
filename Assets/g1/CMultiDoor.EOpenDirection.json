@@ -1,0 +1,10 @@
+{
+    "typename": "CMultiDoor.EOpenDirection",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "_OUT" : 3,
+        "_IN" : 2,
+        "TOWARDS" : 1,
+        "AWAY" : 0
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "typename": "ZBUTTON.EInitialState",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "INST_PUSHED": 1,
+        "INST_NORMAL": 0
+    }
+}

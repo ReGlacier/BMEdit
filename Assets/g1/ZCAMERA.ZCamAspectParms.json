@@ -1,0 +1,10 @@
+{
+    "typename": "ZCAMERA.ZCamAspectParms",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "CAMERA_ASPECT_FORCE_4_3": 3,
+        "CAMERA_ASPECT_PANAVISION": 2,
+        "CAMERA_ASPECT_WIDESCREEN": 1,
+        "CAMERA_ASPECT_NORMAL": 0
+    }
+}

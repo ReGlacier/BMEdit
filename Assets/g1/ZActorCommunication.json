@@ -1,0 +1,6 @@
+{
+    "typename": "ZActorCommunication",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

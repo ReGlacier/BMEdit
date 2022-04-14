@@ -1,0 +1,6 @@
+{
+    "typename": "TeleportList",
+    "kind": "TypeKind.ALIAS",
+    "alias": "CTelePortList",
+    "__comment__": "This hack is required because some levels refs to CTelePortList as TeleportList and we need to support this"
+}

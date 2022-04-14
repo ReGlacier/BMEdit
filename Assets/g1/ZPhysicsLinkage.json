@@ -1,0 +1,9 @@
+{
+    "typename": "ZPhysicsLinkage",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_68", "typename": "ZGEOMREF", "offset": 104 },
+        { "name": "property_6C", "typename": "PRPOpCode.String", "offset": 108 }
+    ]
+}

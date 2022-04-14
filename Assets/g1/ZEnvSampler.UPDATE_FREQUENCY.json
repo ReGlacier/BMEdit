@@ -1,0 +1,9 @@
+{
+    "typename": "ZEnvSampler.UPDATE_FREQUENCY",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "UF_FAST" : 2,
+        "UF_SLOW" : 1,
+        "UF_ONCE" : 0
+    }
+}

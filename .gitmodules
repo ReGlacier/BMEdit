@@ -4,3 +4,6 @@
 [submodule "BMEdit/GameLib/ThirdParty/json"]
 	path = BMEdit/GameLib/ThirdParty/json
 	url = https://github.com/nlohmann/json
+[submodule ".\\BMEdit\\GameLib\\ThirdParty\\zlib"]
+	path = .\\BMEdit\\GameLib\\ThirdParty\\zlib
+	url = https://github.com/madler/zlib

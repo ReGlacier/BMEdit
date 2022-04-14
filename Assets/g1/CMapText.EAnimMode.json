@@ -1,0 +1,16 @@
+{
+    "typename": "CMapText.EAnimMode",
+    "kind": "TypeKind.BITFIELD",
+    "bitfield": {
+        "type": "PRPOpCode.Int32",
+        "values": {
+            "small": 32,
+            "big": 16,
+            "saturation": 8,
+            "alpha": 4,
+            "jump": 2,
+            "scale": 1,
+            "none": 0
+        }
+    }
+}

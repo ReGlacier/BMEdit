@@ -1,0 +1,9 @@
+{
+    "typename": "ZHM3ItemTemplateWeapon.EHM3WeaponScope",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eHiTech": 2,
+        "eNormal": 1,
+        "eNoScope": 0
+    }
+}

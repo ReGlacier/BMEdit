@@ -1,0 +1,8 @@
+{
+    "typename": "CInventory",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Items", "typename": "ZREFTAB32", "offset": 48 }
+    ]
+}

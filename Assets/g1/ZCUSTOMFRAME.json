@@ -1,0 +1,9 @@
+{
+    "typename": "ZCUSTOMFRAME",
+    "parent": "ZFRAME",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_B4", "typename": "ZVector3I", "offset": 180 },
+        { "name": "property_C0", "typename": "ZVector3I", "offset": 192 }
+    ]
+}

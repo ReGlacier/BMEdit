@@ -1,0 +1,19 @@
+{
+    "typename": "ZHM3WeaponUpgradeProperty.EPropertyType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ePTShotsPerMinute": 12,
+        "ePTProjectilesPerMagazine": 11,
+        "ePTMuzzleVelocity": 10,
+        "ePTPrecisionDeg": 9,
+        "ePTRecoilXY": 8,
+        "ePTRecoilY": 7,
+        "ePTRecoilX": 6,
+        "ePTImpact": 5,
+        "ePTFarRange": 4,
+        "ePTNearRange": 3,
+        "ePTDamageMultiplier": 2,
+        "ePTFarDamage": 1,
+        "ePTNearDamage": 0
+    }
+}

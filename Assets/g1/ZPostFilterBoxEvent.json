@@ -1,0 +1,21 @@
+{
+    "typename": "ZPostFilterBoxEvent",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_F4", "typename": "ZGEOMREF", "offset": 244 },
+        { "name": "property_F8", "typename": "ZGEOMREF", "offset": 248 },
+        { "name": "property_FC", "typename": "ZVector3F", "offset": 252 },
+        { "name": "property_108", "typename": "PRPOpCode.String", "offset": 264 },
+        { "name": "Priority", "typename": "ZPostFilterBoxEvent.EPriority", "offset": 268 },
+        { "name": "property_110", "typename": "PRPOpCode.Bool", "offset": 272 },
+        { "name": "property_111", "typename": "PRPOpCode.Bool", "offset": 273 },
+        { "name": "property_112", "typename": "PRPOpCode.Bool", "offset": 274 },
+        { "name": "property_113", "typename": "PRPOpCode.Bool", "offset": 275 },
+        { "name": "property_114", "typename": "PRPOpCode.Bool", "offset": 276 },
+        { "name": "property_115", "typename": "PRPOpCode.Bool", "offset": 277 },
+        { "name": "property_116", "typename": "PRPOpCode.Bool", "offset": 278 },
+        { "name": "property_117", "typename": "PRPOpCode.Bool", "offset": 279 },
+        { "name": "property_118", "typename": "PRPOpCode.Int32", "offset": 280 }
+    ]
+}

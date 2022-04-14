@@ -1,0 +1,10 @@
+{
+    "typename": "ZHM3ItemTemplateWeapon.EHM3RecoilRandom",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eXYRandom": 3,
+        "eYRandom": 2,
+        "eXRandom": 1,
+        "eNoRandom": 0
+    }
+}

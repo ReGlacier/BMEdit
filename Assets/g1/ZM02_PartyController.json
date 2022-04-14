@@ -1,0 +1,27 @@
+{
+    "typename": "ZM02_PartyController",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZREFTAB32", "offset": 44 },
+        { "name": "property_48", "typename": "ZREFTAB32", "offset": 72 },
+        { "name": "property_64", "typename": "ZREFTAB32", "offset": 100 },
+        { "name": "property_80", "typename": "ZREFTAB32", "offset": 128 },
+        { "name": "property_9C", "typename": "ZREFTAB32", "offset": 156 },
+        { "name": "property_B8", "typename": "ZREFTAB32", "offset": 184 },
+        { "name": "property_D4", "typename": "ZREFTAB32", "offset": 212 },
+        { "name": "property_F0", "typename": "ZREFTAB32", "offset": 240 },
+        { "name": "property_10C", "typename": "ZREFTAB32", "offset": 268 },
+        { "name": "property_128", "typename": "ZREFTAB32", "offset": 296 },
+        { "name": "property_144", "typename": "ZREFTAB32", "offset": 324 },
+        { "name": "property_160", "typename": "ZREFTAB32", "offset": 352 },
+        { "name": "property_17C", "typename": "ZREFTAB32", "offset": 380 },
+        { "name": "property_198", "typename": "ZREFTAB32", "offset": 408 },
+        { "name": "property_1B4", "typename": "ZGEOMREF", "offset": 436 },
+        { "name": "property_1B8", "typename": "ZGEOMREF", "offset": 440 },
+        { "name": "property_1BC", "typename": "ZGEOMREF", "offset": 444 },
+        { "name": "property_1C0", "typename": "ZGEOMREF", "offset": 448 },
+        { "name": "property_1C4", "typename": "ZGEOMREF", "offset": 452 },
+        { "name": "property_1C8", "typename": "ZGEOMREF", "offset": 456 }
+    ]
+}

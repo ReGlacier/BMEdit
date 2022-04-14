@@ -1,0 +1,9 @@
+{
+    "typename": "CBodyContainer.eBCType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "BC_GARBAGETRUCK" : 2,
+        "BC_DUMPSTER" : 1,
+        "BC_CRATE" : 0
+    }
+}

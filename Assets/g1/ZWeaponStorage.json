@@ -1,0 +1,8 @@
+{
+    "typename": "ZWeaponStorage",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_E0", "typename": "ZGEOMREF", "offset": 224 }
+    ]
+}

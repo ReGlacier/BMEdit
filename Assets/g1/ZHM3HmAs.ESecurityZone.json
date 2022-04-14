@@ -1,0 +1,18 @@
+{
+    "typename": "ZHM3HmAs.ESecurityZone",
+    "kind": "TypeKind.BITFIELD",
+    "bitfield": {
+        "type": "PRPOpCode.Int32",
+        "values": {
+            "eZoneMegaForbidden": 128,
+            "eZone3B": 64,
+            "eZone3A": 32,
+            "eZone3": 16,
+            "eZone2B": 8,
+            "eZone2A": 4,
+            "eZone2": 2,
+            "eZone1": 1,
+            "eZoneUNDEFINED": 0
+        }
+    }
+}

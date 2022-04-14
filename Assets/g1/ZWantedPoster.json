@@ -1,0 +1,6 @@
+{
+    "typename": "ZWantedPoster",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,6 @@
+{
+    "typename": "ZActivateOnSpaceDebug",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,8 @@
+{
+    "typename": "ZGuardQuarterController",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_DC", "typename": "ZGEOMREF", "offset": 220 }
+    ]
+}

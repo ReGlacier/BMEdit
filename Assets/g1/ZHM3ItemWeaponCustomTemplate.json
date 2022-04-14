@@ -1,0 +1,9 @@
+{
+    "typename": "ZHM3ItemWeaponCustomTemplate",
+    "parent": "ZHM3ItemTemplateWeapon",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "LargeClipParticle", "typename": "ZGEOMREF" },
+        { "name": "ShellParticle", "typename": "ZGEOMREF" }
+    ]
+}

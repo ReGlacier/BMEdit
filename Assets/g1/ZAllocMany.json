@@ -1,0 +1,11 @@
+{
+    "typename": "ZAllocMany",
+    "parent": "ZGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_48", "typename": "PRPOpCode.Int16", "offset": 72 },
+        { "name": "property_54", "typename": "ZMsg", "offset": 84 },
+        { "name": "property_56", "typename": "PRPOpCode.Bool", "offset": 86 },
+        { "name": "property_58", "typename": "ZGEOMREF", "offset": 88 }
+    ]
+}

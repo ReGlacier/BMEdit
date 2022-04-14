@@ -1,0 +1,19 @@
+{
+    "typename": "ZMatrix33F",
+    "kind": "TypeKind.ARRAY",
+    "array": {
+        "expected_length": 9,
+        "inner_opcode_type": "PRPOpCode.Float32"
+    },
+    "transform": {
+        "M00": "$0",
+        "M10": "$1",
+        "M20": "$2",
+        "M01": "$3",
+        "M11": "$4",
+        "M21": "$5",
+        "M02": "$6",
+        "M12": "$7",
+        "M22": "$8"
+    }
+}

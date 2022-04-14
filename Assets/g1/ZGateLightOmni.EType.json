@@ -1,0 +1,8 @@
+{
+    "typename": "ZGateLightOmni.EType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "AIMATGATES" : 1,
+        "CLONES" : 0
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "typename": "ZInterestPoint",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_44", "typename": "PRPOpCode.Float32", "offset": 68 },
+        { "name": "property_48", "typename": "PRPOpCode.Float32", "offset": 72 },
+        { "name": "InterestLevel", "typename": "ZInterestPoint.eInterestLevel", "offset": 92 },
+        { "name": "InterestType", "typename": "ZInterestPoint.eInterestType", "offset": 96 },
+        { "name": "property_64", "typename": "PRPOpCode.Int32", "offset": 100 },
+        { "name": "StartActivated", "typename": "ZInterestPoint.eStartActivated", "offset": 108 }
+    ]
+}

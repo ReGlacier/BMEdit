@@ -1,0 +1,6 @@
+{
+    "typename": "ZHM3CoverList",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,8 @@
+{
+    "typename": "ZHM3ItemContainer",
+    "parent": "ZItemContainer",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+         { "name": "property_C8", "typename": "PRPOpCode.Bool", "offset": 200 }
+    ]
+}

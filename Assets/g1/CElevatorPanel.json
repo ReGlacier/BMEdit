@@ -1,0 +1,11 @@
+{
+    "typename": "CElevatorPanel",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZAUDIOREF", "offset": 44 },
+        { "name": "Targets", "typename": "ZGEOMREF" },
+        { "name": "property_60", "typename": "ZGEOMREF", "offset": 96 },
+        { "name": "property_64", "typename": "ZMsg", "offset": 100 }
+    ]
+}

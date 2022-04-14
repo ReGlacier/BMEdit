@@ -1,0 +1,6 @@
+{
+    "typename": "ZHM3ScopeNumberDisplay",
+    "parent": "ZGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,8 @@
+{
+    "typename": "ZSTDOBJ",
+    "parent": "ZGEOM",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Invisible",  "typename": "PRPOpCode.Bool" }
+    ]
+}

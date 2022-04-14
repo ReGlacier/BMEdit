@@ -1,0 +1,9 @@
+{
+    "typename": "ZItemTemplate.ITEMSIZE",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ITEMSIZE_FORCE32": 2147483647,
+        "ITEMSIZE_LARGE": 1,
+        "ITEMSIZE_SMALL": 0
+    }
+}

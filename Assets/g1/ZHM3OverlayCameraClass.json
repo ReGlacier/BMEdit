@@ -1,0 +1,12 @@
+{
+    "typename": "ZHM3OverlayCameraClass",
+    "parent": "ZCAMERA",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Binoculars", "typename": "ZGEOMREF" },
+        { "name": "Keyhole", "typename": "ZGEOMREF" },
+        { "name": "Sniper", "typename": "ZGEOMREF" },
+        { "name": "EventCameraOverlay", "typename": "ZGEOMREF" },
+        { "name": "Closet", "typename": "ZGEOMREF" }
+    ]
+}

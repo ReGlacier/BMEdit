@@ -1,0 +1,8 @@
+{
+    "typename": "ZLINEOBJ",
+    "parent": "ZCHAROBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_A0", "typename": "PRPOpCode.Int32", "offset": 160 }
+    ]
+}

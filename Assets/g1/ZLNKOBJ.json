@@ -1,0 +1,10 @@
+{
+    "typename": "ZLNKOBJ",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "MeshVariantId", "typename": "PRPOpCode.Int32", "offset": 72 },
+        { "name": "property_60", "typename": "PRPOpCode.Int32", "offset": 96 },
+        { "name": "AnimCollection", "typename": "PRPOpCode.String" }
+    ]
+}

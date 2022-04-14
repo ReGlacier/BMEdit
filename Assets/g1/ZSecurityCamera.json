@@ -1,0 +1,22 @@
+{
+    "typename": "ZSecurityCamera",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_78", "typename": "PRPOpCode.Float32", "offset": 120 },
+        { "name": "property_7C", "typename": "PRPOpCode.Float32", "offset": 124 },
+        { "name": "property_80", "typename": "PRPOpCode.Float32", "offset": 128 },
+        { "name": "property_84", "typename": "PRPOpCode.Float32", "offset": 132 },
+        { "name": "property_88", "typename": "PRPOpCode.Float32", "offset": 136 },
+        { "name": "property_8C", "typename": "PRPOpCode.Float32", "offset": 140 },
+        { "name": "property_90", "typename": "PRPOpCode.Float32", "offset": 144 },
+        { "name": "property_94", "typename": "PRPOpCode.Float32", "offset": 148 },
+        { "name": "property_98", "typename": "PRPOpCode.Int32", "offset": 152 },
+        { "name": "property_9C", "typename": "ZGEOMREF", "offset": 156 },
+        { "name": "property_A0", "typename": "ZGEOMREF", "offset": 160 },
+        { "name": "property_A4", "typename": "ZGEOMREF", "offset": 164 },
+        { "name": "property_A8", "typename": "ZGEOMREF", "offset": 168 },
+        { "name": "property_AC", "typename": "ZGEOMREF", "offset": 172 },
+        { "name": "property_BC", "typename": "PRPOpCode.Float32", "offset": 188 }
+    ]
+}

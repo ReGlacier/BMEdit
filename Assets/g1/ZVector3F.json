@@ -1,0 +1,13 @@
+{
+    "typename": "ZVector3F",
+    "kind": "TypeKind.ARRAY",
+    "array": {
+        "expected_length": 3,
+        "inner_opcode_type": "PRPOpCode.Float32"
+    },
+    "transform": {
+        "X": "$0",
+        "Y": "$1",
+        "Z": "$2"
+    }
+}

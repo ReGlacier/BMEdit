@@ -1,0 +1,9 @@
+{
+    "typename": "ZParamAnim.EPhase",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eSiblingSharedRandom": 2,
+        "eRandom": 1,
+        "eNeutral": 0
+    }
+}

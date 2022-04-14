@@ -1,0 +1,9 @@
+{
+    "typename": "ZScriptC",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "skip_unexposed_properties": true,
+    "properties": [
+        { "name": "ScriptName",  "typename": "PRPOpCode.String" }
+    ]
+}

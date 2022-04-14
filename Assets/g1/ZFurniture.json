@@ -1,0 +1,8 @@
+{
+    "typename": "ZFurniture",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Type", "typename": "ZFurniture.EFurnitureType", "offset": 44 }
+    ]
+}

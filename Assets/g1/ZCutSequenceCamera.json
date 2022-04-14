@@ -1,0 +1,8 @@
+{
+    "typename": "ZCutSequenceCamera",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_AC", "typename": "PRPOpCode.Bool", "offset": 172 }
+    ]
+}

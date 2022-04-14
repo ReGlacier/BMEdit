@@ -1,0 +1,9 @@
+{
+    "typename": "ZLoader_Sequence_Setup",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "LoaderSequenceFileName", "typename": "ZFILENAME", "offset": 12 },
+        { "name": "RefObjectsList", "typename": "ZREFTAB32", "offset": 16 }
+    ]
+}

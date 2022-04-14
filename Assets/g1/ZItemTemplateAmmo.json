@@ -1,0 +1,16 @@
+{
+    "typename": "ZItemTemplateAmmo",
+    "parent": "ZItemTemplate",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_70", "typename": "PRPOpCode.Int32", "offset": 112 },
+        { "name": "property_74", "typename": "PRPOpCode.Int32", "offset": 116 },
+        { "name": "property_78", "typename": "PRPOpCode.Float32", "offset": 120 },
+        { "name": "property_7C", "typename": "PRPOpCode.Float32", "offset": 124 },
+        { "name": "property_80", "typename": "PRPOpCode.Bool", "offset": 128 },
+        { "name": "property_81", "typename": "PRPOpCode.Bool", "offset": 129 },
+        { "name": "property_88", "typename": "ZGEOMREF", "offset": 136 },
+        { "name": "property_8C", "typename": "ZGEOMREF", "offset": 140 },
+        { "name": "DamageType", "typename": "ZItemTemplateAmmo.eDamageType", "offset": 72 }
+    ]
+}

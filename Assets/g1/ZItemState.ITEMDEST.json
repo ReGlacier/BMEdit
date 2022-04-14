@@ -1,0 +1,11 @@
+{
+    "typename": "ZItemState.ITEMDEST",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ID_FORCE32": 2147483647,
+        "ID_ROOT": 3,
+        "ID_OWNER": 2,
+        "ID_PARENT": 1,
+        "ID_ITEM": 0
+    }
+}

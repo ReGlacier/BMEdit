@@ -1,0 +1,18 @@
+{
+    "typename": "ZDiscoMove",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "XSpeed1", "typename": "PRPOpCode.Float32" },
+        { "name": "XSpeed2", "typename": "PRPOpCode.Float32" },
+        { "name": "YSpeed1", "typename": "PRPOpCode.Float32" },
+        { "name": "YSpeed2", "typename": "PRPOpCode.Float32" },
+        { "name": "ZSpeed1", "typename": "PRPOpCode.Float32" },
+        { "name": "ZSpeed2", "typename": "PRPOpCode.Float32" },
+        { "name": "XMax", "typename": "PRPOpCode.Float32" },
+        { "name": "YMax", "typename": "PRPOpCode.Float32" },
+        { "name": "ZMax", "typename": "PRPOpCode.Float32" },
+        { "name": "property_98", "typename": "PRPOpCode.Bool", "offset": 152 },
+        { "name": "property_9C", "typename": "ZGEOMREF", "offset": 156 }
+    ]
+}

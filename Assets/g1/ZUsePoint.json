@@ -1,0 +1,9 @@
+{
+    "typename": "ZUsePoint",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_C", "typename": "PRPOpCode.Float32", "offset": 12 },
+        { "name": "property_14", "typename": "ZGEOMREF", "offset": 20 }
+    ]
+}

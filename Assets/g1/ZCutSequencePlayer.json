@@ -1,0 +1,9 @@
+{
+    "typename": "ZCutSequencePlayer",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_69", "typename": "PRPOpCode.Bool",    "offset": 105 },
+        { "name": "property_6C", "typename": "ZAUDIOREF",    "offset": 109 }
+    ]
+}

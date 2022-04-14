@@ -1,0 +1,6 @@
+{
+    "typename": "ZParticleController",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

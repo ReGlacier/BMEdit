@@ -1,0 +1,6 @@
+{
+    "typename": "ZHM3Button",
+    "parent": "ZBUTTON",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

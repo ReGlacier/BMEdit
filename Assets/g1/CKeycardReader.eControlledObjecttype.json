@@ -1,0 +1,8 @@
+{
+    "typename": "CKeycardReader.eControlledObjecttype",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eElevator" : 1,
+        "eDoor" : 0
+    }
+}

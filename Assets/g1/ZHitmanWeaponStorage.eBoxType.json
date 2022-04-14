@@ -1,0 +1,8 @@
+{
+    "typename": "ZHitmanWeaponStorage.eBoxType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "SMUGGLE" : 1,
+        "NORMAL" : 0
+    }
+}

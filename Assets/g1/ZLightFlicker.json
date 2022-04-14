@@ -1,0 +1,13 @@
+{
+    "typename": "ZLightFlicker",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZAUDIOREF", "offset": 44 },
+        { "name": "property_30", "typename": "ZREFTAB32", "offset": 48 },
+        { "name": "property_4C", "typename": "ZREFTAB32", "offset": 76 },
+        { "name": "property_68", "typename": "PRPOpCode.Float32", "offset": 104 },
+        { "name": "property_6C", "typename": "PRPOpCode.Float32", "offset": 108 },
+        { "name": "property_70", "typename": "PRPOpCode.Int8", "offset": 112 }
+    ]
+}

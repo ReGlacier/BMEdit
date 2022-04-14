@@ -1,0 +1,6 @@
+{
+    "typename": "ZBOUND",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

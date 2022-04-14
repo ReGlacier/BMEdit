@@ -1,0 +1,8 @@
+{
+    "typename": "ZPlayer",
+    "parent": "ZLNKWHANDS",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_404",  "typename": "PRPOpCode.Int32", "offset": 1028 }
+    ]
+}

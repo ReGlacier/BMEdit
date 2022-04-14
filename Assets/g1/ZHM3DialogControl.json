@@ -1,0 +1,6 @@
+{
+    "typename": "ZHM3DialogControl",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,7 @@
+{
+    "typename": "ZHM3ItemAmmo",
+    "parent": "ZItemAmmo",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+    ]
+}

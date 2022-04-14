@@ -1,0 +1,8 @@
+{
+    "typename": "ZActor",
+    "parent": "ZLNKWHANDS",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_580", "typename": "ZREFTAB32", "offset": 1408 }
+    ]
+}

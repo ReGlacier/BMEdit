@@ -1,0 +1,6 @@
+{
+    "typename": "ZSHAPE",
+    "parent": "ZGEOM",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,16 @@
+{
+    "typename": "ZPostFilterAnimEvent",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_84",  "typename": "ZGEOMREF", "offset": 132 },
+        { "name": "property_A8",  "typename": "PRPOpCode.String", "offset": 168 },
+        { "name": "Priority",  "typename": "ZPostFilterAnimEvent.EPriority", "offset": 172 },
+        { "name": "property_B0",  "typename": "PRPOpCode.Bool", "offset": 176 },
+        { "name": "property_B1",  "typename": "PRPOpCode.Bool", "offset": 177 },
+        { "name": "property_B2",  "typename": "PRPOpCode.Bool", "offset": 178 },
+        { "name": "property_B4",  "typename": "PRPOpCode.Float32", "offset": 180 },
+        { "name": "EnableOnMsg",  "typename": "ZMsg", "offset": 184 },
+        { "name": "property_BC",  "typename": "PRPOpCode.Int32", "offset": 188 }
+    ]
+}

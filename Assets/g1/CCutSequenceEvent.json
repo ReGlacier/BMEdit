@@ -1,0 +1,8 @@
+{
+    "typename": "CCutSequenceEvent",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "PRPOpCode.Int32", "offset": 44 }
+    ]
+}

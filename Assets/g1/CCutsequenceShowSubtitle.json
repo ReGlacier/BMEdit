@@ -1,0 +1,9 @@
+{
+    "typename": "CCutsequenceShowSubtitle",
+    "parent": "CCutSequenceEvent",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_34", "typename": "PRPOpCode.String", "offset": 52 },
+        { "name": "property_38", "typename": "PRPOpCode.Int32", "offset": 56 }
+    ]
+}

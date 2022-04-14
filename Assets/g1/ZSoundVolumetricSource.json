@@ -1,0 +1,18 @@
+{
+    "typename": "ZSoundVolumetricSource",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ScaleX",      "typename": "PRPOpCode.Float32" },
+        { "name": "ScaleY",      "typename": "PRPOpCode.Float32" },
+        { "name": "ScaleZ",      "typename": "PRPOpCode.Float32" },
+        { "name": "Property_AC", "typename": "PRPOpCode.Bool", "offset": 172 },
+        { "name": "Property_B0", "typename": "PRPOpCode.Float32", "offset": 176 },
+        { "name": "Property_B4", "typename": "PRPOpCode.Float32", "offset": 180 },
+        { "name": "Property_B8", "typename": "PRPOpCode.Float32", "offset": 184 },
+        { "name": "Property_BC", "typename": "PRPOpCode.Float32", "offset": 188 },
+        { "name": "Property_C0", "typename": "PRPOpCode.Float32", "offset": 192 },
+        { "name": "Property_C4", "typename": "PRPOpCode.Float32", "offset": 196 },
+        { "name": "Property_C8", "typename": "PRPOpCode.Bool",    "offset": 200 }
+    ]
+}

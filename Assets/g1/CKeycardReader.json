@@ -1,0 +1,14 @@
+{
+    "typename": "CKeycardReader",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ControlledObject", "typename": "ZGEOMREF", "offset": 48 },
+        { "name": "Property_34", "typename": "PRPOpCode.String", "offset": 52 },
+        { "name": "Property_38", "typename": "PRPOpCode.String", "offset": 56 },
+        { "name": "MessageOnActivate", "typename": "ZMsg", "offset": 60 },
+        { "name": "Property_40", "typename": "ZAUDIOREF", "offset": 64 },
+        { "name": "Property_44", "typename": "ZAUDIOREF", "offset": 68 },
+        { "name": "Property_81", "typename": "PRPOpCode.Bool", "offset": 129 }
+    ]
+}

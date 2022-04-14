@@ -1,0 +1,9 @@
+{
+    "typename": "ZVideoPlayer.eDisplayMode",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "FREE": 2,
+        "KEEPASPECT": 1,
+        "FULL": 0
+    }
+}

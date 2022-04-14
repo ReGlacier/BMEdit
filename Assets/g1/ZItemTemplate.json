@@ -1,0 +1,12 @@
+{
+    "typename": "ZItemTemplate",
+    "parent": "ZGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ItemHands", "typename": "ZItemTemplate.ITEMHANDS", "offset": 72 },
+        { "name": "ItemSize", "typename": "ZItemTemplate.ITEMSIZE", "offset": 76 },
+        { "name": "property_50", "typename": "PRPOpCode.Bool", "offset": 80 },
+        { "name": "property_68", "typename": "ZAUDIOREF", "offset": 104 },
+        { "name": "property_6C", "typename": "PRPOpCode.Bool", "offset": 108 }
+    ]
+}

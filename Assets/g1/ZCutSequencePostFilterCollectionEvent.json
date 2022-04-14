@@ -1,0 +1,8 @@
+{
+    "typename": "ZCutSequencePostFilterCollectionEvent",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_D8", "typename": "PRPOpCode.Int32", "offset": 216 }
+    ]
+}

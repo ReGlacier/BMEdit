@@ -1,0 +1,8 @@
+{
+    "typename": "ZFiberWire",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Type", "typename": "ZFiberWire.FIBERWIRETYPE", "offset": 16 }
+    ]
+}

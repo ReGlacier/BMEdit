@@ -1,0 +1,8 @@
+{
+    "typename": "ZHM3WeaponUpgradeWeapon",
+    "parent": "ZGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_48", "typename": "ZREFTAB32", "offset": 72 }
+    ]
+}

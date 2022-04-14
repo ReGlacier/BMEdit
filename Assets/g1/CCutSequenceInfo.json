@@ -1,0 +1,17 @@
+{
+    "typename": "CCutSequenceInfo",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_108", "typename": "PRPOpCode.String",  "offset": 264 },
+        { "name": "property_10C", "typename": "ZGEOMREF",          "offset": 268 },
+        { "name": "property_110", "typename": "ZREFTAB32",         "offset": 272 },
+        { "name": "property_1BC", "typename": "PRPOpCode.String",  "offset": 444 },
+        { "name": "property_1C0", "typename": "PRPOpCode.Float32", "offset": 448 },
+        { "name": "property_1C4", "typename": "PRPOpCode.Float32", "offset": 452 },
+        { "name": "property_1C8", "typename": "ZGEOMREF",          "offset": 456 },
+        { "name": "property_1CC", "typename": "PRPOpCode.Bool",    "offset": 460 },
+        { "name": "property_1CD", "typename": "PRPOpCode.Bool",    "offset": 461 },
+        { "name": "property_1CE", "typename": "PRPOpCode.Bool",    "offset": 462 }
+    ]
+}

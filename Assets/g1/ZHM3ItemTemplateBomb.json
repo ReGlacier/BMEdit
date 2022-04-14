@@ -1,0 +1,12 @@
+{
+    "typename": "ZHM3ItemTemplateBomb",
+    "parent": "ZHM3ItemTemplateWeapon",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_19C", "typename": "PRPOpCode.Float32", "offset": 412 },
+        { "name": "property_1A0", "typename": "PRPOpCode.Float32", "offset": 416 },
+        { "name": "property_1A4", "typename": "PRPOpCode.Float32", "offset": 420 },
+        { "name": "property_1A8", "typename": "PRPOpCode.Float32", "offset": 424 },
+        { "name": "Effect", "typename": "ZGEOMREF" }
+    ]
+}

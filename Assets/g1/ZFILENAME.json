@@ -1,0 +1,5 @@
+{
+    "typename": "ZFILENAME",
+    "kind": "TypeKind.ALIAS",
+    "alias": "PRPOpCode.String"
+}

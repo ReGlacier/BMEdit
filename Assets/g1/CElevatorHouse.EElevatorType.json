@@ -1,0 +1,8 @@
+{
+    "typename": "CElevatorHouse.EElevatorType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "E_FOODELEVATOR" : 1,
+        "E_NORMAL" : 0
+    }
+}

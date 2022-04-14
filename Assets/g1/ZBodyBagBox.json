@@ -1,0 +1,8 @@
+{
+    "typename": "ZBodyBagBox",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_34",  "typename": "PRPOpCode.Int32", "offset": 52 }
+    ]
+}

@@ -1,0 +1,23 @@
+{
+    "typename": "ZFriskBox",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ScaleX", "typename": "PRPOpCode.Float32" },
+        { "name": "ScaleY", "typename": "PRPOpCode.Float32" },
+        { "name": "ScaleZ", "typename": "PRPOpCode.Float32" },
+        { "name": "EnableSurrendWeapon", "typename": "PRPOpCode.Bool" },
+        { "name": "EnablePickupWeaponsItems", "typename": "PRPOpCode.Bool" },
+        { "name": "property_C", "typename": "PRPOpCode.Float32", "offset": 12 },
+        { "name": "property_10", "typename": "PRPOpCode.Float32", "offset": 16 },
+        { "name": "property_14", "typename": "PRPOpCode.Float32", "offset": 20 },
+        { "name": "GuardsList", "typename": "ZREFTAB32", "offset": 24 },
+        { "name": "AllowedToEnterWithoutFriskDisguises", "typename": "ZREFTAB32", "offset": 52 },
+        { "name": "AllowedToEnterWithFriskDisguises", "typename": "ZREFTAB32", "offset": 80 },
+        { "name": "property_6C", "typename": "ZREFTAB32", "offset": 108 },
+        { "name": "property_88", "typename": "ZREFTAB32", "offset": 136 },
+        { "name": "property_A4", "typename": "ZREFTAB32", "offset": 164 },
+        { "name": "FriskAreaDoor", "typename": "ZGEOMREF", "offset": 192 },
+        { "name": "FriskOp", "typename": "ZFriskBox.EFriskOp", "offset": 484 }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "typename": "ZFurniture.EFurnitureType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "BED" : 5,
+        "SOFA_3PERS" : 4,
+        "SOFA_2PERS" : 3,
+        "BARCHAIR" : 2,
+        "MOVEABLECHAIR" : 1,
+        "CHAIR" : 0
+    }
+}

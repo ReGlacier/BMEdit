@@ -1,0 +1,11 @@
+{
+    "typename": "CTimeOutDelete",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "PRPOpCode.Float32", "offset": 44 },
+        { "name": "property_30", "typename": "ZMsg", "offset": 46 },
+        { "name": "property_32", "typename": "PRPOpCode.Bool", "offset": 48 },
+        { "name": "Operation", "typename": "CTimeOutDelete.EOperation", "offset": 52 }
+    ]
+}

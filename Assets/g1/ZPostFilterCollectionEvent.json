@@ -1,0 +1,10 @@
+{
+    "typename": "ZPostFilterCollectionEvent",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_D8", "typename": "ZGEOMREF", "offset": 216 },
+        { "name": "property_DC", "typename": "PRPOpCode.String", "offset": 220 },
+        { "name": "property_E0", "typename": "PRPOpCode.Int32", "offset": 224 }
+    ]
+}

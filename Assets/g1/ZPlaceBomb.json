@@ -1,0 +1,11 @@
+{
+    "typename": "ZPlaceBomb",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZREFTAB32", "offset": 44 },
+        { "name": "property_48", "typename": "ZGEOMREF", "offset": 72 },
+        { "name": "PlaceItemType", "typename": "ZPlaceBomb.EPlaceItemType", "offset": 76 },
+        { "name": "property_50", "typename": "PRPOpCode.Bool", "offset": 80 }
+    ]
+}

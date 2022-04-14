@@ -1,0 +1,29 @@
+{
+    "typename": "CMultiDoor",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "InitialState", "typename": "CMultiDoor.EInitialDoorState" },
+        { "name": "AutoClose", "typename": "PRPOpCode.Bool" },
+        { "name": "HideAction", "typename": "PRPOpCode.Bool" },
+        { "name": "IgnoreBlockObj", "typename": "PRPOpCode.Bool" },
+        { "name": "SyncSound", "typename": "PRPOpCode.Bool" },
+        { "name": "KeyHole", "typename": "PRPOpCode.Bool" },
+        { "name": "property_32", "typename": "PRPOpCode.Bool", "offset": 50 },
+        { "name": "OpenDirection", "typename": "CMultiDoor.EOpenDirection", "offset": 260 },
+        { "name": "property_84", "typename": "ZAUDIOREF", "offset": 132 },
+        { "name": "property_8C", "typename": "ZAUDIOREF", "offset": 140 },
+        { "name": "property_5C", "typename": "PRPOpCode.String", "offset": 92 },
+        { "name": "LockPickDifficulty", "typename": "CMultiDoor.ELockPickable", "offset": 264 },
+        { "name": "ShotResponse", "typename": "CMultiDoor.EShotResponse", "offset": 268 },
+        { "name": "property_90", "typename": "ZAUDIOREF", "offset": 144 },
+        { "name": "property_88", "typename": "ZAUDIOREF", "offset": 136 },
+        { "name": "property_94", "typename": "ZAUDIOREF", "offset": 148 },
+        { "name": "property_98", "typename": "ZAUDIOREF", "offset": 152 },
+        { "name": "property_114", "typename": "CMultiDoor.ESoundState", "offset": 276 },
+        { "name": "property_118", "typename": "CMultiDoor.ESoundState", "offset": 280 },
+        { "name": "DoorType", "typename": "CMultiDoor.EDoorType", "offset": 272 },
+        { "name": "property_9C", "typename": "PRPOpCode.Float32", "offset": 156 },
+        { "name": "PenetrableBy", "typename": "CMultiDoor.EPenetrableBy", "offset": 284 }
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "typename": "ZPostFilterEvent",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "iPrim", "typename": "PRPOpCode.Int32" }
+    ]
+}

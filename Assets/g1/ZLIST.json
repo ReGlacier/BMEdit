@@ -1,0 +1,8 @@
+{
+    "typename": "ZLIST",
+    "parent": "ZGEOM",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "GeomList", "typename": "ZREFTAB32" }
+    ]
+}

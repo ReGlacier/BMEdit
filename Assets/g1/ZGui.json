@@ -1,0 +1,6 @@
+{
+    "typename": "ZGui",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,18 @@
+{
+    "typename": "ZShatter",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_3C", "typename": "ZGEOMREF", "offset": 60 },
+        { "name": "RemovalsList", "typename": "ZREFTAB32" },
+        { "name": "RemainsList", "typename": "ZREFTAB32" },
+        { "name": "AlignPivot", "typename": "PRPOpCode.Bool" },
+        { "name": "property_40", "typename": "ZAUDIOREF", "offset": 64 },
+        { "name": "property_44", "typename": "ZAUDIOREF", "offset": 68 },
+        { "name": "property_48", "typename": "ZAUDIOREF", "offset": 72 },
+        { "name": "property_4C", "typename": "PRPOpCode.Float32", "offset": 76 },
+        { "name": "ProjectileHit", "typename": "PRPOpCode.Bool" },
+        { "name": "Frozen", "typename": "PRPOpCode.Bool" },
+        { "name": "Vital", "typename": "PRPOpCode.Bool" }
+    ]
+}

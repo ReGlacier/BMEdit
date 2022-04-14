@@ -1,0 +1,7 @@
+{
+    "typename": "ZGateLightSpot.EType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "CLONES" : 0
+    }
+}

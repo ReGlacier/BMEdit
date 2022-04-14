@@ -1,0 +1,12 @@
+{
+    "typename": "ZWeaponDisplay",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_7C", "typename": "ZGEOMREF", "offset": 124 },
+        { "name": "property_80", "typename": "ZGEOMREF", "offset": 128 },
+        { "name": "property_84", "typename": "ZGEOMREF", "offset": 132 },
+        { "name": "Text", "typename": "ZGEOMREF" },
+        { "name": "TextOutline", "typename": "ZGEOMREF" }
+    ]
+}

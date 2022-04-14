@@ -1,0 +1,14 @@
+{
+    "typename": "ZModifiableCloth",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_C", "typename": "ZGEOMREF", "offset": 12 },
+        { "name": "property_10", "typename": "ZGEOMREF", "offset": 16 },
+        { "name": "property_14", "typename": "ZGEOMREF", "offset": 20 },
+        { "name": "property_18", "typename": "ZGEOMREF", "offset": 24 },
+        { "name": "property_1C", "typename": "PRPOpCode.String", "offset": 28 },
+        { "name": "property_20", "typename": "ZGEOMREF", "offset": 32 },
+        { "name": "property_24", "typename": "PRPOpCode.Bool", "offset": 36 }
+    ]
+}

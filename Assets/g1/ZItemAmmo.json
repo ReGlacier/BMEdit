@@ -1,0 +1,8 @@
+{
+    "typename": "ZItemAmmo",
+    "parent": "ZItem",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+         { "name": "property_80", "typename": "PRPOpCode.Int32", "offset": 128 }
+    ]
+}

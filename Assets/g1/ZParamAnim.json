@@ -1,0 +1,15 @@
+{
+    "typename": "ZParamAnim",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "PRPOpCode.Bool", "offset": 44 },
+        { "name": "property_38", "typename": "PRPOpCode.Float32", "offset": 56 },
+        { "name": "property_3C", "typename": "PRPOpCode.Float32", "offset": 60 },
+        { "name": "property_108", "typename": "ZMsg", "offset": 264 },
+        { "name": "property_10A", "typename": "PRPOpCode.Bool", "offset": 266 },
+        { "name": "property_10B", "typename": "PRPOpCode.Bool", "offset": 267 },
+        { "name": "property_10C", "typename": "PRPOpCode.Float32", "offset": 268 },
+        { "name": "property_110", "typename": "ZParamAnim.EPhase", "offset": 272 }
+    ]
+}

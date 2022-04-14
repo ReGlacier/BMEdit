@@ -1,0 +1,11 @@
+{
+    "typename": "ZHM3HmAs.EDressQuality",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eQualityHitman": 4,
+        "eQualityPerfect": 3,
+        "eQualitySuper": 2,
+        "eQualityGood": 1,
+        "eQualityBad": 0
+    }
+}

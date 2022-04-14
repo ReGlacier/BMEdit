@@ -1,0 +1,8 @@
+{
+    "typename": "ZHitmanWeaponStorage",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Type", "typename": "ZHitmanWeaponStorage.eBoxType", "offset": 64 }
+    ]
+}

@@ -1,0 +1,6 @@
+{
+    "typename": "ZVCR",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

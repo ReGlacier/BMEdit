@@ -1,0 +1,13 @@
+{
+    "typename": "ZHM3Boid",
+    "parent": "ZIKLNKOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_18C", "typename": "PRPOpCode.Float32", "offset": 396 },
+        { "name": "property_194", "typename": "PRPOpCode.Float32", "offset": 404 },
+        { "name": "property_19C", "typename": "PRPOpCode.Float32", "offset": 412 },
+        { "name": "property_1A0", "typename": "PRPOpCode.Float32", "offset": 416 },
+        { "name": "property_1A4", "typename": "ZGEOMREF", "offset": 420 },
+        { "name": "property_1A8", "typename": "ZAUDIOREF", "offset": 424 }
+    ]
+}

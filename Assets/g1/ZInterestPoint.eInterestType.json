@@ -1,0 +1,10 @@
+{
+    "typename": "ZInterestPoint.eInterestType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "INTERESTING": 3,
+        "TOILET": 2,
+        "DRINK": 1,
+        "FOOD": 0
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "typename": "ZItemTemplateWeapon.WEAPONOPERATION",
+    "kind": "TypeKind.BITFIELD",
+    "bitfield": {
+        "type": "PRPOpCode.Int32",
+        "values": {
+            "WO_FORCE32": 2147483647,
+            "WO_FULLAUTO3": 8,
+            "WO_FULLAUTO": 4,
+            "WO_SEMIAUTO": 2,
+            "WO_MANUAL": 1
+        }
+    }
+}

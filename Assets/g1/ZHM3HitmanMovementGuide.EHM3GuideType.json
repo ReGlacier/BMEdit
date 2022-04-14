@@ -1,0 +1,17 @@
+{
+    "typename": "ZHM3HitmanMovementGuide.EHM3GuideType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eAnyGuide": 32769,
+        "eNoGuide": 32768,
+        "eJumpBalcony": 8,
+        "eDrainPipe": 7,
+        "eLadder": 6,
+        "eScaleWall": 5,
+        "eWindow": 4,
+        "ePassObstacle": 3,
+        "eClimbBox": 2,
+        "eLedge": 1,
+        "eClimbWall": 0
+    }
+}

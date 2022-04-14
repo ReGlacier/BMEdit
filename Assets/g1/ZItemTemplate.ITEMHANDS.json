@@ -1,0 +1,10 @@
+{
+    "typename": "ZItemTemplate.ITEMHANDS",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "IH_FORCE32": 2147483647,
+        "IH_TWOHANDED": 2,
+        "IH_ONEHANDED": 1,
+        "IH_NONE": 0
+    }
+}

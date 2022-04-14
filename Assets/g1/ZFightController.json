@@ -1,0 +1,6 @@
+{
+    "typename": "ZFightController",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,9 @@
+{
+    "typename": "ZMatPosAnim.EPhase",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eSiblingSharedRandom__": 2,
+        "eRandom__": 1,
+        "eNeutral__": 0
+    }
+}

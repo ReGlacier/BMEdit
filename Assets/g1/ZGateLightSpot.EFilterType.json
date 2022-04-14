@@ -1,0 +1,8 @@
+{
+    "typename": "ZGateLightSpot.EFilterType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "INCLUDE" : 1,
+        "EXCLUDE" : 0
+    }
+}

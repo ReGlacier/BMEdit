@@ -1,0 +1,6 @@
+{
+    "typename": "ZBloodTrail",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

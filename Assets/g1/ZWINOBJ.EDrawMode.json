@@ -1,0 +1,13 @@
+{
+    "typename": "ZWINOBJ.EDrawMode",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "DRAWMODE_HARDOPACITY": 6,
+        "DRAWMODE_OPACITY": 5,
+        "DRAWMODE_MUL": 4,
+        "DRAWMODE_TRANS": 3,
+        "DRAWMODE_SUB": 2,
+        "DRAWMODE_ADD": 1,
+        "DRAWMODE_NORMAL": 0
+    }
+}

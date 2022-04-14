@@ -1,0 +1,23 @@
+{
+    "typename": "ZMatPosAnim",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_48", "typename": "ZMsg", "offset": 72 },
+        { "name": "property_4C", "typename": "ZVector3F", "offset": 76 },
+        { "name": "property_88", "typename": "PRPOpCode.Bool", "offset": 136 },
+        { "name": "property_89", "typename": "PRPOpCode.Bool", "offset": 137 },
+        { "name": "property_8A", "typename": "PRPOpCode.Bool", "offset": 138 },
+        { "name": "property_8B", "typename": "PRPOpCode.Bool", "offset": 139 },
+        { "name": "property_8C", "typename": "PRPOpCode.Bool", "offset": 140 },
+        { "name": "property_8D", "typename": "PRPOpCode.Bool", "offset": 141 },
+        { "name": "property_8E", "typename": "PRPOpCode.Bool", "offset": 142 },
+        { "name": "property_8F", "typename": "PRPOpCode.Bool", "offset": 143 },
+        { "name": "property_90", "typename": "PRPOpCode.Bool", "offset": 144 },
+        { "name": "property_C0", "typename": "PRPOpCode.Float32", "offset": 192 },
+        { "name": "property_C4", "typename": "PRPOpCode.Float32", "offset": 196 },
+        { "name": "property_C8", "typename": "PRPOpCode.Int32", "offset": 200 },
+        { "name": "property_CC", "typename": "PRPOpCode.Int32", "offset": 204 },
+        { "name": "property_D0", "typename": "ZMatPosAnim.EPhase", "offset": 208 }
+    ]
+}

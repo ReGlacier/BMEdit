@@ -1,0 +1,8 @@
+{
+    "typename": "CMapIconDraw",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "TextObjects", "typename": "ZREFTAB32" }
+    ]
+}

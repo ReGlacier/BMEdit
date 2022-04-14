@@ -1,0 +1,9 @@
+{
+    "typename": "ZFiberWire.FIBERWIRETYPE",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "FW_WIRE": 2,
+        "FW_HANDLE_LEFT": 1,
+        "FW_HANDLE_RIGHT": 0
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "typename": "CMapText",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Color", "typename": "PRPOpCode.Int32" },
+        { "name": "Animation", "typename": "CMapText.EAnimMode" },
+        { "name": "LocaleId", "typename": "PRPOpCode.String" },
+        { "name": "Visible", "typename": "PRPOpCode.Bool" },
+        { "name": "Rotate", "typename": "PRPOpCode.Bool" },
+        { "name": "Scale", "typename": "PRPOpCode.Float32" },
+        { "name": "IconAlignment", "typename": "CMapText.EIconAlignment" }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "typename": "ZHM3WeaponUpgradeProperty.EPropertyFunc",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ePFDecAbsValue": 8,
+        "ePFIncAbsValue": 7,
+        "ePFMinValue": 6,
+        "ePFMaxValue": 5,
+        "ePFDivValue": 4,
+        "ePFMultValue": 3,
+        "ePFSubValue": 2,
+        "ePFAddValue": 1,
+        "ePFSetValue": 0
+    }
+}

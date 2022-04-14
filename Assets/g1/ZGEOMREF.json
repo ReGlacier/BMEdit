@@ -1,0 +1,5 @@
+{
+    "typename": "ZGEOMREF",
+    "kind": "TypeKind.ALIAS",
+    "alias": "PRPOpCode.String"
+}

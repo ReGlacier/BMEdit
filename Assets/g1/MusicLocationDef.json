@@ -1,0 +1,6 @@
+{
+    "typename": "MusicLocationDef",
+    "kind": "TypeKind.ALIAS",
+    "alias": "ZMusicLocations",
+    "__comment__": "This hack is required because some levels refs to ZMusicLocations as MusicLocationDef and we need to support this"
+}

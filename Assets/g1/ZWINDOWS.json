@@ -1,0 +1,12 @@
+{
+    "typename": "ZWINDOWS",
+    "parent": "ZWINGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_58", "typename": "ZGEOMREF", "offset": 88 },
+        { "name": "property_1DB", "typename": "PRPOpCode.Bool", "offset": 475 },
+        { "name": "property_1DC", "typename": "PRPOpCode.Bool", "offset": 476 },
+        { "name": "MainCamera", "typename": "ZGEOMREF" },
+        { "name": "GfxHandler", "typename": "ZGEOMREF" }
+    ]
+}

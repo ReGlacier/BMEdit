@@ -1,0 +1,9 @@
+{
+    "typename": "CMultiDoor.EInitialDoorState",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "IDS_LOCKED" : 2,
+        "IDS_OPEN" : 1,
+        "IDS_CLOSED" : 0
+    }
+}

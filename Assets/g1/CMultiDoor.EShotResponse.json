@@ -1,0 +1,9 @@
+{
+    "typename": "CMultiDoor.EShotResponse",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "UNLOCK" : 2,
+        "OPEN" : 1,
+        "NOTHING" : 0
+    }
+}

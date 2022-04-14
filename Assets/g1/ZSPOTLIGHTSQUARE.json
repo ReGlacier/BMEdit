@@ -1,0 +1,6 @@
+{
+    "typename": "ZSPOTLIGHTSQUARE",
+    "parent": "ZLIGHT",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

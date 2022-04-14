@@ -1,0 +1,10 @@
+{
+    "typename": "ZInterestPoint.eInterestLevel",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "IL_Suspicious": 3,
+        "IL_Strange": 2,
+        "IL_Interesting": 1,
+        "IL_Neutral": 0
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "typename": "ZNotorietyPapers",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,10 @@
+{
+    "typename": "ZWINPIC",
+    "parent": "ZWINOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Width", "typename": "PRPOpCode.Int32", "offset": 132 },
+        { "name": "Height", "typename": "PRPOpCode.Int32", "offset": 136 },
+        { "name": "PicResourcePrim", "typename": "PRPOpCode.Int32" }
+    ]
+}

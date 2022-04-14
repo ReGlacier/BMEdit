@@ -1,0 +1,6 @@
+{
+    "typename": "ZAddResourcesFrontend",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

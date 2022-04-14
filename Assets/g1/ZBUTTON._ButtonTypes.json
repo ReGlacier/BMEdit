@@ -1,0 +1,8 @@
+{
+    "typename": "ZBUTTON._ButtonTypes",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ZBT_CHECKBUTTON": 1,
+        "ZBT_NORMAL": 0
+    }
+}

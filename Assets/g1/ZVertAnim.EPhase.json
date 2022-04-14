@@ -1,0 +1,9 @@
+{
+    "typename": "ZVertAnim.EPhase",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eSiblingSharedRandom_": 2,
+        "eRandom_": 1,
+        "eNeutral_": 0
+    }
+}

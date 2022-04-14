@@ -1,0 +1,8 @@
+{
+    "typename": "ZBackdrop",
+    "parent": "ZROOM",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "GeomList",  "typename": "ZREFTAB32" }
+    ]
+}

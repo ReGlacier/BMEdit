@@ -1,0 +1,8 @@
+{
+    "typename": "ZKerningFont",
+    "parent": "ZTTFONT",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_94", "typename": "PRPOpCode.Int32", "offset": 148 }
+    ]
+}

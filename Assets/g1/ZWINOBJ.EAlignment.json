@@ -1,0 +1,22 @@
+{
+    "typename": "ZWINOBJ.EAlignment",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ALIGNMENT_None": 15,
+        "ALIGNMENT_Middle": 14,
+        "ALIGNMENT_Bottom": 13,
+        "ALIGNMENT_Top": 12,
+        "ALIGNMENT_Center": 11,
+        "ALIGNMENT_Right": 10,
+        "ALIGNMENT_Left": 9,
+        "ALIGNMENT_Middle_Center": 8,
+        "ALIGNMENT_Middle_Right": 7,
+        "ALIGNMENT_Middle_Left": 6,
+        "ALIGNMENT_Bottom_Center": 5,
+        "ALIGNMENT_Bottom_Right": 4,
+        "ALIGNMENT_Bottom_Left": 3,
+        "ALIGNMENT_Top_Center": 2,
+        "ALIGNMENT_Top_Right": 1,
+        "ALIGNMENT_Top_Left": 0
+    }
+}

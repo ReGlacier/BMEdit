@@ -1,0 +1,9 @@
+{
+    "typename": "CMapObject",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "IconType", "typename": "CMapObject.EIconType" },
+        { "name": "IsVisible", "typename": "PRPOpCode.Bool" }
+    ]
+}

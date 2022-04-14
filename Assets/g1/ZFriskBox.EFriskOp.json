@@ -1,0 +1,10 @@
+{
+    "typename": "ZFriskBox.EFriskOp",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eFriskOp_TakeWeapons" : 3,
+        "eFriskOp_DefendAreaAggressive" : 2,
+        "eFriskOp_DefendAreaNormal" : 1,
+        "eFriskOp_Attack" : 0
+    }
+}

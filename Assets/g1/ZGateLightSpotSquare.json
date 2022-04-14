@@ -1,0 +1,11 @@
+{
+    "typename": "ZGateLightSpotSquare",
+    "parent": "ZSPOTLIGHTSQUARE",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Type", "typename": "ZGateLightSpotSquare.EType", "offset": 28 },
+        { "name": "Property_20", "typename": "ZREFTAB32", "offset": 32 },
+        { "name": "FilterType", "typename": "ZGateLightSpotSquare.EFilterType", "offset": 60 },
+        { "name": "Property_40", "typename": "ZREFTAB32", "offset": 64 }
+    ]
+}

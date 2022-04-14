@@ -1,0 +1,9 @@
+{
+    "typename": "ZXMLGUISystem",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Resources", "typename" :"ZGEOMREF" },
+        { "name": "Font", "typename" :"ZGEOMREF" }
+    ]
+}

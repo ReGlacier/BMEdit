@@ -1,0 +1,6 @@
+{
+    "typename": "QRigidBody",
+    "kind": "TypeKind.ALIAS",
+    "alias": "CRigidBody",
+    "__comment__": "Another IOI hack? Who cares)"
+}

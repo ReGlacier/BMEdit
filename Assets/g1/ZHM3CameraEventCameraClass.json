@@ -1,0 +1,8 @@
+{
+    "typename": "ZHM3CameraEventCameraClass",
+    "parent": "ZHM3CameraClass",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "OverlayCamera", "typename": "ZGEOMREF" }
+    ]
+}

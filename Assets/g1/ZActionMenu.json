@@ -1,0 +1,16 @@
+{
+    "typename": "ZActionMenu",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_7AC", "typename": "ZGEOMREF", "offset": 1966 },
+        { "name": "property_7B0", "typename": "ZGEOMREF", "offset": 1968 },
+        { "name": "property_7B4", "typename": "ZGEOMREF", "offset": 1972 },
+        { "name": "property_7B8", "typename": "ZGEOMREF", "offset": 1976 },
+        { "name": "property_7BC", "typename": "ZGEOMREF", "offset": 1980 },
+        { "name": "property_7C0", "typename": "ZGEOMREF", "offset": 1984 },
+        { "name": "property_7C4", "typename": "PRPOpCode.Float32", "offset": 1988 },
+        { "name": "property_7C8", "typename": "PRPOpCode.Float32", "offset": 1992 },
+        { "name": "property_7A4", "typename": "ZGEOMREF", "offset": 1956 }
+    ]
+}

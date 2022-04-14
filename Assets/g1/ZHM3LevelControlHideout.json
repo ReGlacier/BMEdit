@@ -1,0 +1,13 @@
+{
+    "typename": "ZHM3LevelControlHideout",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_318", "typename": "ZREFTAB32", "offset": 792  },
+        { "name": "property_3C4", "typename": "ZREFTAB32", "offset": 964  },
+        { "name": "property_34",  "typename": "ZSDOwner",  "offset": 52   },
+        { "name": "property_51C", "typename": "ZGEOMREF",  "offset": 1308 },
+        { "name": "property_520", "typename": "ZREFTAB32", "offset": 1312 },
+        { "name": "property_5D0", "typename": "ZGEOMREF",  "offset": 1488 }
+    ]
+}

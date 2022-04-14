@@ -1,0 +1,12 @@
+{
+    "typename": "ZHM3Item",
+    "parent": "ZItem",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_90", "typename": "PRPOpCode.Int32", "offset": 144 },
+        { "name": "property_94", "typename": "PRPOpCode.Bool", "offset": 148 },
+        { "name": "AnasteticInfected", "typename": "PRPOpCode.Bool" },
+        { "name": "PoisonInfected", "typename": "PRPOpCode.Bool" },
+        { "name": "AphrodiciacInfected", "typename": "PRPOpCode.Bool" }
+    ]
+}

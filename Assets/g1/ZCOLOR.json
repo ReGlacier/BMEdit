@@ -1,0 +1,5 @@
+{
+    "typename": "ZCOLOR",
+    "kind": "TypeKind.ALIAS",
+    "alias": "PRPOpCode.Int32"
+}

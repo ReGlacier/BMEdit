@@ -1,0 +1,8 @@
+{
+    "typename": "ZNewsPaperMissingController",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZGEOMREF", "offset": 44 }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "typename": "ZParticleEmitter",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_10", "typename": "ZVector3F", "offset": 16 },
+        { "name": "property_1C", "typename": "PRPOpCode.Int16", "offset": 28 },
+        { "name": "property_20", "typename": "ZVector3F", "offset": 32 },
+        { "name": "property_2C", "typename": "PRPOpCode.Float32", "offset": 44 },
+        { "name": "property_30", "typename": "PRPOpCode.Float32", "offset": 48 },
+        { "name": "property_34", "typename": "PRPOpCode.Float32", "offset": 52 },
+        { "name": "property_38", "typename": "PRPOpCode.Float32", "offset": 56 },
+        { "name": "property_3C", "typename": "ZVector3F", "offset": 60 },
+        { "name": "property_48", "typename": "PRPOpCode.Float32", "offset": 72 },
+        { "name": "property_4C", "typename": "PRPOpCode.Float32", "offset": 76 },
+        { "name": "property_50", "typename": "PRPOpCode.Float32", "offset": 80 },
+        { "name": "property_54", "typename": "ZGEOMREF", "offset": 84 },
+        { "name": "property_58", "typename": "PRPOpCode.Int32", "offset": 88 },
+        { "name": "property_5C", "typename": "PRPOpCode.Int32", "offset": 92 },
+        { "name": "property_60", "typename": "PRPOpCode.Bool", "offset": 96 },
+        { "name": "property_64", "typename": "PRPOpCode.Float32", "offset": 100 },
+        { "name": "property_68", "typename": "PRPOpCode.Int32", "offset": 104 },
+        { "name": "property_6C", "typename": "PRPOpCode.Bool", "offset": 108 },
+        { "name": "property_6D", "typename": "PRPOpCode.Bool", "offset": 109 },
+        { "name": "property_6E", "typename": "ZMsg", "offset": 110 },
+        { "name": "IsGlobal", "typename": "PRPOpCode.Bool" },
+        { "name": "bHide", "typename": "PRPOpCode.Bool" },
+        { "name": "bLighting", "typename": "PRPOpCode.Bool" },
+        { "name": "bAutoStart", "typename": "PRPOpCode.Bool" },
+        { "name": "bDeactivate", "typename": "PRPOpCode.Bool" },
+        { "name": "szParticleTemplateName", "typename": "PRPOpCode.String" }
+    ]
+}

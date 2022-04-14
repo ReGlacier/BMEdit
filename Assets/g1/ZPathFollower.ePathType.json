@@ -1,0 +1,10 @@
+{
+    "typename": "ZPathFollower.ePathType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ONEWAY": 3,
+        "RANDOM": 2,
+        "PINGPONG": 1,
+        "LOOPING": 0
+    }
+}

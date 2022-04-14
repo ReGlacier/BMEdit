@@ -1,0 +1,8 @@
+{
+    "typename": "ZHM3ClothBundle",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "UnkGeom", "typename": "ZGEOMREF", "offset": 12 }
+    ]
+}

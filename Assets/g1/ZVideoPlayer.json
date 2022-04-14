@@ -1,0 +1,19 @@
+{
+    "typename": "ZVideoPlayer",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_FC",   "typename": "PRPOpCode.String", "offset": 252 },
+        { "name": "property_100",  "typename": "PRPOpCode.Bool", "offset": 256 },
+        { "name": "property_101",  "typename": "PRPOpCode.Bool", "offset": 257 },
+        { "name": "property_104",  "typename": "PRPOpCode.String", "offset": 260 },
+        { "name": "DisplayMode",   "typename": "ZVideoPlayer.eDisplayMode", "offset": 264 },
+        { "name": "property_10C",  "typename": "PRPOpCode.Float32", "offset": 268 },
+        { "name": "property_110",  "typename": "PRPOpCode.Float32", "offset": 272 },
+        { "name": "property_114",  "typename": "PRPOpCode.Bool", "offset": 276 },
+        { "name": "property_118",  "typename": "ZGEOMREF", "offset": 280 },
+        { "name": "property_11C",  "typename": "ZMsg", "offset": 284 },
+        { "name": "property_120",  "typename": "PRPOpCode.String", "offset": 288 },
+        { "name": "DisableRender", "typename": "ZVideoPlayer.EDisableRender", "offset": 292 }
+    ]
+}

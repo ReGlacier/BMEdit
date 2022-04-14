@@ -1,0 +1,25 @@
+{
+    "typename": "ZItemTemplateWeapon",
+    "parent": "ZItemTemplate",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_70", "typename": "ZSDOwner", "offset": 112 },
+        { "name": "ShootMode", "typename": "ZItemTemplateWeapon.WEAPONOPERATION", "offset": 156 },
+        { "name": "WeaponType", "typename": "ZItemTemplateWeapon.WEAPONTYPE", "offset": 160 },
+        { "name": "property_A4", "typename": "ZREFTAB32", "offset": 164 },
+        { "name": "property_C0", "typename": "PRPOpCode.Float32", "offset": 192 },
+        { "name": "property_C4", "typename": "PRPOpCode.Float32", "offset": 196 },
+        { "name": "property_C8", "typename": "PRPOpCode.Float32", "offset": 200 },
+        { "name": "property_CC", "typename": "PRPOpCode.Float32", "offset": 204 },
+        { "name": "property_D0", "typename": "PRPOpCode.Float32", "offset": 208 },
+        { "name": "property_D4", "typename": "PRPOpCode.Float32", "offset": 212 },
+        { "name": "property_D8", "typename": "PRPOpCode.Float32", "offset": 216 },
+        { "name": "property_DC", "typename": "PRPOpCode.Bool", "offset": 220 },
+        { "name": "property_DD", "typename": "PRPOpCode.Bool", "offset": 221 },
+        { "name": "property_DE", "typename": "PRPOpCode.Bool", "offset": 222 },
+        { "name": "property_E0", "typename": "ZREFTAB32", "offset": 224 },
+        { "name": "property_FC", "typename": "ZGEOMREF", "offset": 252 },
+        { "name": "property_100", "typename": "PRPOpCode.Int32", "offset": 256 },
+        { "name": "property_104", "typename": "PRPOpCode.Float32", "offset": 260 }
+    ]
+}

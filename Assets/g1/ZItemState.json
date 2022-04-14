@@ -1,0 +1,17 @@
+{
+    "typename": "ZItemState",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ItemState", "typename": "ZItemState.ITEMSTATE", "offset": 52 },
+        { "name": "property_38", "typename": "PRPOpCode.Bool", "offset": 56 },
+        { "name": "ItemDestination", "typename": "ZItemState.ITEMDEST", "offset": 60 },
+        { "name": "property_40", "typename": "PRPOpCode.Float32", "offset": 64 },
+        { "name": "property_44", "typename": "PRPOpCode.Float32", "offset": 64 },
+        { "name": "property_48", "typename": "PRPOpCode.Bool", "offset": 68 },
+        { "name": "property_49", "typename": "PRPOpCode.Bool", "offset": 69 },
+        { "name": "property_4C", "typename": "PRPOpCode.String", "offset": 72 },
+        { "name": "property_50", "typename": "ZGEOMREF", "offset": 76 },
+        { "name": "property_54", "typename": "PRPOpCode.Bool", "offset": 76 }
+    ]
+}

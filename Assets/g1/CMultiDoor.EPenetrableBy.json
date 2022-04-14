@@ -1,0 +1,9 @@
+{
+    "typename": "CMultiDoor.EPenetrableBy",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "PUPGRADEDAMMO" : 2,
+        "PALL" : 1,
+        "PNOTHING" : 0
+    }
+}

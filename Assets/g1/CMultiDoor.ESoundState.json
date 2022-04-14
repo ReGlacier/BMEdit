@@ -1,0 +1,11 @@
+{
+    "typename": "CMultiDoor.ESoundState",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "SSDEFAULT" : 4,
+        "SSCLOSE" : 3,
+        "SSOPEN" : 2,
+        "PARALLEL" : 1,
+        "SERIAL" : 0
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "typename": "ZCubeGrid",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "SubBoxes", "typename": "ZRawData" }
+    ]
+}

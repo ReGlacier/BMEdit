@@ -1,0 +1,6 @@
+{
+    "typename": "ZHM3ItemTemplateAmmo",
+    "parent": "ZItemTemplateAmmo",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

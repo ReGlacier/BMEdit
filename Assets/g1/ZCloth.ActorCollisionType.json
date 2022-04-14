@@ -1,0 +1,9 @@
+{
+    "typename": "ZCloth.ActorCollisionType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ALL": 2,
+        "HERO": 1,
+        "NONE": 0
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "typename": "ZShotPenetrate",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+    ]
+}

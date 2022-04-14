@@ -1,0 +1,13 @@
+{
+    "typename": "ZHM3ItemTemplate",
+    "parent": "ZItemTemplate",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_74", "typename": "PRPOpCode.String", "offset": 116 },
+        { "name": "property_78", "typename": "PRPOpCode.String", "offset": 120 },
+        { "name": "property_7C", "typename": "PRPOpCode.String", "offset": 124 },
+        { "name": "property_8C", "typename": "PRPOpCode.Int8",   "offset": 140 },
+        { "name": "property_8D", "typename": "PRPOpCode.Bool",   "offset": 141 },
+        { "name": "property_8E", "typename": "PRPOpCode.Bool",   "offset": 142 }
+    ]
+}

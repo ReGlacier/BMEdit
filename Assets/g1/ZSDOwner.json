@@ -1,0 +1,5 @@
+{
+    "typename": "ZSDOwner",
+    "kind": "TypeKind.ALIAS",
+    "alias": "PRPOpCode.Int32"
+}

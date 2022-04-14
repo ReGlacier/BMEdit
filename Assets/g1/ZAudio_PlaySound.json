@@ -1,0 +1,10 @@
+{
+    "typename": "ZAudio_PlaySound",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZAUDIOREF", "offset": 44 },
+        { "name": "property_30", "typename": "ZMsg", "offset": 48 },
+        { "name": "property_32", "typename": "ZMsg", "offset": 52 }
+    ]
+}

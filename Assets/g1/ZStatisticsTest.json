@@ -1,0 +1,13 @@
+{
+    "typename": "ZStatisticsTest",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_174", "typename": "ZGEOMREF", "offset": 372 },
+        { "name": "property_178", "typename": "ZGEOMREF", "offset": 376 },
+        { "name": "property_17C", "typename": "ZGEOMREF", "offset": 380 },
+        { "name": "property_180", "typename": "ZGEOMREF", "offset": 384 },
+        { "name": "property_184", "typename": "ZGEOMREF", "offset": 388 },
+        { "name": "property_188", "typename": "ZGEOMREF", "offset": 392 }
+    ]
+}

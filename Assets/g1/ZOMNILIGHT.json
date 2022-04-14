@@ -1,0 +1,6 @@
+{
+    "typename": "ZOMNILIGHT",
+    "parent": "ZLIGHT",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

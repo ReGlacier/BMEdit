@@ -1,0 +1,9 @@
+{
+    "typename": "CMultiDoor.EDoorType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "DT_VERTANIM" : 2,
+        "DT_MATPOSANIM" : 1,
+        "DT_NORMAL" : 0
+    }
+}

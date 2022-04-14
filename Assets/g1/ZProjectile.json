@@ -1,0 +1,8 @@
+{
+    "typename": "ZProjectile",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "bCanPenetrate", "typename": "PRPOpCode.Bool" }
+    ]
+}

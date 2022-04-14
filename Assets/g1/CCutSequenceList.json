@@ -1,0 +1,14 @@
+{
+    "typename": "CCutSequenceList",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_64", "typename": "ZGEOMREF",          "offset": 100 },
+        { "name": "property_7C", "typename": "PRPOpCode.Bool",    "offset": 124 },
+        { "name": "property_7D", "typename": "PRPOpCode.Bool",    "offset": 125 },
+        { "name": "property_7E", "typename": "PRPOpCode.Bool",    "offset": 126 },
+        { "name": "property_7F", "typename": "PRPOpCode.Bool",    "offset": 127 },
+        { "name": "property_80", "typename": "PRPOpCode.Bool",    "offset": 128 },
+        { "name": "property_84", "typename": "PRPOpCode.Float32", "offset": 132 }
+    ]
+}

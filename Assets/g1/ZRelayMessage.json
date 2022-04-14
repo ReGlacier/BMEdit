@@ -1,0 +1,11 @@
+{
+    "typename": "ZRelayMessage",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZMsg", "offset": 44 },
+        { "name": "property_2E", "typename": "ZMsg", "offset": 46 },
+        { "name": "property_30", "typename": "ZGEOMREF", "offset": 48 },
+        { "name": "property_34", "typename": "PRPOpCode.Bool", "offset": 52 }
+    ]
+}

@@ -1,0 +1,6 @@
+{
+    "typename": "ZCigs",
+    "parent": "ZAllocMany",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

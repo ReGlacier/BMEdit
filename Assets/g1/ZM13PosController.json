@@ -1,0 +1,6 @@
+{
+    "typename": "ZM13PosController",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,6 @@
+{
+    "typename": "ZAudio_Set3DMusic",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

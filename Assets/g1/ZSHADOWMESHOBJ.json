@@ -1,0 +1,9 @@
+{
+    "typename": "ZSHADOWMESHOBJ",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_C", "typename": "PRPOpCode.Int32", "offset": 12 },
+        { "name": "property_10", "typename": "ZGEOMREF", "offset": 16 }
+    ]
+}

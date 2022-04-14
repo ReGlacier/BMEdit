@@ -1,0 +1,9 @@
+{
+    "typename": "ZMsgForward",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Receiver", "typename": "ZGEOMREF", "offset": 44 },
+        { "name": "MessageID", "typename": "ZMsg", "offset": 48 }
+    ]
+}

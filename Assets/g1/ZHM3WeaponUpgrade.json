@@ -1,0 +1,14 @@
+{
+    "typename": "ZHM3WeaponUpgrade",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_C", "typename": "PRPOpCode.Float32", "offset": 12 },
+        { "name": "UpgradeType", "typename": "ZHM3WeaponUpgrade.EUpgradeType", "offset": 16 },
+        { "name": "property_14", "typename": "ZREFTAB32", "offset": 20 },
+        { "name": "property_18", "typename": "ZREFTAB32", "offset": 24 },
+        { "name": "property_1C", "typename": "ZREFTAB32", "offset": 28 },
+        { "name": "property_20", "typename": "ZREFTAB32", "offset": 32 },
+        { "name": "UpgradeTier", "typename": "ZHM3WeaponUpgrade.EUpgradeTier", "offset": 36 }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "typename": "ZBUTTON",
+    "parent": "ZCONTROL",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "InitialState", "typename": "ZBUTTON.EInitialState" },
+        { "name": "ButtonType", "typename": "ZBUTTON._ButtonTypes", "offset": 148 }
+    ]
+}

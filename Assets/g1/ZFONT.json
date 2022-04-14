@@ -1,0 +1,6 @@
+{
+    "typename": "ZFONT",
+    "parent": "ZWINOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

@@ -1,0 +1,11 @@
+{
+    "typename": "ZHM3ItemTemplateWeapon.ESilencerType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "eSilentWithNoEvent": 4,
+        "eSilentOver20": 3,
+        "eSilentUpTo20": 2,
+        "eSilentLowVelocityAmmo": 1,
+        "eNotSilent": 0
+    }
+}

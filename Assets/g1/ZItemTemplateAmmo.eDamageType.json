@@ -1,0 +1,8 @@
+{
+    "typename": "ZItemTemplateAmmo.eDamageType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "TRANQUILIZING": 1,
+        "LETHAL": 0
+    }
+}

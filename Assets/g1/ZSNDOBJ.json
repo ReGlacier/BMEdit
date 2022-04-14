@@ -1,0 +1,8 @@
+{
+    "typename": "ZSNDOBJ",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Sound",  "typename": "ZAUDIOREF", "offset": 12 }
+    ]
+}

@@ -1,0 +1,10 @@
+{
+    "typename": "CBodyContainer.eBCState",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "STATE_CLOSING" : 3,
+        "STATE_OPENING" : 2,
+        "STATE_CLOSE" : 1,
+        "STATE_OPEN" : 0
+    }
+}

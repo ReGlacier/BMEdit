@@ -1,0 +1,10 @@
+{
+    "typename": "ZBoxPrimitive",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ScaleX", "typename": "PRPOpCode.Float32" },
+        { "name": "ScaleY", "typename": "PRPOpCode.Float32" },
+        { "name": "ScaleZ", "typename": "PRPOpCode.Float32" }
+    ]
+}

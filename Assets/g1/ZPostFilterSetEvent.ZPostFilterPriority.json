@@ -1,0 +1,10 @@
+{
+    "typename": "ZPostFilterSetEvent.ZPostFilterPriority",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "CAMERAEFFECT": 3,
+        "CAMERA": 2,
+        "SCENEEFFECT": 1,
+        "SCENE": 0
+    }
+}

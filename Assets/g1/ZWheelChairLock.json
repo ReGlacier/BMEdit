@@ -1,0 +1,8 @@
+{
+    "typename": "ZWheelChairLock",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "rTargetGeom", "typename": "ZGEOMREF", "offset": 44 }
+    ]
+}

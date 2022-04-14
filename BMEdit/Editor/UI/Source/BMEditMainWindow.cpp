@@ -5,8 +5,11 @@
 #include <QFile>
 #include <QDir>
 #include <QDirIterator>
+#include <QMessageBox>
 
 #include <GameLib/TypeRegistry.h>
+#include <GameLib/TypeNotFoundException.h>
+
 #include <nlohmann/json.hpp>
 
 
@@ -206,5 +209,20 @@ void BMEditMainWindow::loadTypesDataBase()
 		}
 	}
 
-	registry.registerTypes(std::move(typeInfos), std::move(typesToHashes));
+	try
+	{
+		registry.registerTypes(std::move(typeInfos), std::move(typesToHashes));
+		m_operationProgress->setValue(0);
+		m_operationCommentLabel->setText("Ready to open level");
+	}
+	catch (const gamelib::TypeNotFoundException &typeNotFoundException)
+	{
+		m_operationCommentLabel->setText(QString("ERROR: Unable to load types database: %1").arg(QString::fromStdString(typeNotFoundException.what())));
+		QMessageBox::critical(this, QString("Unable to load types database"), QString("An error occurred while loading types database:\n%1").arg(typeNotFoundException.what()));
+	}
+	catch (const std::exception &somethingGoesWrong)
+	{
+		m_operationCommentLabel->setText(QString("ERROR: Unknown exception in type loader: %1").arg(QString::fromStdString(somethingGoesWrong.what())));
+		QMessageBox::critical(this, QString("Unable to load types database"), QString("An error occurred while loading types database:\n%1").arg(somethingGoesWrong.what()));
+	}
 }

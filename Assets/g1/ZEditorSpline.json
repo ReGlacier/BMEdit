@@ -1,0 +1,9 @@
+{
+    "typename": "ZEditorSpline",
+    "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "PointData", "typename": "ZRawData" },
+        { "name": "DebugObject", "typename": "ZGEOMREF" }
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "typename": "ZHM3WeaponUpgrade.EUpgradeTier",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "UPGRADE_TIER5": 4,
+        "UPGRADE_TIER4": 3,
+        "UPGRADE_TIER3": 2,
+        "UPGRADE_TIER2": 1,
+        "UPGRADE_TIER1": 0
+    }
+}

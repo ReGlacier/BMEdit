@@ -1,0 +1,18 @@
+{
+    "typename": "ZAction",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ActionName", "typename": "PRPOpCode.String" },
+        { "name": "IsVisible", "typename": "PRPOpCode.Bool" },
+        { "name": "ActionType", "typename": "ZAction.EActionType", "offset": 44 },
+        { "name": "MessageID", "typename": "ZMsg", "offset": 48 },
+        { "name": "property_34", "typename": "ZGEOMREF", "offset": 52 },
+        { "name": "property_38", "typename": "PRPOpCode.Int32", "offset": 56 },
+        { "name": "property_3C", "typename": "PRPOpCode.Int32", "offset": 60 },
+        { "name": "property_40", "typename": "PRPOpCode.Bool", "offset": 64 },
+        { "name": "HideAction_MessageID", "typename": "ZMsg", "offset": 74 },
+        { "name": "ShowAction_MessageID", "typename": "ZMsg", "offset": 76 },
+        { "name": "property_F4", "typename": "ZGEOMREF", "offset": 244 }
+    ]
+}

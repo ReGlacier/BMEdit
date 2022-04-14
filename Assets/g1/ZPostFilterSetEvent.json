@@ -1,0 +1,12 @@
+{
+    "typename": "ZPostFilterSetEvent",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_5C", "typename": "ZGEOMREF", "offset": 92 },
+        { "name": "Priority", "typename": "ZPostFilterSetEvent.ZPostFilterPriority" },
+        { "name": "fBlend", "typename": "PRPOpCode.Float32" },
+        { "name": "fPriorityBlend", "typename": "PRPOpCode.Float32" },
+        { "name": "iPrim", "typename": "PRPOpCode.Int32" }
+    ]
+}
