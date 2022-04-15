@@ -78,14 +78,22 @@ namespace gamelib
 	bool Level::loadLevelScene()
 	{
 		int64_t gmsFileSize = 0;
+		int64_t bufFileSize = 0;
+
 		auto gmsFileBuffer = m_assetProvider->getAsset(io::AssetKind::SCENE, gmsFileSize);
 		if (!gmsFileBuffer || !gmsFileSize)
 		{
 			return false;
 		}
 
+		auto bufFileBuffer = m_assetProvider->getAsset(io::AssetKind::BUFFER, bufFileSize);
+		if (!bufFileBuffer || !bufFileSize)
+		{
+			return false;
+		}
+
 		gms::GMSReader reader;
-		if (!reader.parse(gmsFileBuffer.get(), gmsFileSize))
+		if (!reader.parse(gmsFileBuffer.get(), gmsFileSize, bufFileBuffer.get(), bufFileSize))
 		{
 			return false;
 		}
