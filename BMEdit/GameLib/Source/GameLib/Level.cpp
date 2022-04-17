@@ -53,6 +53,16 @@ namespace gamelib
 		return nullptr;
 	}
 
+	const SceneProperties * Level::getSceneProperties() const
+	{
+		if (m_isLevelLoaded)
+		{
+			return &m_sceneProperties;
+		}
+
+		return nullptr;
+	}
+
 	bool Level::loadLevelProperties()
 	{
 		int64_t prpFileSize = 0;
@@ -93,7 +103,7 @@ namespace gamelib
 		}
 
 		gms::GMSReader reader;
-		if (!reader.parse(gmsFileBuffer.get(), gmsFileSize, bufFileBuffer.get(), bufFileSize))
+		if (!reader.parse(&m_sceneProperties.header, gmsFileBuffer.get(), gmsFileSize, bufFileBuffer.get(), bufFileSize))
 		{
 			return false;
 		}

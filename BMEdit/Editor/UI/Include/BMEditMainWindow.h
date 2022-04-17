@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QProgressBar>
 #include <QLabel>
+#include <QString>
 
 
 namespace Ui {
@@ -22,13 +23,18 @@ private:
 	void initStatusBar();
 	void connectActions();
 	void connectDockWidgetActions();
+	void connectEditorSignals();
 	void loadTypesDataBase();
+	void resetStatusToDefault();
 
 public slots:
 	void onExit();
 	void onOpenLevel();
 	void onRestoreLayout();
 	void onShowTypesViewer();
+	void onLevelLoadSuccess();
+	void onLevelLoadFailed(const QString &reason);
+	void onLevelLoadProgressChanged(int totalPercentsProgress, const QString &currentOperationTag);
 
 private:
     Ui::BMEditMainWindow *ui;

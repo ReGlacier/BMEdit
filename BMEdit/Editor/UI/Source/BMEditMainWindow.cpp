@@ -12,6 +12,7 @@
 #include <GameLib/TypeNotFoundException.h>
 
 #include <Editor/EditorInstance.h>
+#include <Models/SceneObjectsTreeModel.h>
 
 #include <nlohmann/json.hpp>
 
@@ -32,9 +33,12 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->sceneTreeView->setModel(new models::SceneObjectsTreeModel(this));
+
 	initStatusBar();
 	connectActions();
 	connectDockWidgetActions();
+	connectEditorSignals();
 	loadTypesDataBase();
 }
 
@@ -52,8 +56,7 @@ void BMEditMainWindow::initStatusBar()
 	m_operationLabel = new QLabel(statusBar());
 	m_operationCommentLabel = new QLabel(statusBar());
 
-	m_operationLabel->setText("Progress: ");
-	m_operationCommentLabel->setText("(No active operation)");
+	resetStatusToDefault();
 
 	statusBar()->insertWidget(0, m_operationLabel);
 	statusBar()->insertWidget(1, m_operationProgress);
@@ -116,6 +119,16 @@ void BMEditMainWindow::connectDockWidgetActions()
 	});
 }
 
+void BMEditMainWindow::connectEditorSignals()
+{
+	using editor::EditorInstance;
+
+	auto &instance = EditorInstance::getInstance();
+
+	connect(&instance, &EditorInstance::levelLoadSuccess, [=]() { onLevelLoadSuccess(); });
+	connect(&instance, &EditorInstance::levelLoadFailed, [=](const QString &reason) { onLevelLoadFailed(reason); });
+}
+
 void BMEditMainWindow::onExit()
 {
 	close();
@@ -132,17 +145,9 @@ void BMEditMainWindow::onOpenLevel()
 	}
 
 	auto selectedLevel = openLevelDialog.selectedFiles().first().toStdString();
+	auto &editorInstance = editor::EditorInstance::getInstance();
 
-	//TODO: Do it in another thread to avoid UI-freeze
-	if (!editor::EditorInstance::getInstance().openLevelFromZIP(selectedLevel))
-	{
-		m_operationCommentLabel->setText(QString("Failed to open level '%1'").arg(QString::fromStdString(selectedLevel)));
-	} else {
-		auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
-		setWindowTitle(QString("BMEdit - %1").arg(QString::fromStdString(currentLevel->getLevelName())));
-
-		// Level is loaded?
-	}
+	editor::EditorInstance::getInstance().openLevelFromZIP(selectedLevel);
 }
 
 void BMEditMainWindow::onRestoreLayout() {
@@ -156,6 +161,46 @@ void BMEditMainWindow::onShowTypesViewer()
 	TypeViewerWindow viewerWindow(this);
 	viewerWindow.setModal(true);
 	viewerWindow.exec();
+}
+
+void BMEditMainWindow::onLevelLoadSuccess()
+{
+	auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
+	setWindowTitle(QString("BMEdit - %1").arg(QString::fromStdString(currentLevel->getLevelName())));
+
+	resetStatusToDefault();
+
+	// Level loaded, show objects tree
+	auto sceneModel = qobject_cast<models::SceneObjectsTreeModel *>(ui->sceneTreeView->model());
+	if (sceneModel) {
+		//sceneModel->setLevel(currentLevel);
+	}
+}
+
+void BMEditMainWindow::onLevelLoadFailed(const QString &reason)
+{
+	QMessageBox::warning(this, QString("Failed to load level"), QString("Error occurred during level load process:\n%1").arg(reason));
+	m_operationCommentLabel->setText(QString("Failed to open level '%1'").arg(reason));
+	m_operationProgress->setValue(0);
+}
+
+void BMEditMainWindow::onLevelLoadProgressChanged(int totalPercentsProgress, const QString &currentOperationTag)
+{
+	// Clamp value between [0, 100]
+	totalPercentsProgress = std::min(totalPercentsProgress, 100);
+	totalPercentsProgress = std::max(totalPercentsProgress, 0);
+
+	// Update value if it greater
+	if (m_operationProgress->value() < totalPercentsProgress)
+	{
+		m_operationProgress->setValue(totalPercentsProgress);
+	}
+
+	// Set operation tag
+	if (!currentOperationTag.isEmpty())
+	{
+		m_operationCommentLabel->setText(QString("LOAD LEVEL: %1").arg(currentOperationTag));
+	}
 }
 
 void BMEditMainWindow::loadTypesDataBase()
@@ -247,4 +292,11 @@ void BMEditMainWindow::loadTypesDataBase()
 		m_operationCommentLabel->setText(QString("ERROR: Unknown exception in type loader: %1").arg(QString::fromStdString(somethingGoesWrong.what())));
 		QMessageBox::critical(this, QString("Unable to load types database"), QString("An error occurred while loading types database:\n%1").arg(somethingGoesWrong.what()));
 	}
+}
+
+void BMEditMainWindow::resetStatusToDefault()
+{
+	m_operationLabel->setText("Progress: ");
+	m_operationCommentLabel->setText("(No active operation)");
+	m_operationProgress->setValue(0);
 }

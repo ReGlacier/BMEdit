@@ -13,7 +13,11 @@ namespace gamelib::gms
 {
 	class GMSGeomEntity
 	{
+		friend class GMSEntries;
+
 	public:
+		static constexpr uint32_t kInvalidParent = 0xFFFFFFEEu;
+
 		GMSGeomEntity();
 
 		[[nodiscard]] const std::string &getName() const;
@@ -21,9 +25,13 @@ namespace gamelib::gms
 		[[nodiscard]] uint32_t getInstanceId() const;
 		[[nodiscard]] uint32_t getColiBits() const;
 		[[nodiscard]] uint32_t getDepthLevel() const;
+		[[nodiscard]] uint32_t getParentGeomIndex() const;
+		[[nodiscard]] bool isInheritedOfGeom() const;
 
 		static void deserialize(GMSGeomEntity &entity, uint32_t depthLevel, ZBio::ZBinaryReader::BinaryReader *gmsBinaryReader, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader);
+
 	private:
+		uint32_t m_parentGeomIndex { GMSGeomEntity::kInvalidParent };
 		uint32_t m_depthLevel {};
 		std::string m_name {};
 		uint32_t m_unk4 { };
@@ -38,7 +46,10 @@ namespace gamelib::gms
 		uint32_t m_unk28 { };
 		uint32_t m_unk2C { };
 		uint32_t m_instanceId { };
-		uint32_t m_unk34 { };
+		union {
+			uint8_t u8_4[4];
+			uint32_t u32;
+		} m_unk34;
 		uint32_t m_unk38 { };
 		uint32_t m_unk3C { };
 	};

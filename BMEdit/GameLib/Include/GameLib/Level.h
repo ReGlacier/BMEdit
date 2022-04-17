@@ -34,6 +34,7 @@ namespace gamelib
 
 		[[nodiscard]] const std::string &getLevelName() const;
 		[[nodiscard]] const LevelProperties *getLevelProperties() const;
+		[[nodiscard]] const SceneProperties *getSceneProperties() const;
 
 	private:
 		bool loadLevelProperties();

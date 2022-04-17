@@ -1,0 +1,12 @@
+{
+    "typename": "ZHM3OpenMenu",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "UnknownProperty", "typename": "PRPOpCode.String" },
+        { "name": "property_B9", "typename": "PRPOpCode.Bool", "offset": 185 },
+        { "name": "property_BC", "typename": "ZSDOwner", "offset": 188 },
+        { "name": "property_CC", "typename": "ZMsg", "offset": 204 },
+        { "name": "property_D0", "typename": "ZGEOMREF", "offset": 208 }
+    ]
+}

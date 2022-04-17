@@ -2,6 +2,8 @@
 
 #include <GameLib/GMS/GMSGeomEntity.h>
 #include <GameLib/GMS/GMSGeomStats.h>
+#include <GameLib/GMS/GMSGroupsCluster.h>
+#include <GameLib/GMS/GMSEntries.h>
 #include <cstdint>
 #include <vector>
 
@@ -18,11 +20,14 @@ namespace gamelib::gms
 	public:
 		GMSHeader();
 
-		static void deserialize(GMSHeader &header, ZBio::ZBinaryReader::BinaryReader *binaryReader, ZBio::ZBinaryReader::BinaryReader *bufFileReader);
+		[[nodiscard]] const GMSEntries &getEntries() const;
+		[[nodiscard]] const GMSGeomStats &getGeomStats() const;
+		[[nodiscard]] const GMSGroupsCluster &getGeomClusters() const;
 
+		static void deserialize(GMSHeader &header, ZBio::ZBinaryReader::BinaryReader *binaryReader, ZBio::ZBinaryReader::BinaryReader *bufFileReader);
 	private:
-		//https://github.com/ReGlacier/ReHitmanTools/issues/3#issuecomment-769654029
-		std::vector<GMSGeomEntity> m_geomEntities {};
+		GMSEntries m_geomEntities {};
 		GMSGeomStats m_geomStats {};
+		GMSGroupsCluster m_geomClusters {};
 	};
 }
