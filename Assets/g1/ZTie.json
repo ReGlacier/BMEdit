@@ -1,6 +1,5 @@
 {
-    "typename": "ZTie",
-    "parent": "ZCloth",
+    "typename": "ZTreeGroup",
+    "parent": "ZGROUP",
     "kind": "TypeKind.COMPLEX",
-    "properties": []
-}
+    "properties"

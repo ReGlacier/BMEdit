@@ -1,8 +1,17 @@
 {
-    "typename": "ZLINEOBJ",
-    "parent": "ZCHAROBJ",
+    "geomInfo": {
+        "id": 14732,
+        "mask": 16383,
+        "typeID": 2097208
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZCHAROBJ",
     "properties": [
-        { "name": "property_A0", "typename": "PRPOpCode.Int32", "offset": 160 }
-    ]
+        {
+            "name": "property_A0",
+            "offset": 160,
+            "typename": "PRPOpCode.Int32"
+        }
+    ],
+    "typename": "ZLINEOBJ"
 }

@@ -1,9 +1,8 @@
 {
-    "typename": "ZSHADOWMESHOBJ",
-    "parent": "ZSTDOBJ",
+    "typename": "ZShatter",
+    "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_C", "typename": "PRPOpCode.Int32", "offset": 12 },
-        { "name": "property_10", "typename": "ZGEOMREF", "offset": 16 }
-    ]
-}
+        { "name": "property_3C", "typename": "ZGEOMREF", "offset": 60 },
+        { "name": "RemovalsList", "typename": "ZREFTAB32" },
+        { "name": "RemainsL

@@ -1,9 +1,7 @@
 {
-    "typename": "ZWINDOW",
+    "typename": "ZWINDOWS",
     "parent": "ZWINGROUP",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_50", "typename": "ZGEOMREF", "offset": 80 },
-        { "name": "property_54", "typename": "ZGEOMREF", "offset": 84 }
-    ]
-}
+        { "name": "property_58", "typename": "ZGEOMREF", "offset": 88 },
+        { "name": "property_1DB", "typename": "PRPOpCode.Bool", "offset": 475 

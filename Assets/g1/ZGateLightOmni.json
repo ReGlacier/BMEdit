@@ -1,12 +1,37 @@
 {
-    "typename": "ZGateLightOmni",
-    "parent": "ZOMNILIGHT",
+    "geomInfo": {
+        "id": 86,
+        "mask": 127,
+        "typeID": 8388853
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZOMNILIGHT",
     "properties": [
-        { "name": "Type", "typename": "ZGateLightOmni.EType", "offset": 28 },
-        { "name": "property_20", "typename": "ZREFTAB32", "offset": 32 },
-        { "name": "FilterType", "typename": "ZGateLightOmni.EFilterType", "offset": 60 },
-        { "name": "property_40", "typename": "ZREFTAB32", "offset": 64 },
-        { "name": "property_5C", "typename": "ZREFTAB32", "offset": 92 }
-    ]
+        {
+            "name": "Type",
+            "offset": 28,
+            "typename": "ZGateLightOmni.EType"
+        },
+        {
+            "name": "property_20",
+            "offset": 32,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "FilterType",
+            "offset": 60,
+            "typename": "ZGateLightOmni.EFilterType"
+        },
+        {
+            "name": "property_40",
+            "offset": 64,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "property_5C",
+            "offset": 92,
+            "typename": "ZREFTAB32"
+        }
+    ],
+    "typename": "ZGateLightOmni"
 }

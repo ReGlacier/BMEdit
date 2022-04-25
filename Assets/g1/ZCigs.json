@@ -1,6 +1,11 @@
 {
-    "typename": "ZCigs",
-    "parent": "ZAllocMany",
+    "geomInfo": {
+        "id": 365,
+        "mask": 1023,
+        "typeID": 1049686
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZAllocMany",
+    "properties": [],
+    "typename": "ZCigs"
 }

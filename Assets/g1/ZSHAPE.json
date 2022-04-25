@@ -1,6 +1,5 @@
 {
-    "typename": "ZSHAPE",
-    "parent": "ZGEOM",
+    "typename": "ZShotActivate",
+    "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
-    "properties": []
-}
+    "prope

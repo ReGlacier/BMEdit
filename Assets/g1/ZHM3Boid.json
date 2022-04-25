@@ -1,13 +1,42 @@
 {
-    "typename": "ZHM3Boid",
-    "parent": "ZIKLNKOBJ",
+    "geomInfo": {
+        "id": 7092,
+        "mask": 16383,
+        "typeID": 2098249
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZIKLNKOBJ",
     "properties": [
-        { "name": "property_18C", "typename": "PRPOpCode.Float32", "offset": 396 },
-        { "name": "property_194", "typename": "PRPOpCode.Float32", "offset": 404 },
-        { "name": "property_19C", "typename": "PRPOpCode.Float32", "offset": 412 },
-        { "name": "property_1A0", "typename": "PRPOpCode.Float32", "offset": 416 },
-        { "name": "property_1A4", "typename": "ZGEOMREF", "offset": 420 },
-        { "name": "property_1A8", "typename": "ZAUDIOREF", "offset": 424 }
-    ]
+        {
+            "name": "property_18C",
+            "offset": 396,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_194",
+            "offset": 404,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_19C",
+            "offset": 412,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_1A0",
+            "offset": 416,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_1A4",
+            "offset": 420,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_1A8",
+            "offset": 424,
+            "typename": "ZAUDIOREF"
+        }
+    ],
+    "typename": "ZHM3Boid"
 }

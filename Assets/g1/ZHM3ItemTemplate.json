@@ -1,13 +1,42 @@
 {
-    "typename": "ZHM3ItemTemplate",
-    "parent": "ZItemTemplate",
+    "geomInfo": {
+        "id": 1045,
+        "mask": 2047,
+        "typeID": 1049640
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZItemTemplate",
     "properties": [
-        { "name": "property_74", "typename": "PRPOpCode.String", "offset": 116 },
-        { "name": "property_78", "typename": "PRPOpCode.String", "offset": 120 },
-        { "name": "property_7C", "typename": "PRPOpCode.String", "offset": 124 },
-        { "name": "property_8C", "typename": "PRPOpCode.Int8",   "offset": 140 },
-        { "name": "property_8D", "typename": "PRPOpCode.Bool",   "offset": 141 },
-        { "name": "property_8E", "typename": "PRPOpCode.Bool",   "offset": 142 }
-    ]
+        {
+            "name": "property_74",
+            "offset": 116,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_78",
+            "offset": 120,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_7C",
+            "offset": 124,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_8C",
+            "offset": 140,
+            "typename": "PRPOpCode.Int8"
+        },
+        {
+            "name": "property_8D",
+            "offset": 141,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "property_8E",
+            "offset": 142,
+            "typename": "PRPOpCode.Bool"
+        }
+    ],
+    "typename": "ZHM3ItemTemplate"
 }

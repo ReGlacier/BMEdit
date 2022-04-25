@@ -1,8 +1,17 @@
 {
-    "typename": "ZPlayer",
-    "parent": "ZLNKWHANDS",
+    "geomInfo": {
+        "id": 93108,
+        "mask": 131071,
+        "typeID": 2149580820
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZLNKWHANDS",
     "properties": [
-        { "name": "property_404",  "typename": "PRPOpCode.Int32", "offset": 1028 }
-    ]
+        {
+            "name": "property_404",
+            "offset": 1028,
+            "typename": "PRPOpCode.Int32"
+        }
+    ],
+    "typename": "ZPlayer"
 }

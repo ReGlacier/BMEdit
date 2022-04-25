@@ -1,10 +1,7 @@
 {
-    "typename": "CBodyContainer.eBCState",
-    "kind": "TypeKind.ENUM",
-    "enum": {
-        "STATE_CLOSING" : 3,
-        "STATE_OPENING" : 2,
-        "STATE_CLOSE" : 1,
-        "STATE_OPEN" : 0
-    }
-}
+    "typename": "CBodyContainer",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Type", "typename": "CBodyContainer.eBCType", "offset": 56 },
+        {

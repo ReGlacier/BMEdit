@@ -1,8 +1,7 @@
 {
-    "typename": "ZWheelChairLock",
+    "typename": "ZWindowNormal",
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "rTargetGeom", "typename": "ZGEOMREF", "offset": 44 }
-    ]
-}
+        { "name": "property_4C", "typename": "PRPOpCode.Bool", "offset": 64 }
+   

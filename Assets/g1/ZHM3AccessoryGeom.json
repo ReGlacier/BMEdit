@@ -1,6 +1,11 @@
 {
-    "typename": "ZHM3AccessoryGeom",
-    "parent": "ZLNKOBJ",
+    "geomInfo": {
+        "id": 1972,
+        "mask": 4095,
+        "typeID": 2098261
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZLNKOBJ",
+    "properties": [],
+    "typename": "ZHM3AccessoryGeom"
 }

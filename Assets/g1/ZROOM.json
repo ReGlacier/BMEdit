@@ -1,19 +1,63 @@
 {
-    "typename": "ZROOM",
-    "parent": "ZTreeGroup",
+    "geomInfo": {
+        "id": 389,
+        "mask": 511,
+        "typeID": 1048609
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZTreeGroup",
     "properties": [
-        { "name": "property_6C", "typename": "PRPOpCode.Int32", "offset": 108 },
-        { "name": "property_84", "typename": "PRPOpCode.Int8", "offset": 132 },
-        { "name": "property_A4", "typename": "ZAUDIOREF", "offset": 164 },
-        { "name": "NoiseLevel", "typename": "ENoiseLevel" },
-        { "name": "Location", "typename": "ELocation" },
-        { "name": "property_12C", "typename": "ZRawData" },
-        { "name": "NotInRoomData", "typename": "PRPOpCode.Bool" },
-        { "name": "DisableAudiEvt", "typename": "PRPOpCode.Bool" },
-        { "name": "ExitOffsets", "typename": "PRPOpCode.Int32" },
-        { "name": "NeighborsOffset", "typename": "PRPOpCode.Int32" },
-        { "name": "EnvironmentLight", "typename": "ZGEOMREF" },
-        { "name": "property_134", "typename": "ZVector3F"}
-    ]
+        {
+            "name": "property_6C",
+            "offset": 108,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_84",
+            "offset": 132,
+            "typename": "PRPOpCode.Int8"
+        },
+        {
+            "name": "property_A4",
+            "offset": 164,
+            "typename": "ZAUDIOREF"
+        },
+        {
+            "name": "NoiseLevel",
+            "typename": "ENoiseLevel"
+        },
+        {
+            "name": "Location",
+            "typename": "ELocation"
+        },
+        {
+            "name": "property_12C",
+            "typename": "ZRawData"
+        },
+        {
+            "name": "NotInRoomData",
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "DisableAudiEvt",
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "ExitOffsets",
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "NeighborsOffset",
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "EnvironmentLight",
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_134",
+            "typename": "ZVector3F"
+        }
+    ],
+    "typename": "ZROOM"
 }

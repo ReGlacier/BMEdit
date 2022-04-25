@@ -1,10 +1,27 @@
 {
-    "typename": "ZHM3ItemTemplateContainer",
-    "parent": "ZItemTemplateContainer",
+    "geomInfo": {
+        "id": 2325,
+        "mask": 4095,
+        "typeID": 1049649
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZItemTemplateContainer",
     "properties": [
-        { "name": "property_98", "typename": "PRPOpCode.String", "offset": 152 },
-        { "name": "property_9C", "typename": "PRPOpCode.String", "offset": 156 },
-        { "name": "property_A0", "typename": "PRPOpCode.String", "offset": 160 }
-    ]
+        {
+            "name": "property_98",
+            "offset": 152,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_9C",
+            "offset": 156,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_A0",
+            "offset": 160,
+            "typename": "PRPOpCode.String"
+        }
+    ],
+    "typename": "ZHM3ItemTemplateContainer"
 }

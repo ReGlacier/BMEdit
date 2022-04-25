@@ -1,12 +1,32 @@
 {
-    "typename": "ZHM3OverlayCameraClass",
-    "parent": "ZCAMERA",
+    "geomInfo": {
+        "id": 27,
+        "mask": 31,
+        "typeID": 4195355
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZCAMERA",
     "properties": [
-        { "name": "Binoculars", "typename": "ZGEOMREF" },
-        { "name": "Keyhole", "typename": "ZGEOMREF" },
-        { "name": "Sniper", "typename": "ZGEOMREF" },
-        { "name": "EventCameraOverlay", "typename": "ZGEOMREF" },
-        { "name": "Closet", "typename": "ZGEOMREF" }
-    ]
+        {
+            "name": "Binoculars",
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "Keyhole",
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "Sniper",
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "EventCameraOverlay",
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "Closet",
+            "typename": "ZGEOMREF"
+        }
+    ],
+    "typename": "ZHM3OverlayCameraClass"
 }

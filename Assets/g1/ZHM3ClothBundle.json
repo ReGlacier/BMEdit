@@ -1,8 +1,17 @@
 {
-    "typename": "ZHM3ClothBundle",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 100,
+        "mask": 511,
+        "typeID": 2098247
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "UnkGeom", "typename": "ZGEOMREF", "offset": 12 }
-    ]
+        {
+            "name": "UnkGeom",
+            "offset": 12,
+            "typename": "ZGEOMREF"
+        }
+    ],
+    "typename": "ZHM3ClothBundle"
 }

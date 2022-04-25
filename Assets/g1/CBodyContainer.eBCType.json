@@ -1,9 +1,6 @@
 {
-    "typename": "CBodyContainer.eBCType",
-    "kind": "TypeKind.ENUM",
-    "enum": {
-        "BC_GARBAGETRUCK" : 2,
-        "BC_DUMPSTER" : 1,
-        "BC_CRATE" : 0
-    }
-}
+    "typename": "CCheckInside",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "property_2C", "typename": "ZGEOMREF", "off

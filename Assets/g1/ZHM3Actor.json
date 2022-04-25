@@ -1,10 +1,26 @@
 {
-    "typename": "ZHM3Actor",
-    "parent": "ZActor",
+    "geomInfo": {
+        "id": 191412,
+        "mask": 262143,
+        "typeID": 2098153
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZActor",
     "properties": [
-        { "name": "property_900", "typename": "ZGEOMREF", "offset": 2304 },
-        { "name": "OverrideHitpoints", "typename": "PRPOpCode.Int32" },
-        { "name": "property_9D8", "typename": "ZGEOMREF", "offset": 2520 }
-    ]
+        {
+            "name": "property_900",
+            "offset": 2304,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "OverrideHitpoints",
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_9D8",
+            "offset": 2520,
+            "typename": "ZGEOMREF"
+        }
+    ],
+    "typename": "ZHM3Actor"
 }

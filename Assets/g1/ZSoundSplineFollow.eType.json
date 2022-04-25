@@ -1,10 +1,7 @@
 {
-    "typename": "ZSoundSplineFollow.eType",
-    "kind": "TypeKind.ENUM",
-    "enum": {
-        "RANDOM_AND_MOVE": 3,
-        "RANDOM": 2,
-        "PINGPONG": 1,
-        "LOOPING": 0
-    }
-}
+    "typename": "ZSoundVolumetricRandom",
+    "parent": "ZEventBase",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "ScaleX", "typename": "PRPOpCode.Float32" },
+    

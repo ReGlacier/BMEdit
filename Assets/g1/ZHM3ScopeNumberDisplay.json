@@ -1,6 +1,11 @@
 {
-    "typename": "ZHM3ScopeNumberDisplay",
-    "parent": "ZGROUP",
+    "geomInfo": {
+        "id": 37,
+        "mask": 255,
+        "typeID": 1049697
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZGROUP",
+    "properties": [],
+    "typename": "ZHM3ScopeNumberDisplay"
 }

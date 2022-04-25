@@ -1,12 +1,11 @@
 {
-    "typename": "ZSoundSplineFollow",
+    "typename": "ZSoundVolumetricSource",
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "Property_80", "typename": "ZGEOMREF", "offset": 128 },
-        { "name": "Type", "typename": "ZSoundSplineFollow.eType", "offset": 132 },
-        { "name": "Property_88", "typename": "PRPOpCode.Float32", "offset": 136 },
-        { "name": "Property_8C", "typename": "PRPOpCode.Int32", "offset": 140 },
-        { "name": "Property_90", "typename": "PRPOpCode.Bool", "offset": 144 }
-    ]
-}
+        { "name": "ScaleX",      "typename": "PRPOpCode.Float32" },
+        { "name": "ScaleY",      "typename": "PRPOpCode.Float32" },
+        { "name": "ScaleZ",      "typename": "PRPOpCode.Float32" },
+        { "name": "Property_AC", "typename": "PRPOpCode.Bool", "offset": 172 },
+        { "name": "Property_B0", "typename": "PRPOpCode.Float32", "offset": 176 },
+        { "name": "Property_B4", "ty

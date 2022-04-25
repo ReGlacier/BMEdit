@@ -1,10 +1,24 @@
 {
-    "typename": "ZBoxPrimitive",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 356,
+        "mask": 511,
+        "typeID": 2097377
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "ScaleX", "typename": "PRPOpCode.Float32" },
-        { "name": "ScaleY", "typename": "PRPOpCode.Float32" },
-        { "name": "ScaleZ", "typename": "PRPOpCode.Float32" }
-    ]
+        {
+            "name": "ScaleX",
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "ScaleY",
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "ScaleZ",
+            "typename": "PRPOpCode.Float32"
+        }
+    ],
+    "typename": "ZBoxPrimitive"
 }

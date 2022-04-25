@@ -1,10 +1,27 @@
 {
-    "typename": "ZLNKWHANDS",
-    "parent": "ZCTRLIKLNKOBJ",
+    "geomInfo": {
+        "id": 27572,
+        "mask": 32767,
+        "typeID": 2097267
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZCTRLIKLNKOBJ",
     "properties": [
-        { "name": "rSpeechSound", "typename": "PRPOpCode.Int32", "offset": 520 },
-        { "name": "property_218", "typename": "PRPOpCode.Int32", "offset": 536 },
-        { "name": "property_228", "typename": "PRPOpCode.Float32", "offset": 552 }
-    ]
+        {
+            "name": "rSpeechSound",
+            "offset": 520,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_218",
+            "offset": 536,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_228",
+            "offset": 552,
+            "typename": "PRPOpCode.Float32"
+        }
+    ],
+    "typename": "ZLNKWHANDS"
 }

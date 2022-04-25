@@ -1,11 +1,32 @@
 {
-    "typename": "ZGateLightSpot",
-    "parent": "ZSPOTLIGHT",
+    "geomInfo": {
+        "id": 94,
+        "mask": 127,
+        "typeID": 8388857
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSPOTLIGHT",
     "properties": [
-        { "name": "Type",        "typename": "ZGateLightSpot.EType",       "offset": 28 },
-        { "name": "property_20", "typename": "ZREFTAB32",                  "offset": 32 },
-        { "name": "Filter",      "typename": "ZGateLightSpot.EFilterType", "offset": 60 },
-        { "name": "property_40", "typename": "ZREFTAB32",                  "offset": 64 }
-    ]
+        {
+            "name": "Type",
+            "offset": 28,
+            "typename": "ZGateLightSpot.EType"
+        },
+        {
+            "name": "property_20",
+            "offset": 32,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "Filter",
+            "offset": 60,
+            "typename": "ZGateLightSpot.EFilterType"
+        },
+        {
+            "name": "property_40",
+            "offset": 64,
+            "typename": "ZREFTAB32"
+        }
+    ],
+    "typename": "ZGateLightSpot"
 }

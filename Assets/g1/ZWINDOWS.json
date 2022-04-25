@@ -1,12 +1,16 @@
 {
-    "typename": "ZWINDOWS",
-    "parent": "ZWINGROUP",
-    "kind": "TypeKind.COMPLEX",
-    "properties": [
-        { "name": "property_58", "typename": "ZGEOMREF", "offset": 88 },
-        { "name": "property_1DB", "typename": "PRPOpCode.Bool", "offset": 475 },
-        { "name": "property_1DC", "typename": "PRPOpCode.Bool", "offset": 476 },
-        { "name": "MainCamera", "typename": "ZGEOMREF" },
-        { "name": "GfxHandler", "typename": "ZGEOMREF" }
-    ]
-}
+    "typename": "ZWINOBJ.EAlignment",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "ALIGNMENT_None": 15,
+        "ALIGNMENT_Middle": 14,
+        "ALIGNMENT_Bottom": 13,
+        "ALIGNMENT_Top": 12,
+        "ALIGNMENT_Center": 11,
+        "ALIGNMENT_Right": 10,
+        "ALIGNMENT_Left": 9,
+        "ALIGNMENT_Middle_Center": 8,
+        "ALIGNMENT_Middle_Right": 7,
+        "ALIGNMENT_Middle_Left": 6,
+        "ALIGNMENT_Bottom_Center": 5,
+        "ALIGNMENT_

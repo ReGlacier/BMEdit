@@ -1,14 +1,47 @@
 {
-    "typename": "ZModifiableCloth",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 84,
+        "mask": 511,
+        "typeID": 2098250
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "property_C", "typename": "ZGEOMREF", "offset": 12 },
-        { "name": "property_10", "typename": "ZGEOMREF", "offset": 16 },
-        { "name": "property_14", "typename": "ZGEOMREF", "offset": 20 },
-        { "name": "property_18", "typename": "ZGEOMREF", "offset": 24 },
-        { "name": "property_1C", "typename": "PRPOpCode.String", "offset": 28 },
-        { "name": "property_20", "typename": "ZGEOMREF", "offset": 32 },
-        { "name": "property_24", "typename": "PRPOpCode.Bool", "offset": 36 }
-    ]
+        {
+            "name": "property_C",
+            "offset": 12,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_10",
+            "offset": 16,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_14",
+            "offset": 20,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_18",
+            "offset": 24,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_1C",
+            "offset": 28,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_20",
+            "offset": 32,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_24",
+            "offset": 36,
+            "typename": "PRPOpCode.Bool"
+        }
+    ],
+    "typename": "ZModifiableCloth"
 }

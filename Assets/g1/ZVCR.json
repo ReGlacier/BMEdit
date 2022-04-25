@@ -1,6 +1,6 @@
 {
-    "typename": "ZVCR",
-    "parent": "ZEventBase",
-    "kind": "TypeKind.COMPLEX",
-    "properties": []
-}
+    "typename": "ZVector3I",
+    "kind": "TypeKind.ARRAY",
+    "array": {
+        "expected_length": 3,
+  

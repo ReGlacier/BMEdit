@@ -1,6 +1,11 @@
 {
-    "typename": "ZBOUND",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 404,
+        "mask": 511,
+        "typeID": 2097180
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZSTDOBJ",
+    "properties": [],
+    "typename": "ZBOUND"
 }

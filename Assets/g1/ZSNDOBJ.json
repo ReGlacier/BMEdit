@@ -1,8 +1,8 @@
 {
-    "typename": "ZSNDOBJ",
-    "parent": "ZSTDOBJ",
-    "kind": "TypeKind.COMPLEX",
-    "properties": [
-        { "name": "Sound",  "typename": "ZAUDIOREF", "offset": 12 }
-    ]
-}
+    "typename": "ZSoundSplineFollow.eType",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "RANDOM_AND_MOVE": 3,
+        "RANDOM": 2,
+        "PINGPONG": 1,
+        "LOOPING":

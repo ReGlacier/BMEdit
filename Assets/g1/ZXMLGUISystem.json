@@ -1,9 +1,7 @@
 {
-    "typename": "ZXMLGUISystem",
+    "typename": "ZZoneControl",
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "Resources", "typename" :"ZGEOMREF" },
-        { "name": "Font", "typename" :"ZGEOMREF" }
-    ]
-}
+        { "name": "SecurityZonePatch", "typename": "ZZoneControl.ESecurityZone_PATCH", "offset": 44 },
+        { "na

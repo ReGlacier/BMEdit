@@ -1,6 +1,11 @@
 {
-    "typename": "ZHM3ClipParticleControl",
-    "parent": "ZAllocMany",
+    "geomInfo": {
+        "id": 621,
+        "mask": 1023,
+        "typeID": 1049678
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZAllocMany",
+    "properties": [],
+    "typename": "ZHM3ClipParticleControl"
 }

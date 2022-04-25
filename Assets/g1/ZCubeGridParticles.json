@@ -1,10 +1,27 @@
 {
-    "typename": "ZCubeGridParticles",
-    "parent": "ZCubeGrid",
+    "geomInfo": {
+        "id": 836,
+        "mask": 1023,
+        "typeID": 2097384
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZCubeGrid",
     "properties": [
-        { "name": "property_38", "typename": "PRPOpCode.Int32", "offset": 56 },
-        { "name": "property_3C", "typename": "PRPOpCode.Int32", "offset": 60 },
-        { "name": "property_40", "typename": "ZGEOMREF", "offset": 64 }
-    ]
+        {
+            "name": "property_38",
+            "offset": 56,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_3C",
+            "offset": 60,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_40",
+            "offset": 64,
+            "typename": "ZGEOMREF"
+        }
+    ],
+    "typename": "ZCubeGridParticles"
 }

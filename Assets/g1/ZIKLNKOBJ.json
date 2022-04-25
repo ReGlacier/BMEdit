@@ -1,6 +1,11 @@
 {
-    "typename": "ZIKLNKOBJ",
-    "parent": "ZLNKOBJ",
+    "geomInfo": {
+        "id": 2996,
+        "mask": 4095,
+        "typeID": 2097191
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZLNKOBJ",
+    "properties": [],
+    "typename": "ZIKLNKOBJ"
 }

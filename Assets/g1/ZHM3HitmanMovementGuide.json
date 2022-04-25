@@ -1,9 +1,22 @@
 {
-    "typename": "ZHM3HitmanMovementGuide",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 148,
+        "mask": 511,
+        "typeID": 2098229
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "GuideType", "typename": "ZHM3HitmanMovementGuide.EHM3GuideType", "offset": 132 },
-        { "name": "StartTransform", "typename": "ZMatrix34F", "offset": 136 }
-    ]
+        {
+            "name": "GuideType",
+            "offset": 132,
+            "typename": "ZHM3HitmanMovementGuide.EHM3GuideType"
+        },
+        {
+            "name": "StartTransform",
+            "offset": 136,
+            "typename": "ZMatrix34F"
+        }
+    ],
+    "typename": "ZHM3HitmanMovementGuide"
 }

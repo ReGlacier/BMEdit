@@ -1,6 +1,6 @@
 {
-    "typename": "ZWINOBJSPRITEHOLDER",
-    "parent": "ZLIST",
+    "typename": "ZXMLGUISystem",
+    "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
-    "properties": []
-}
+    "properties": [
+   

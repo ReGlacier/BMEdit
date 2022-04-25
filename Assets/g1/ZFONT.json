@@ -1,6 +1,11 @@
 {
-    "typename": "ZFONT",
-    "parent": "ZWINOBJ",
+    "geomInfo": {
+        "id": 1932,
+        "mask": 4095,
+        "typeID": 2097199
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZWINOBJ",
+    "properties": [],
+    "typename": "ZFONT"
 }
