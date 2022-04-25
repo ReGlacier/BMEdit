@@ -104,6 +104,7 @@
         "0x8000F2": "ZGateLightSpotSquare",
         "0x2000F6": "ZCloth",
         "0x20044A": "ZModifiableCloth",
-        "0x2000CF": "ZEditorSpline"
+        "0x2000CF": "ZEditorSpline",
+        "0x80800004": "ZLIGHT"
     }
 }
