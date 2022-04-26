@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 2996,
-        "mask": 4095,
-        "typeID": 2097191
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZIKLNKOBJ",
     "parent": "ZLNKOBJ",
-    "properties": [],
-    "typename": "ZIKLNKOBJ"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

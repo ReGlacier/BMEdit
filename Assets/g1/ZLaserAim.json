@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 444,
-        "mask": 511,
-        "typeID": 1049698
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZLaserAim",
     "parent": "ZSTDOBJ",
-    "properties": [],
-    "typename": "ZLaserAim"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

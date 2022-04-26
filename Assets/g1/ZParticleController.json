@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 340,
-        "mask": 511,
-        "typeID": 2097380
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZParticleController",
     "parent": "ZSTDOBJ",
-    "properties": [],
-    "typename": "ZParticleController"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 156,
-        "mask": 511,
-        "typeID": 2098224
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZGui",
     "parent": "ZSTDOBJ",
-    "properties": [],
-    "typename": "ZGui"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

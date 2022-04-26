@@ -1,27 +1,10 @@
 {
-    "geomInfo": {
-        "id": 277,
-        "mask": 2047,
-        "typeID": 1050585
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZItemTemplateContainer",
     "parent": "ZItemTemplate",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_70",
-            "offset": 112,
-            "typename": "ZREFTAB32"
-        },
-        {
-            "name": "property_8C",
-            "offset": 140,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_90",
-            "offset": 144,
-            "typename": "PRPOpCode.Bool"
-        }
-    ],
-    "typename": "ZItemTemplateContainer"
+        { "name": "property_70", "typename": "ZREFTAB32", "offset": 112 },
+        { "name": "property_8C", "typename": "PRPOpCode.Int32", "offset": 140 },
+        { "name": "property_90", "typename": "PRPOpCode.Bool", "offset": 144 }
+    ]
 }

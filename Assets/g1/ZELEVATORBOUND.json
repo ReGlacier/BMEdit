@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 196,
-        "mask": 511,
-        "typeID": 2097426
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZELEVATORBOUND",
     "parent": "ZSTDOBJ",
-    "properties": [],
-    "typename": "ZELEVATORBOUND"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

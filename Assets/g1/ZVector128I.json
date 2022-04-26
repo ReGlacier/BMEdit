@@ -1,6 +1,8 @@
 {
-    "typename": "ZVertAnim",
-    "parent": "ZEventBase",
-    "kind": "TypeKind.COMPLEX",
-    "properties": [
-        { "name": "property_2C", "typename": "ZMsg", 
+    "typename": "ZVector128I",
+    "kind": "TypeKind.ARRAY",
+    "array": {
+        "expected_length": 128,
+        "inner_opcode_type": "PRPOpCode.Int32"
+    }
+}

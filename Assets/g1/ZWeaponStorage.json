@@ -1,7 +1,8 @@
 {
-    "typename": "ZWINDOW",
-    "parent": "ZWINGROUP",
+    "typename": "ZWeaponStorage",
+    "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_50", "typename": "ZGEOMREF", "offset": 80 },
-        { "name
+        { "name": "property_E0", "typename": "ZGEOMREF", "offset": 224 }
+    ]
+}

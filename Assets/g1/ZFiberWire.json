@@ -1,17 +1,8 @@
 {
-    "geomInfo": {
-        "id": 172,
-        "mask": 511,
-        "typeID": 2098205
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZFiberWire",
     "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "Type",
-            "offset": 16,
-            "typename": "ZFiberWire.FIBERWIRETYPE"
-        }
-    ],
-    "typename": "ZFiberWire"
+        { "name": "Type", "typename": "ZFiberWire.FIBERWIRETYPE", "offset": 16 }
+    ]
 }

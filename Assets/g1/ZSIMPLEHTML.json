@@ -1,6 +1,8 @@
 {
-    "typename": "ZSlider",
-    "parent": "ZCONTROL",
+    "typename": "ZSIMPLEHTML",
+    "parent": "ZCHAROBJ",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_94",  "typename": "PRPOpCode.Int32",
+        { "name": "Fonts", "typename": "ZREFTAB32" }
+    ]
+}

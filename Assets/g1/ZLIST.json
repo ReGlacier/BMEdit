@@ -1,16 +1,8 @@
 {
-    "geomInfo": {
-        "id": 1,
-        "mask": 7,
-        "typeID": 134217754
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZLIST",
     "parent": "ZGEOM",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "GeomList",
-            "typename": "ZREFTAB32"
-        }
-    ],
-    "typename": "ZLIST"
+        { "name": "GeomList", "typename": "ZREFTAB32" }
+    ]
 }

@@ -1,7 +1,9 @@
 {
-    "typename": "ZViewport",
-    "kind": "TypeKind.ARRAY",
-    "array": {
-        "expected_length": 4,
-        "inner_opcode_type": "PRPOpCode.Float32"
-    
+    "typename": "ZVideoPlayer.eDisplayMode",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "FREE": 2,
+        "KEEPASPECT": 1,
+        "FULL": 0
+    }
+}

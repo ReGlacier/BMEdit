@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 77,
-        "mask": 255,
-        "typeID": 1049655
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZHM3WeaponUpgradeControl",
     "parent": "ZGROUP",
-    "properties": [],
-    "typename": "ZHM3WeaponUpgradeControl"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

@@ -1,25 +1,10 @@
 {
-    "geomInfo": {
-        "id": 2444,
-        "mask": 4095,
-        "typeID": 2097197
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZCHAROBJ",
     "parent": "ZWINOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_90",
-            "offset": 144,
-            "typename": "PRPOpCode.String"
-        },
-        {
-            "name": "Font",
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "Color",
-            "typename": "ZVector3F"
-        }
-    ],
-    "typename": "ZCHAROBJ"
+        { "name": "property_90", "typename": "PRPOpCode.String", "offset": 144 },
+        { "name": "Font", "typename": "ZGEOMREF" },
+        { "name": "Color", "typename": "ZVector3F" }
+    ]
 }

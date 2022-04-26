@@ -1,8 +1,8 @@
 {
-    "typename": "ZWeaponStorage",
-    "parent": "ZEventBase",
+    "typename": "ZWaterBox",
+    "parent": "ZBoxPrimitive",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_E0", "typename": "ZGEOMREF", "offset": 224 }
+        { "name": "property_C4",  "typename": "ZVector3F", "offset": 196 }
     ]
 }

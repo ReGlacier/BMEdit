@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 365,
-        "mask": 1023,
-        "typeID": 1049686
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZCigs",
     "parent": "ZAllocMany",
-    "properties": [],
-    "typename": "ZCigs"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

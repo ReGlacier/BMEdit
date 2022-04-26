@@ -1,17 +1,8 @@
 {
-    "geomInfo": {
-        "id": 285,
-        "mask": 2047,
-        "typeID": 1050586
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZItemContainer",
     "parent": "ZItem",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_88",
-            "offset": 132,
-            "typename": "ZREFTAB32"
-        }
-    ],
-    "typename": "ZItemContainer"
+         { "name": "property_88", "typename": "ZREFTAB32", "offset": 132 }
+    ]
 }

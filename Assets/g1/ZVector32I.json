@@ -1,7 +1,8 @@
 {
-    "typename": "ZVector128I",
+    "typename": "ZVector32I",
     "kind": "TypeKind.ARRAY",
     "array": {
-        "expected_length": 128,
+        "expected_length": 32,
         "inner_opcode_type": "PRPOpCode.Int32"
     }
+}

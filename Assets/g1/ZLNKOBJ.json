@@ -1,26 +1,10 @@
 {
-    "geomInfo": {
-        "id": 436,
-        "mask": 511,
-        "typeID": 2097158
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZLNKOBJ",
     "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "MeshVariantId",
-            "offset": 72,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_60",
-            "offset": 96,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "AnimCollection",
-            "typename": "PRPOpCode.String"
-        }
-    ],
-    "typename": "ZLNKOBJ"
+        { "name": "MeshVariantId", "typename": "PRPOpCode.Int32", "offset": 72 },
+        { "name": "property_60", "typename": "PRPOpCode.Int32", "offset": 96 },
+        { "name": "AnimCollection", "typename": "PRPOpCode.String" }
+    ]
 }

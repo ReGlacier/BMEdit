@@ -1,26 +1,10 @@
 {
-    "geomInfo": {
-        "id": 1420,
-        "mask": 4095,
-        "typeID": 2097221
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZFRAME",
     "parent": "ZWINOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_AC",
-            "offset": 172,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_B0",
-            "offset": 176,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "Pieces",
-            "typename": "ZREFTAB32"
-        }
-    ],
-    "typename": "ZFRAME"
+        { "name": "property_AC", "typename": "PRPOpCode.Int32", "offset": 172 },
+        { "name": "property_B0", "typename": "PRPOpCode.Int32", "offset": 176 },
+        { "name": "Pieces",      "typename": "ZREFTAB32" }
+    ]
 }

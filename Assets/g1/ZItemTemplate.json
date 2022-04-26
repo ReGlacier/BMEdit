@@ -1,37 +1,12 @@
 {
-    "geomInfo": {
-        "id": 21,
-        "mask": 255,
-        "typeID": 1050579
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZItemTemplate",
     "parent": "ZGROUP",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "ItemHands",
-            "offset": 72,
-            "typename": "ZItemTemplate.ITEMHANDS"
-        },
-        {
-            "name": "ItemSize",
-            "offset": 76,
-            "typename": "ZItemTemplate.ITEMSIZE"
-        },
-        {
-            "name": "property_50",
-            "offset": 80,
-            "typename": "PRPOpCode.Bool"
-        },
-        {
-            "name": "property_68",
-            "offset": 104,
-            "typename": "ZAUDIOREF"
-        },
-        {
-            "name": "property_6C",
-            "offset": 108,
-            "typename": "PRPOpCode.Bool"
-        }
-    ],
-    "typename": "ZItemTemplate"
+        { "name": "ItemHands", "typename": "ZItemTemplate.ITEMHANDS", "offset": 72 },
+        { "name": "ItemSize", "typename": "ZItemTemplate.ITEMSIZE", "offset": 76 },
+        { "name": "property_50", "typename": "PRPOpCode.Bool", "offset": 80 },
+        { "name": "property_68", "typename": "ZAUDIOREF", "offset": 104 },
+        { "name": "property_6C", "typename": "PRPOpCode.Bool", "offset": 108 }
+    ]
 }

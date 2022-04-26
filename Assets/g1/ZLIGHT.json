@@ -1,24 +1,10 @@
 {
-    "geomInfo": {
-        "id": 6,
-        "mask": 7,
-        "typeID": 2155872260
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZLIGHT",
     "parent": "ZGEOM",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "ParentBound",
-            "typename": "PRPOpCode.Bool"
-        },
-        {
-            "name": "ExcludeList",
-            "typename": "ZREFTAB32"
-        },
-        {
-            "name": "StaticShadowList",
-            "typename": "ZREFTAB32"
-        }
-    ],
-    "typename": "ZLIGHT"
+        { "name": "ParentBound", "typename": "PRPOpCode.Bool" },
+        { "name": "ExcludeList", "typename": "ZREFTAB32" },
+        { "name": "StaticShadowList", "typename": "ZREFTAB32" }
+    ]
 }

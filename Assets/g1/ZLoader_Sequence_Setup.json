@@ -1,22 +1,9 @@
 {
-    "geomInfo": {
-        "id": 180,
-        "mask": 511,
-        "typeID": 2097435
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZLoader_Sequence_Setup",
     "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "LoaderSequenceFileName",
-            "offset": 12,
-            "typename": "ZFILENAME"
-        },
-        {
-            "name": "RefObjectsList",
-            "offset": 16,
-            "typename": "ZREFTAB32"
-        }
-    ],
-    "typename": "ZLoader_Sequence_Setup"
+        { "name": "LoaderSequenceFileName", "typename": "ZFILENAME", "offset": 12 },
+        { "name": "RefObjectsList", "typename": "ZREFTAB32", "offset": 16 }
+    ]
 }

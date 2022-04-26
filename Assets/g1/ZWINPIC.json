@@ -1,13 +1,10 @@
 {
-    "typename": "ZZoneControl.ESecurityZone_PATCH",
-    "kind": "TypeKind.ENUM",
-    "enum": {
-        "eZoneMegaForbidden_PATCH": 8,
-        "eZone3B_PATCH": 7,
-        "eZone3A_PATCH": 6,
-        "eZone3_PATCH": 5,
-        "eZone2B_PATCH": 4,
-        "eZone2A_PATCH": 3,
-        "eZone2_PATCH": 2,
-        "eZone1_PATCH": 1,
-    
+    "typename": "ZWINPIC",
+    "parent": "ZWINOBJ",
+    "kind": "TypeKind.COMPLEX",
+    "properties": [
+        { "name": "Width", "typename": "PRPOpCode.Int32", "offset": 132 },
+        { "name": "Height", "typename": "PRPOpCode.Int32", "offset": 136 },
+        { "name": "PicResourcePrim", "typename": "PRPOpCode.Int32" }
+    ]
+}

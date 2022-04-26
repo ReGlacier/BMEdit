@@ -1,5 +1,5 @@
 {
-    "typename": "ZTTFONT",
-    "parent": "ZFONT",
-    "kind": "TypeKind.COMPLEX",
-    "prop
+    "typename": "ZTIMETYPE",
+    "kind": "TypeKind.ALIAS",
+    "alias": "PRPOpCode.Int32"
+}

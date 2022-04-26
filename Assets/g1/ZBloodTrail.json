@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 52,
-        "mask": 511,
-        "typeID": 2098262
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZBloodTrail",
     "parent": "ZSTDOBJ",
-    "properties": [],
-    "typename": "ZBloodTrail"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

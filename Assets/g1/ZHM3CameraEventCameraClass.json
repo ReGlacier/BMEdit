@@ -1,16 +1,8 @@
 {
-    "geomInfo": {
-        "id": 51,
-        "mask": 63,
-        "typeID": 4195395
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZHM3CameraEventCameraClass",
     "parent": "ZHM3CameraClass",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "OverlayCamera",
-            "typename": "ZGEOMREF"
-        }
-    ],
-    "typename": "ZHM3CameraEventCameraClass"
+        { "name": "OverlayCamera", "typename": "ZGEOMREF" }
+    ]
 }

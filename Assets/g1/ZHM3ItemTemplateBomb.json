@@ -1,36 +1,12 @@
 {
-    "geomInfo": {
-        "id": 6933,
-        "mask": 16383,
-        "typeID": 1049681
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZHM3ItemTemplateBomb",
     "parent": "ZHM3ItemTemplateWeapon",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_19C",
-            "offset": 412,
-            "typename": "PRPOpCode.Float32"
-        },
-        {
-            "name": "property_1A0",
-            "offset": 416,
-            "typename": "PRPOpCode.Float32"
-        },
-        {
-            "name": "property_1A4",
-            "offset": 420,
-            "typename": "PRPOpCode.Float32"
-        },
-        {
-            "name": "property_1A8",
-            "offset": 424,
-            "typename": "PRPOpCode.Float32"
-        },
-        {
-            "name": "Effect",
-            "typename": "ZGEOMREF"
-        }
-    ],
-    "typename": "ZHM3ItemTemplateBomb"
+        { "name": "property_19C", "typename": "PRPOpCode.Float32", "offset": 412 },
+        { "name": "property_1A0", "typename": "PRPOpCode.Float32", "offset": 416 },
+        { "name": "property_1A4", "typename": "PRPOpCode.Float32", "offset": 420 },
+        { "name": "property_1A8", "typename": "PRPOpCode.Float32", "offset": 424 },
+        { "name": "Effect", "typename": "ZGEOMREF" }
+    ]
 }

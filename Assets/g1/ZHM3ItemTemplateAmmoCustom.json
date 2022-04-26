@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 6677,
-        "mask": 8191,
-        "typeID": 1049646
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZHM3ItemTemplateAmmoCustom",
     "parent": "ZHM3ItemTemplateAmmo",
-    "properties": [],
-    "typename": "ZHM3ItemTemplateAmmoCustom"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

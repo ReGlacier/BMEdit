@@ -1,5 +1,6 @@
 {
-    "typename": "ZStatisticsTest",
-    "parent": "ZEventBase",
+    "typename": "ZSPOTLIGHTSQUARE",
+    "parent": "ZLIGHT",
     "kind": "TypeKind.COMPLEX",
-    "properties": [
+    "properties": []
+}

@@ -1,17 +1,8 @@
 {
-    "geomInfo": {
-        "id": 93108,
-        "mask": 131071,
-        "typeID": 2149580820
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZPlayer",
     "parent": "ZLNKWHANDS",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_404",
-            "offset": 1028,
-            "typename": "PRPOpCode.Int32"
-        }
-    ],
-    "typename": "ZPlayer"
+        { "name": "property_404",  "typename": "PRPOpCode.Int32", "offset": 1028 }
+    ]
 }

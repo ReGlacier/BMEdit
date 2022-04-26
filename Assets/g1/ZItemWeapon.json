@@ -1,17 +1,8 @@
 {
-    "geomInfo": {
-        "id": 797,
-        "mask": 2047,
-        "typeID": 1050578
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZItemWeapon",
     "parent": "ZItem",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_90",
-            "offset": 144,
-            "typename": "PRPOpCode.Int32"
-        }
-    ],
-    "typename": "ZItemWeapon"
+        { "name": "property_90", "typename": "PRPOpCode.Int32", "offset": 144 }
+    ]
 }

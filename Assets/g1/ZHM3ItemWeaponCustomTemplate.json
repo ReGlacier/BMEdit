@@ -1,20 +1,9 @@
 {
-    "geomInfo": {
-        "id": 11029,
-        "mask": 16383,
-        "typeID": 1049644
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZHM3ItemWeaponCustomTemplate",
     "parent": "ZHM3ItemTemplateWeapon",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "LargeClipParticle",
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "ShellParticle",
-            "typename": "ZGEOMREF"
-        }
-    ],
-    "typename": "ZHM3ItemWeaponCustomTemplate"
+        { "name": "LargeClipParticle", "typename": "ZGEOMREF" },
+        { "name": "ShellParticle", "typename": "ZGEOMREF" }
+    ]
 }

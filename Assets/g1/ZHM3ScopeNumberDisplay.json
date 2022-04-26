@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 37,
-        "mask": 255,
-        "typeID": 1049697
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZHM3ScopeNumberDisplay",
     "parent": "ZGROUP",
-    "properties": [],
-    "typename": "ZHM3ScopeNumberDisplay"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

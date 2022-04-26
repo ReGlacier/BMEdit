@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 188,
-        "mask": 511,
-        "typeID": 2097428
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZFadeFullScreen",
     "parent": "ZSTDOBJ",
-    "properties": [],
-    "typename": "ZFadeFullScreen"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

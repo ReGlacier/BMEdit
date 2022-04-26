@@ -1,25 +1,10 @@
 {
-    "geomInfo": {
-        "id": 5,
-        "mask": 7,
-        "typeID": 1048577
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZGROUP",
     "parent": "ZGEOM",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_40",
-            "offset": 64,
-            "typename": "PRPOpCode.Float32"
-        },
-        {
-            "name": "bLightShinesIn",
-            "typename": "PRPOpCode.Bool"
-        },
-        {
-            "name": "bLightShinesOut",
-            "typename": "PRPOpCode.Bool"
-        }
-    ],
-    "typename": "ZGROUP"
+        { "name": "property_40", "typename": "PRPOpCode.Float32", "offset": 64 },
+        { "name": "bLightShinesIn", "typename": "PRPOpCode.Bool" },
+        { "name": "bLightShinesOut", "typename": "PRPOpCode.Bool" }
+    ]
 }

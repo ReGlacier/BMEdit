@@ -1,6 +1,6 @@
 {
-    "typename": "ZSNDOBJ",
-    "parent": "ZSTDOBJ",
+    "typename": "ZSkipSaveGroup",
+    "parent": "ZGROUP",
     "kind": "TypeKind.COMPLEX",
-    "properties": [
-        
+    "properties": []
+}

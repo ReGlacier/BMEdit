@@ -1,127 +1,30 @@
 {
-    "geomInfo": {
-        "id": 164,
-        "mask": 511,
-        "typeID": 2098215
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZOSD",
     "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_48",
-            "offset": 72,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_4C",
-            "offset": 76,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_74",
-            "offset": 116,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_94",
-            "offset": 148,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_B0",
-            "offset": 176,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_BC",
-            "offset": 180,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_C4",
-            "offset": 196,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_C8",
-            "offset": 200,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_CC",
-            "offset": 204,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_D0",
-            "offset": 208,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_D4",
-            "offset": 212,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_D8",
-            "offset": 216,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_DC",
-            "offset": 220,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_E0",
-            "offset": 224,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_E4",
-            "offset": 228,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_194",
-            "offset": 404,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_1A4",
-            "offset": 420,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_1B8",
-            "offset": 440,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_1CC",
-            "offset": 460,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_1E0",
-            "offset": 480,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_1F4",
-            "offset": 500,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_1FC",
-            "offset": 508,
-            "typename": "ZSDOwner"
-        },
-        {
-            "name": "property_6B8",
-            "offset": 1720,
-            "typename": "ZVector128I"
-        }
-    ],
-    "typename": "ZOSD"
+        { "name": "property_48",  "typename": "ZGEOMREF",    "offset":  72   },
+        { "name": "property_4C",  "typename": "ZGEOMREF",    "offset":  76   },
+        { "name": "property_74",  "typename": "ZGEOMREF",    "offset":  116  },
+        { "name": "property_94",  "typename": "ZGEOMREF",    "offset":  148  },
+        { "name": "property_B0",  "typename": "ZGEOMREF",    "offset":  176  },
+        { "name": "property_BC",  "typename": "ZGEOMREF",    "offset":  180  },
+        { "name": "property_C4",  "typename": "ZGEOMREF",    "offset":  196  },
+        { "name": "property_C8",  "typename": "ZGEOMREF",    "offset":  200  },
+        { "name": "property_CC",  "typename": "ZGEOMREF",    "offset":  204  },
+        { "name": "property_D0",  "typename": "ZGEOMREF",    "offset":  208  },
+        { "name": "property_D4",  "typename": "ZGEOMREF",    "offset":  212  },
+        { "name": "property_D8",  "typename": "ZGEOMREF",    "offset":  216  },
+        { "name": "property_DC",  "typename": "ZGEOMREF",    "offset":  220  },
+        { "name": "property_E0",  "typename": "ZGEOMREF",    "offset":  224  },
+        { "name": "property_E4",  "typename": "ZGEOMREF",    "offset":  228  },
+        { "name": "property_194", "typename": "ZGEOMREF",    "offset":  404  },
+        { "name": "property_1A4", "typename": "ZGEOMREF",    "offset":  420  },
+        { "name": "property_1B8", "typename": "ZGEOMREF",    "offset":  440  },
+        { "name": "property_1CC", "typename": "ZGEOMREF",    "offset":  460  },
+        { "name": "property_1E0", "typename": "ZGEOMREF",    "offset":  480  },
+        { "name": "property_1F4", "typename": "ZGEOMREF",    "offset":  500  },
+        { "name": "property_1FC", "typename": "ZSDOwner",    "offset":  508  },
+        { "name": "property_6B8", "typename": "ZVector128I", "offset":  1720 }
+    ]
 }

@@ -1,8 +1,7 @@
 {
-    "typename": "ZSkipSaveGroup",
-    "parent": "ZGROUP",
+    "typename": "ZShotPenetrate",
+    "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
-    "properties": []
-}[
+    "properties": [
     ]
 }

@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 11037,
-        "mask": 16383,
-        "typeID": 1049645
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZHM3ItemWeaponCustom",
     "parent": "ZHM3ItemWeapon",
-    "properties": [],
-    "typename": "ZHM3ItemWeaponCustom"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

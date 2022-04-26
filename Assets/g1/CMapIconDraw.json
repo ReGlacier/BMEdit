@@ -1,16 +1,8 @@
 {
-    "geomInfo": {
-        "id": 124,
-        "mask": 511,
-        "typeID": 2098241
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "CMapIconDraw",
     "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "TextObjects",
-            "typename": "ZREFTAB32"
-        }
-    ],
-    "typename": "CMapIconDraw"
+        { "name": "TextObjects", "typename": "ZREFTAB32" }
+    ]
 }

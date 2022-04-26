@@ -1,9 +1,9 @@
 {
-    "typename": "ZVideoPlayer.EDisableRender",
+    "typename": "ZVertAnim.EPhase",
     "kind": "TypeKind.ENUM",
     "enum": {
-        "BOTH": 3,
-        "AFTER": 2,
-        "BEFORE": 1,
-        "NO": 0
-  
+        "eSiblingSharedRandom_": 2,
+        "eRandom_": 1,
+        "eNeutral_": 0
+    }
+}

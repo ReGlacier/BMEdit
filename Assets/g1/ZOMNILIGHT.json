@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 22,
-        "mask": 63,
-        "typeID": 8388644
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZOMNILIGHT",
     "parent": "ZLIGHT",
-    "properties": [],
-    "typename": "ZOMNILIGHT"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

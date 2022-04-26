@@ -1,80 +1,21 @@
 {
-    "geomInfo": {
-        "id": 1397,
-        "mask": 2047,
-        "typeID": 2148532274
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZCONTROL",
     "parent": "ZWINGROUP",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_58",
-            "offset": 88,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_68",
-            "offset": 104,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_6C",
-            "offset": 108,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_70",
-            "offset": 112,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_74",
-            "offset": 116,
-            "typename": "ZGEOMREF"
-        },
-        {
-            "name": "property_79",
-            "offset": 121,
-            "typename": "PRPOpCode.Bool"
-        },
-        {
-            "name": "property_7C",
-            "offset": 124,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_80",
-            "offset": 128,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_84",
-            "offset": 132,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_88",
-            "offset": 136,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_8C",
-            "offset": 140,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_90",
-            "offset": 144,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "Disabled",
-            "typename": "PRPOpCode.Bool"
-        },
-        {
-            "name": "Visible",
-            "typename": "PRPOpCode.Bool"
-        }
-    ],
-    "typename": "ZCONTROL"
+        { "name": "property_58", "typename": "PRPOpCode.Int32", "offset": 88 },
+        { "name": "property_68", "typename": "ZGEOMREF", "offset": 104 },
+        { "name": "property_6C", "typename": "ZGEOMREF", "offset": 108 },
+        { "name": "property_70", "typename": "ZGEOMREF", "offset": 112 },
+        { "name": "property_74", "typename": "ZGEOMREF", "offset": 116 },
+        { "name": "property_79", "typename": "PRPOpCode.Bool", "offset": 121 },
+        { "name": "property_7C", "typename": "PRPOpCode.Int32", "offset": 124 },
+        { "name": "property_80", "typename": "PRPOpCode.Int32", "offset": 128 },
+        { "name": "property_84", "typename": "PRPOpCode.Int32", "offset": 132 },
+        { "name": "property_88", "typename": "PRPOpCode.Int32", "offset": 136 },
+        { "name": "property_8C", "typename": "PRPOpCode.Int32", "offset": 140 },
+        { "name": "property_90", "typename": "PRPOpCode.Int32", "offset": 144 },
+        { "name": "Disabled", "typename": "PRPOpCode.Bool" },
+        { "name": "Visible", "typename": "PRPOpCode.Bool" }
+    ]
 }

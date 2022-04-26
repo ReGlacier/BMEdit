@@ -1,17 +1,8 @@
 {
-    "geomInfo": {
-        "id": 92,
-        "mask": 511,
-        "typeID": 2098248
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZHitmanAnim",
     "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_C",
-            "offset": 12,
-            "typename": "ZANIM"
-        }
-    ],
-    "typename": "ZHitmanAnim"
+        { "name": "property_C",  "typename": "ZANIM", "offset": 12 }
+    ]
 }

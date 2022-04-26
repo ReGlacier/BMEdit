@@ -1,31 +1,11 @@
 {
-    "geomInfo": {
-        "id": 0,
-        "mask": 0,
-        "typeID": 0
-    },
+    "typename": "ZGEOM",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "BoundingBox",
-            "typename": "EBoundingBox"
-        },
-        {
-            "name": "Matrix",
-            "typename": "ZMatrix33F"
-        },
-        {
-            "name": "Position",
-            "typename": "ZVector3F"
-        },
-        {
-            "name": "IsInactive",
-            "typename": "PRPOpCode.Bool"
-        },
-        {
-            "name": "PrimId",
-            "typename": "PRPOpCode.Int32"
-        }
-    ],
-    "typename": "ZGEOM"
+        { "name": "BoundingBox", "typename": "EBoundingBox" },
+        { "name": "Matrix",      "typename": "ZMatrix33F" },
+        { "name": "Position",    "typename": "ZVector3F" },
+        { "name": "IsInactive",  "typename": "PRPOpCode.Bool" },
+        { "name": "PrimId",      "typename": "PRPOpCode.Int32" }
+    ]
 }

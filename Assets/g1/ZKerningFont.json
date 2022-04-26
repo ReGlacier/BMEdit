@@ -1,17 +1,8 @@
 {
-    "geomInfo": {
-        "id": 14220,
-        "mask": 16383,
-        "typeID": 2097228
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZKerningFont",
     "parent": "ZTTFONT",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_94",
-            "offset": 148,
-            "typename": "PRPOpCode.Int32"
-        }
-    ],
-    "typename": "ZKerningFont"
+        { "name": "property_94", "typename": "PRPOpCode.Int32", "offset": 148 }
+    ]
 }

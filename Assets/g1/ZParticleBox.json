@@ -1,52 +1,15 @@
 {
-    "geomInfo": {
-        "id": 348,
-        "mask": 511,
-        "typeID": 2097378
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZParticleBox",
     "parent": "ZSTDOBJ",
+    "kind": "TypeKind.COMPLEX",
     "properties": [
-        {
-            "name": "property_C",
-            "offset": 12,
-            "typename": "PRPOpCode.Float32"
-        },
-        {
-            "name": "property_1C",
-            "offset": 28,
-            "typename": "ZVector3F"
-        },
-        {
-            "name": "property_28",
-            "offset": 40,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_2C",
-            "offset": 44,
-            "typename": "PRPOpCode.Float32"
-        },
-        {
-            "name": "property_30",
-            "offset": 48,
-            "typename": "PRPOpCode.Float32"
-        },
-        {
-            "name": "property_34",
-            "offset": 52,
-            "typename": "PRPOpCode.Int32"
-        },
-        {
-            "name": "property_38",
-            "offset": 56,
-            "typename": "ZVector3F"
-        },
-        {
-            "name": "property_44",
-            "offset": 68,
-            "typename": "ZVector3F"
-        }
-    ],
-    "typename": "ZParticleBox"
+        { "name": "property_C", "typename": "PRPOpCode.Float32", "offset": 12 },
+        { "name": "property_1C", "typename": "ZVector3F", "offset": 28 },
+        { "name": "property_28", "typename": "PRPOpCode.Int32", "offset": 40 },
+        { "name": "property_2C", "typename": "PRPOpCode.Float32", "offset": 44 },
+        { "name": "property_30", "typename": "PRPOpCode.Float32", "offset": 48 },
+        { "name": "property_34", "typename": "PRPOpCode.Int32", "offset": 52 },
+        { "name": "property_38", "typename": "ZVector3F", "offset": 56 },
+        { "name": "property_44", "typename": "ZVector3F", "offset": 68 }
+    ]
 }

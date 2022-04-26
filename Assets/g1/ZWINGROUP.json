@@ -1,5 +1,6 @@
 {
-    "typename": "ZWINOBJ.EDrawMode",
-    "kind": "TypeKind.ENUM",
-    "enum": {
-        "DRAWMODE_HARDOPACI
+    "typename": "ZWINGROUP",
+    "parent": "ZGROUP",
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
+}

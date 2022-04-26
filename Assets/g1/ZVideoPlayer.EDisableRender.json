@@ -1,6 +1,10 @@
 {
-    "typename": "ZVideoPlayer",
-    "parent": "ZEventBase",
-    "kind": "TypeKind.COMPLEX",
-    "properties": [
-        { "name": "property_FC",   "typename": "PRPOpCode.Str
+    "typename": "ZVideoPlayer.EDisableRender",
+    "kind": "TypeKind.ENUM",
+    "enum": {
+        "BOTH": 3,
+        "AFTER": 2,
+        "BEFORE": 1,
+        "NO": 0
+    }
+}

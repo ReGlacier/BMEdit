@@ -1,11 +1,6 @@
 {
-    "geomInfo": {
-        "id": 380,
-        "mask": 511,
-        "typeID": 2097358
-    },
-    "kind": "TypeKind.COMPLEX",
+    "typename": "ZScatterObj",
     "parent": "ZSTDOBJ",
-    "properties": [],
-    "typename": "ZScatterObj"
+    "kind": "TypeKind.COMPLEX",
+    "properties": []
 }

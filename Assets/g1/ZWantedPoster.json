@@ -1,5 +1,6 @@
 {
-    "typename": "ZWeaponDisplay",
-    "parent": "ZEventBase",
+    "typename": "ZWantedPoster",
+    "parent": "ZSTDOBJ",
     "kind": "TypeKind.COMPLEX",
-    "properties": 
+    "properties": []
+}

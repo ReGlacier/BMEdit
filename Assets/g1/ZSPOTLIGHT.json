@@ -1,5 +1,6 @@
 {
-    "typename": "ZStartAnim",
-    "parent": "ZEventBase",
+    "typename": "ZSPOTLIGHT",
+    "parent": "ZLIGHT",
     "kind": "TypeKind.COMPLEX",
-    "propertie
+    "properties": []
+}
