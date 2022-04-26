@@ -3,9 +3,9 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZGEOMREF", "offset": 44 },
-        { "name": "property_30", "typename": "PRPOpCode.String", "offset": 48 },
-        { "name": "property_34", "typename": "PRPOpCode.Bool", "offset": 52 },
-        { "name": "property_38", "typename": "PRPOpCode.Float32", "offset": 56 }
+        { "name": "property_2C",  "typename": "ZGEOMREF", "offset": 44 },
+        { "name": "property_30",  "typename": "PRPOpCode.String", "offset": 48 },
+        { "name": "property_34",  "typename": "PRPOpCode.Bool", "offset": 52 },
+        { "name": "property_38",  "typename": "PRPOpCode.Float32", "offset": 56 }
     ]
 }
