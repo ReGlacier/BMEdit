@@ -1,12 +1,34 @@
 {
-    "typename": "ZHM3Item",
-    "parent": "ZItem",
+    "geomInfo": {
+        "id": 1053,
+        "mask": 2047,
+        "typeID": 1049642
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZItem",
     "properties": [
-        { "name": "property_90", "typename": "PRPOpCode.Int32", "offset": 144 },
-        { "name": "property_94", "typename": "PRPOpCode.Bool", "offset": 148 },
-        { "name": "AnasteticInfected", "typename": "PRPOpCode.Bool" },
-        { "name": "PoisonInfected", "typename": "PRPOpCode.Bool" },
-        { "name": "AphrodiciacInfected", "typename": "PRPOpCode.Bool" }
-    ]
+        {
+            "name": "property_90",
+            "offset": 144,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_94",
+            "offset": 148,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "AnasteticInfected",
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "PoisonInfected",
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "AphrodiciacInfected",
+            "typename": "PRPOpCode.Bool"
+        }
+    ],
+    "typename": "ZHM3Item"
 }

@@ -1,8 +1,17 @@
 {
-    "typename": "ZWaterBox",
-    "parent": "ZBoxPrimitive",
+    "geomInfo": {
+        "id": 868,
+        "mask": 1023,
+        "typeID": 2097362
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZBoxPrimitive",
     "properties": [
-        { "name": "property_C4",  "typename": "ZVector3F", "offset": 196 }
-    ]
+        {
+            "name": "property_C4",
+            "offset": 196,
+            "typename": "ZVector3F"
+        }
+    ],
+    "typename": "ZWaterBox"
 }

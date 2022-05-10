@@ -1,25 +1,102 @@
 {
-    "typename": "ZItemTemplateWeapon",
-    "parent": "ZItemTemplate",
+    "geomInfo": {
+        "id": 789,
+        "mask": 2047,
+        "typeID": 1050580
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZItemTemplate",
     "properties": [
-        { "name": "property_70", "typename": "ZSDOwner", "offset": 112 },
-        { "name": "ShootMode", "typename": "ZItemTemplateWeapon.WEAPONOPERATION", "offset": 156 },
-        { "name": "WeaponType", "typename": "ZItemTemplateWeapon.WEAPONTYPE", "offset": 160 },
-        { "name": "property_A4", "typename": "ZREFTAB32", "offset": 164 },
-        { "name": "property_C0", "typename": "PRPOpCode.Float32", "offset": 192 },
-        { "name": "property_C4", "typename": "PRPOpCode.Float32", "offset": 196 },
-        { "name": "property_C8", "typename": "PRPOpCode.Float32", "offset": 200 },
-        { "name": "property_CC", "typename": "PRPOpCode.Float32", "offset": 204 },
-        { "name": "property_D0", "typename": "PRPOpCode.Float32", "offset": 208 },
-        { "name": "property_D4", "typename": "PRPOpCode.Float32", "offset": 212 },
-        { "name": "property_D8", "typename": "PRPOpCode.Float32", "offset": 216 },
-        { "name": "property_DC", "typename": "PRPOpCode.Bool", "offset": 220 },
-        { "name": "property_DD", "typename": "PRPOpCode.Bool", "offset": 221 },
-        { "name": "property_DE", "typename": "PRPOpCode.Bool", "offset": 222 },
-        { "name": "property_E0", "typename": "ZREFTAB32", "offset": 224 },
-        { "name": "property_FC", "typename": "ZGEOMREF", "offset": 252 },
-        { "name": "property_100", "typename": "PRPOpCode.Int32", "offset": 256 },
-        { "name": "property_104", "typename": "PRPOpCode.Float32", "offset": 260 }
-    ]
+        {
+            "name": "property_70",
+            "offset": 112,
+            "typename": "ZSDOwner"
+        },
+        {
+            "name": "ShootMode",
+            "offset": 156,
+            "typename": "ZItemTemplateWeapon.WEAPONOPERATION"
+        },
+        {
+            "name": "WeaponType",
+            "offset": 160,
+            "typename": "ZItemTemplateWeapon.WEAPONTYPE"
+        },
+        {
+            "name": "property_A4",
+            "offset": 164,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "property_C0",
+            "offset": 192,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_C4",
+            "offset": 196,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_C8",
+            "offset": 200,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_CC",
+            "offset": 204,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_D0",
+            "offset": 208,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_D4",
+            "offset": 212,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_D8",
+            "offset": 216,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_DC",
+            "offset": 220,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "property_DD",
+            "offset": 221,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "property_DE",
+            "offset": 222,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "property_E0",
+            "offset": 224,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "property_FC",
+            "offset": 252,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_100",
+            "offset": 256,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_104",
+            "offset": 260,
+            "typename": "PRPOpCode.Float32"
+        }
+    ],
+    "typename": "ZItemTemplateWeapon"
 }

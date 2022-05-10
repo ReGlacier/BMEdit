@@ -14,6 +14,7 @@ namespace gamelib::gms
 {
 	class GMSGroupsCluster
 	{
+		friend class GMSHeader;
 	public:
 		GMSGroupsCluster();
 

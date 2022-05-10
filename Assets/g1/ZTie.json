@@ -1,6 +1,11 @@
 {
-    "typename": "ZTie",
-    "parent": "ZCloth",
+    "geomInfo": {
+        "id": 788,
+        "mask": 2047,
+        "typeID": 2097436
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZCloth",
+    "properties": [],
+    "typename": "ZTie"
 }

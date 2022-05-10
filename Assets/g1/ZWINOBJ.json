@@ -1,12 +1,32 @@
 {
-    "typename": "ZWINOBJ",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 396,
+        "mask": 511,
+        "typeID": 2097196
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "property_7E",  "typename": "PRPOpCode.Int8" },
-        { "name": "property_7F",  "typename": "PRPOpCode.Int8" },
-        { "name": "Alignment",    "typename": "ZWINOBJ.EAlignment" },
-        { "name": "DrawMode",     "typename":  "ZWINOBJ.EDrawMode"},
-        { "name": "Type",         "typename":  "ZWINOBJ.EType" }
-    ]
+        {
+            "name": "property_7E",
+            "typename": "PRPOpCode.Int8"
+        },
+        {
+            "name": "property_7F",
+            "typename": "PRPOpCode.Int8"
+        },
+        {
+            "name": "Alignment",
+            "typename": "ZWINOBJ.EAlignment"
+        },
+        {
+            "name": "DrawMode",
+            "typename": "ZWINOBJ.EDrawMode"
+        },
+        {
+            "name": "Type",
+            "typename": "ZWINOBJ.EType"
+        }
+    ],
+    "typename": "ZWINOBJ"
 }

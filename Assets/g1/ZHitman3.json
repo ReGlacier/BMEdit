@@ -1,8 +1,18 @@
 {
-    "typename": "ZHitman3",
-    "parent": "ZPlayer",
+    "geomInfo": {
+        "id": 224180,
+        "mask": 262143,
+        "typeID": 2098152
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZPlayer",
     "properties": [
-        { "name": "property_12CC",  "typename": "ZGEOMREF", "offset": 4812, "comment": "Active room?" }
-    ]
+        {
+            "comment": "Active room?",
+            "name": "property_12CC",
+            "offset": 4812,
+            "typename": "ZGEOMREF"
+        }
+    ],
+    "typename": "ZHitman3"
 }

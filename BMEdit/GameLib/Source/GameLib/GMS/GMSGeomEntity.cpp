@@ -26,11 +26,6 @@ namespace gamelib::gms
 		return m_coliBits;
 	}
 
-	uint32_t GMSGeomEntity::getDepthLevel() const
-	{
-		return m_depthLevel;
-	}
-
 	uint32_t GMSGeomEntity::getParentGeomIndex() const
 	{
 		return m_parentGeomIndex;
@@ -41,10 +36,13 @@ namespace gamelib::gms
 		return m_typeId && ((m_typeId & 0x100000u) != 0u);
 	}
 
-	void GMSGeomEntity::deserialize(GMSGeomEntity &entity, uint32_t depthLevel, ZBio::ZBinaryReader::BinaryReader *gmsBinaryReader, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader)
+	bool GMSGeomEntity::isRootOfGroup() const
 	{
-		entity.m_depthLevel = depthLevel;
+		return (m_geomFlags >> 24) & 1;
+	}
 
+	void GMSGeomEntity::deserialize(GMSGeomEntity &entity, ZBio::ZBinaryReader::BinaryReader *gmsBinaryReader, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader)
+	{
 		// Read name
 		const auto nameOffset = gmsBinaryReader->read<uint32_t, ZBio::Endianness::LE>();
 		bufBinaryReader->seek(nameOffset);

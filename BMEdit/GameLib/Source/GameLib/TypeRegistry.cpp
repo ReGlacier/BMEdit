@@ -5,6 +5,8 @@
 #include <GameLib/TypeComplex.h>
 #include <GameLib/TypeNotFoundException.h>
 
+#include <sstream>
+
 
 namespace gamelib
 {
@@ -143,6 +145,15 @@ namespace gamelib
 		}
 
 		return it->second;
+	}
+
+	const Type *TypeRegistry::findTypeByHash(std::size_t typeId) const
+	{
+		std::stringstream stringStream;
+		stringStream << "0x" << std::hex << std::uppercase << typeId;
+		auto str = stringStream.str();
+
+		return findTypeByHash(str);
 	}
 
 	void TypeRegistry::forEachType(const std::function<void(const Type *)> &predicate)

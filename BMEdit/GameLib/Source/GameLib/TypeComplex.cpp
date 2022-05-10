@@ -48,6 +48,29 @@ namespace gamelib
 		return m_allowUnexposedInstructions;
 	}
 
+	bool TypeComplex::isInheritedOf(const std::string &parentTypeName) const
+	{
+		const Type *parentType = getParent();
+		return parentType && parentType->getName() == parentTypeName;
+	}
+
+	bool TypeComplex::hasGeomInfo() const
+	{
+		return m_geomInfo.has_value();
+	}
+
+	const GeomBasedTypeInfo &TypeComplex::getGeomInfo() const
+	{
+		static const GeomBasedTypeInfo kInvalidGeomInfo {};
+
+		if (!m_geomInfo.has_value())
+		{
+			return kInvalidGeomInfo;
+		}
+
+		return m_geomInfo.value();
+	}
+
 	Span<PRPInstruction> TypeComplex::verifyInstructionSet(const Span<PRPInstruction> &instructions) const
 	{
 		if (!instructions)
@@ -105,6 +128,15 @@ namespace gamelib
 		}
 
 		return ourSlice;
+	}
+
+	GeomBasedTypeInfo &TypeComplex::createGeomInfo()
+	{
+		if (m_geomInfo.has_value()) {
+			return m_geomInfo.value();
+		}
+
+		return m_geomInfo.emplace();
 	}
 
 	Type::DataMappingResult TypeComplex::map(const Span<PRPInstruction> &instructions) const

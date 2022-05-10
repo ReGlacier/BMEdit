@@ -6,14 +6,6 @@
 
 namespace delegates
 {
-	///----------------
-	/// CONFIGURATION
-	///----------------
-	static constexpr int kValueColumnIndex = 1;
-
-	///---------------------------
-	/// TypePropertyItemDelegate
-	///---------------------------
 	TypePropertyItemDelegate::TypePropertyItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
 	{
 	}

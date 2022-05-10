@@ -27,13 +27,14 @@ namespace models
 		[[nodiscard]] bool isValidLevel() const;
 		void loadLevelIndices();
 
-	private:
+	public:
 		struct Index
 		{
 			const gamelib::gms::GMSGeomEntity *data { nullptr };
 			struct Index *parent { nullptr };
 			std::vector<struct Index *> children {};
 			uint32_t depth { 0u };
+			std::size_t sceneIndex { 0 };
 
 			[[nodiscard]] int childCount() const { return children.size(); }
 			[[nodiscard]] int row() const {
@@ -57,6 +58,7 @@ namespace models
 			}
 		};
 
+	private:
 		const gamelib::Level *m_level { nullptr };
 		std::vector<Index> m_indices;
 	};

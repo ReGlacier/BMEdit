@@ -12,6 +12,8 @@ namespace gamelib::gms
 {
 	class GMSEntries
 	{
+		friend class GMSHeader;
+
 	public:
 		GMSEntries();
 

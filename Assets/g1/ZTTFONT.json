@@ -1,8 +1,16 @@
 {
-    "typename": "ZTTFONT",
-    "parent": "ZFONT",
+    "geomInfo": {
+        "id": 6028,
+        "mask": 8191,
+        "typeID": 2097210
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZFONT",
     "properties": [
-        { "name": "DataHandle", "typename": "PRPOpCode.Int32" }
-    ]
+        {
+            "name": "DataHandle",
+            "typename": "PRPOpCode.Int32"
+        }
+    ],
+    "typename": "ZTTFONT"
 }

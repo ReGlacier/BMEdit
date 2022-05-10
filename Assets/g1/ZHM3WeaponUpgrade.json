@@ -1,14 +1,47 @@
 {
-    "typename": "ZHM3WeaponUpgrade",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 140,
+        "mask": 511,
+        "typeID": 2098230
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "property_C", "typename": "PRPOpCode.Float32", "offset": 12 },
-        { "name": "UpgradeType", "typename": "ZHM3WeaponUpgrade.EUpgradeType", "offset": 16 },
-        { "name": "property_14", "typename": "ZREFTAB32", "offset": 20 },
-        { "name": "property_18", "typename": "ZREFTAB32", "offset": 24 },
-        { "name": "property_1C", "typename": "ZREFTAB32", "offset": 28 },
-        { "name": "property_20", "typename": "ZREFTAB32", "offset": 32 },
-        { "name": "UpgradeTier", "typename": "ZHM3WeaponUpgrade.EUpgradeTier", "offset": 36 }
-    ]
+        {
+            "name": "property_C",
+            "offset": 12,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "UpgradeType",
+            "offset": 16,
+            "typename": "ZHM3WeaponUpgrade.EUpgradeType"
+        },
+        {
+            "name": "property_14",
+            "offset": 20,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "property_18",
+            "offset": 24,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "property_1C",
+            "offset": 28,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "property_20",
+            "offset": 32,
+            "typename": "ZREFTAB32"
+        },
+        {
+            "name": "UpgradeTier",
+            "offset": 36,
+            "typename": "ZHM3WeaponUpgrade.EUpgradeTier"
+        }
+    ],
+    "typename": "ZHM3WeaponUpgrade"
 }

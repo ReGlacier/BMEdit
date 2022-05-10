@@ -97,6 +97,14 @@ namespace editor {
 			}
 			levelLoadFailed(QString("Unable to locate requried type %1").arg(typeNotFoundException.what()));
 		}
+		catch (const std::runtime_error &runtimeFailure)
+		{
+			if (savedLevel)
+			{
+				m_currentLevel = std::move(savedLevel);
+			}
+			levelLoadFailed(QString("RUNTIME ERROR: %1").arg(runtimeFailure.what()));
+		}
 	}
 
 	const gamelib::Level *EditorInstance::getActiveLevel()

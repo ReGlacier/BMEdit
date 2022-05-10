@@ -1,8 +1,17 @@
 {
-    "typename": "ZBodyBagBox",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 68,
+        "mask": 511,
+        "typeID": 2098258
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "property_34",  "typename": "PRPOpCode.Int32", "offset": 52 }
-    ]
+        {
+            "name": "property_34",
+            "offset": 52,
+            "typename": "PRPOpCode.Int32"
+        }
+    ],
+    "typename": "ZBodyBagBox"
 }

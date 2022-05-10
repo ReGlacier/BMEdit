@@ -1,10 +1,26 @@
 {
-    "typename": "ZWINPIC",
-    "parent": "ZWINOBJ",
+    "geomInfo": {
+        "id": 908,
+        "mask": 4095,
+        "typeID": 2097222
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZWINOBJ",
     "properties": [
-        { "name": "Width", "typename": "PRPOpCode.Int32", "offset": 132 },
-        { "name": "Height", "typename": "PRPOpCode.Int32", "offset": 136 },
-        { "name": "PicResourcePrim", "typename": "PRPOpCode.Int32" }
-    ]
+        {
+            "name": "Width",
+            "offset": 132,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "Height",
+            "offset": 136,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "PicResourcePrim",
+            "typename": "PRPOpCode.Int32"
+        }
+    ],
+    "typename": "ZWINPIC"
 }

@@ -1,6 +1,11 @@
 {
-    "typename": "ZHM3ItemWeapon",
-    "parent": "ZItemWeapon",
+    "geomInfo": {
+        "id": 2845,
+        "mask": 4095,
+        "typeID": 1049643
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZItemWeapon",
+    "properties": [],
+    "typename": "ZHM3ItemWeapon"
 }

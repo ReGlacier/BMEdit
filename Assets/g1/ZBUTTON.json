@@ -1,9 +1,21 @@
 {
-    "typename": "ZBUTTON",
-    "parent": "ZCONTROL",
+    "geomInfo": {
+        "id": 11637,
+        "mask": 16383,
+        "typeID": 1048627
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZCONTROL",
     "properties": [
-        { "name": "InitialState", "typename": "ZBUTTON.EInitialState" },
-        { "name": "ButtonType", "typename": "ZBUTTON._ButtonTypes", "offset": 148 }
-    ]
+        {
+            "name": "InitialState",
+            "typename": "ZBUTTON.EInitialState"
+        },
+        {
+            "name": "ButtonType",
+            "offset": 148,
+            "typename": "ZBUTTON._ButtonTypes"
+        }
+    ],
+    "typename": "ZBUTTON"
 }

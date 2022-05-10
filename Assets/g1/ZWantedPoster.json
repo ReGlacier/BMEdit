@@ -1,6 +1,11 @@
 {
-    "typename": "ZWantedPoster",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 36,
+        "mask": 511,
+        "typeID": 2098269
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZSTDOBJ",
+    "properties": [],
+    "typename": "ZWantedPoster"
 }

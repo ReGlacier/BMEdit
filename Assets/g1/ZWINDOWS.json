@@ -1,12 +1,35 @@
 {
-    "typename": "ZWINDOWS",
-    "parent": "ZWINGROUP",
+    "geomInfo": {
+        "id": 1141,
+        "mask": 2047,
+        "typeID": 1048624
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZWINGROUP",
     "properties": [
-        { "name": "property_58", "typename": "ZGEOMREF", "offset": 88 },
-        { "name": "property_1DB", "typename": "PRPOpCode.Bool", "offset": 475 },
-        { "name": "property_1DC", "typename": "PRPOpCode.Bool", "offset": 476 },
-        { "name": "MainCamera", "typename": "ZGEOMREF" },
-        { "name": "GfxHandler", "typename": "ZGEOMREF" }
-    ]
+        {
+            "name": "property_58",
+            "offset": 88,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_1DB",
+            "offset": 475,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "property_1DC",
+            "offset": 476,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "MainCamera",
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "GfxHandler",
+            "typename": "ZGEOMREF"
+        }
+    ],
+    "typename": "ZWINDOWS"
 }

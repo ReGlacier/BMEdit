@@ -1,8 +1,17 @@
 {
-    "typename": "ZActor",
-    "parent": "ZLNKWHANDS",
+    "geomInfo": {
+        "id": 60340,
+        "mask": 131071,
+        "typeID": 2099152
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZLNKWHANDS",
     "properties": [
-        { "name": "property_580", "typename": "ZREFTAB32", "offset": 1408 }
-    ]
+        {
+            "name": "property_580",
+            "offset": 1408,
+            "typename": "ZREFTAB32"
+        }
+    ],
+    "typename": "ZActor"
 }

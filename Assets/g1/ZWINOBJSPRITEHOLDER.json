@@ -1,6 +1,11 @@
 {
-    "typename": "ZWINOBJSPRITEHOLDER",
-    "parent": "ZLIST",
+    "geomInfo": {
+        "id": 17,
+        "mask": 31,
+        "typeID": 134217801
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZLIST",
+    "properties": [],
+    "typename": "ZWINOBJSPRITEHOLDER"
 }

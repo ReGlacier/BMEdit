@@ -1,6 +1,11 @@
 {
-    "typename": "ZSkipSaveGroup",
-    "parent": "ZGROUP",
+    "geomInfo": {
+        "id": 13,
+        "mask": 255,
+        "typeID": 1054576
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZGROUP",
+    "properties": [],
+    "typename": "ZSkipSaveGroup"
 }

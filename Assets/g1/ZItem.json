@@ -1,9 +1,22 @@
 {
-    "typename": "ZItem",
-    "parent": "ZGROUP",
+    "geomInfo": {
+        "id": 29,
+        "mask": 255,
+        "typeID": 1050577
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZGROUP",
     "properties": [
-         { "name": "property_4C", "typename": "ZGEOMREF", "offset": 76 },
-         { "name": "property_50", "typename": "PRPOpCode.Bool", "offset": 80 }
-    ]
+        {
+            "name": "property_4C",
+            "offset": 76,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_50",
+            "offset": 80,
+            "typename": "PRPOpCode.Bool"
+        }
+    ],
+    "typename": "ZItem"
 }

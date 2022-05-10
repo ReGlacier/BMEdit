@@ -1,16 +1,57 @@
 {
-    "typename": "ZItemTemplateAmmo",
-    "parent": "ZItemTemplate",
+    "geomInfo": {
+        "id": 533,
+        "mask": 2047,
+        "typeID": 1050581
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZItemTemplate",
     "properties": [
-        { "name": "property_70", "typename": "PRPOpCode.Int32", "offset": 112 },
-        { "name": "property_74", "typename": "PRPOpCode.Int32", "offset": 116 },
-        { "name": "property_78", "typename": "PRPOpCode.Float32", "offset": 120 },
-        { "name": "property_7C", "typename": "PRPOpCode.Float32", "offset": 124 },
-        { "name": "property_80", "typename": "PRPOpCode.Bool", "offset": 128 },
-        { "name": "property_81", "typename": "PRPOpCode.Bool", "offset": 129 },
-        { "name": "property_88", "typename": "ZGEOMREF", "offset": 136 },
-        { "name": "property_8C", "typename": "ZGEOMREF", "offset": 140 },
-        { "name": "DamageType", "typename": "ZItemTemplateAmmo.eDamageType", "offset": 72 }
-    ]
+        {
+            "name": "property_70",
+            "offset": 112,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_74",
+            "offset": 116,
+            "typename": "PRPOpCode.Int32"
+        },
+        {
+            "name": "property_78",
+            "offset": 120,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_7C",
+            "offset": 124,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_80",
+            "offset": 128,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "property_81",
+            "offset": 129,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "property_88",
+            "offset": 136,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_8C",
+            "offset": 140,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "DamageType",
+            "offset": 72,
+            "typename": "ZItemTemplateAmmo.eDamageType"
+        }
+    ],
+    "typename": "ZItemTemplateAmmo"
 }

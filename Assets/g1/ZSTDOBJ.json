@@ -1,8 +1,16 @@
 {
-    "typename": "ZSTDOBJ",
-    "parent": "ZGEOM",
+    "geomInfo": {
+        "id": 4,
+        "mask": 7,
+        "typeID": 2097154
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZGEOM",
     "properties": [
-        { "name": "Invisible",  "typename": "PRPOpCode.Bool" }
-    ]
+        {
+            "name": "Invisible",
+            "typename": "PRPOpCode.Bool"
+        }
+    ],
+    "typename": "ZSTDOBJ"
 }

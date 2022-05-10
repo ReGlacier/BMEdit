@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <cstdint>
 #include <unordered_map>
 
 #include <GameLib/Type.h>
@@ -32,6 +33,7 @@ namespace gamelib
 
 		[[nodiscard]] const Type *findTypeByName(const std::string &typeName) const;
 		[[nodiscard]] const Type *findTypeByHash(const std::string &hash) const;
+		[[nodiscard]] const Type *findTypeByHash(std::size_t hash) const;
 
 		void forEachType(const std::function<void(const Type *)> &predicate);
 

@@ -20,13 +20,13 @@ namespace models
 	{
 		if (role != Qt::DisplayRole || !isValidLevel())
 		{
-			return QVariant();
+			return QVariant {};
 		}
 
 		const auto *entityIndex = reinterpret_cast<const Index *>(index.constInternalPointer());
 		if (!entityIndex || !entityIndex->data)
 		{
-			return QVariant();
+			return QVariant {};
 		}
 
 		return QVariant(QString::fromStdString(entityIndex->data->getName()));
@@ -36,7 +36,7 @@ namespace models
 	{
 		if (!hasIndex(row, column, parent) || !isValidLevel())
 		{
-			return QModelIndex();
+			return QModelIndex {};
 		}
 
 		const Index *parentIndex = nullptr;
@@ -54,14 +54,14 @@ namespace models
 			return createIndex(row, column, childIndex);
 		}
 
-		return QModelIndex();
+		return QModelIndex {};
 	}
 
 	QModelIndex SceneObjectsTreeModel::parent(const QModelIndex &index) const
 	{
 		if (!index.isValid() || !isValidLevel())
 		{
-			return QModelIndex();
+			return QModelIndex {};
 		}
 
 		const Index *childIndex = reinterpret_cast<const Index *>(index.constInternalPointer());
@@ -69,7 +69,7 @@ namespace models
 
 		if (!parentIndex || parentIndex == &m_indices[0])
 		{
-			return QModelIndex();
+			return QModelIndex {};
 		}
 
 		return createIndex(parentIndex->row(), 0, parentIndex);
@@ -120,10 +120,10 @@ namespace models
 	{
 		if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
 		{
-			return QVariant("Game Object");
+			return QVariant {"Game Object" };
 		}
 
-		return QVariant();
+		return {};
 	}
 
 	void SceneObjectsTreeModel::setLevel(const gamelib::Level *level)
@@ -159,6 +159,7 @@ namespace models
 					const auto &currentEntity = entities[entityIndex];
 
 					currentIndex.data = &currentEntity;
+					currentIndex.sceneIndex = entityIndex;
 
 					if (currentEntity.getParentGeomIndex() != GMSGeomEntity::kInvalidParent)
 					{

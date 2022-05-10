@@ -25,6 +25,11 @@ namespace gamelib::gms
 		[[nodiscard]] const GMSGroupsCluster &getGeomClusters() const;
 
 		static void deserialize(GMSHeader &header, ZBio::ZBinaryReader::BinaryReader *binaryReader, ZBio::ZBinaryReader::BinaryReader *bufFileReader);
+
+	private:
+		static void buildSceneHierarchy(GMSHeader &header);
+
+
 	private:
 		GMSEntries m_geomEntities {};
 		GMSGeomStats m_geomStats {};

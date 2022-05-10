@@ -1,8 +1,16 @@
 {
-    "typename": "ZCubeGrid",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 324,
+        "mask": 511,
+        "typeID": 2097383
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "SubBoxes", "typename": "ZRawData" }
-    ]
+        {
+            "name": "SubBoxes",
+            "typename": "ZRawData"
+        }
+    ],
+    "typename": "ZCubeGrid"
 }

@@ -1,9 +1,22 @@
 {
-    "typename": "ZWINDOW",
-    "parent": "ZWINGROUP",
+    "geomInfo": {
+        "id": 885,
+        "mask": 2047,
+        "typeID": 1048625
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZWINGROUP",
     "properties": [
-        { "name": "property_50", "typename": "ZGEOMREF", "offset": 80 },
-        { "name": "property_54", "typename": "ZGEOMREF", "offset": 84 }
-    ]
+        {
+            "name": "property_50",
+            "offset": 80,
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "property_54",
+            "offset": 84,
+            "typename": "ZGEOMREF"
+        }
+    ],
+    "typename": "ZWINDOW"
 }

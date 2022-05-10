@@ -35,6 +35,9 @@ public slots:
 	void onLevelLoadSuccess();
 	void onLevelLoadFailed(const QString &reason);
 	void onLevelLoadProgressChanged(int totalPercentsProgress, const QString &currentOperationTag);
+	void onSearchObjectQueryChanged(const QString &query);
+	void onSelectedSceneObject(int selectedSceneObjectIdx);
+	void onDeselectedSceneObject();
 
 private:
     Ui::BMEditMainWindow *ui;

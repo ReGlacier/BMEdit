@@ -1,11 +1,32 @@
 {
-    "typename": "ZAllocMany",
-    "parent": "ZGROUP",
+    "geomInfo": {
+        "id": 109,
+        "mask": 255,
+        "typeID": 1048778
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZGROUP",
     "properties": [
-        { "name": "property_48", "typename": "PRPOpCode.Int16", "offset": 72 },
-        { "name": "property_54", "typename": "ZMsg", "offset": 84 },
-        { "name": "property_56", "typename": "PRPOpCode.Bool", "offset": 86 },
-        { "name": "property_58", "typename": "ZGEOMREF", "offset": 88 }
-    ]
+        {
+            "name": "property_48",
+            "offset": 72,
+            "typename": "PRPOpCode.Int16"
+        },
+        {
+            "name": "property_54",
+            "offset": 84,
+            "typename": "ZMsg"
+        },
+        {
+            "name": "property_56",
+            "offset": 86,
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "property_58",
+            "offset": 88,
+            "typename": "ZGEOMREF"
+        }
+    ],
+    "typename": "ZAllocMany"
 }

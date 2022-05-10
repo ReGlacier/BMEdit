@@ -1,6 +1,11 @@
 {
-    "typename": "ZHM3CameraClassBase",
-    "parent": "ZCAMERA",
+    "geomInfo": {
+        "id": 11,
+        "mask": 31,
+        "typeID": 4195424
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZCAMERA",
+    "properties": [],
+    "typename": "ZHM3CameraClassBase"
 }

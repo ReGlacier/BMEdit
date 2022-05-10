@@ -1,8 +1,17 @@
 {
-    "typename": "ZHM3ItemContainer",
-    "parent": "ZItemContainer",
+    "geomInfo": {
+        "id": 2333,
+        "mask": 4095,
+        "typeID": 1049650
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZItemContainer",
     "properties": [
-         { "name": "property_C8", "typename": "PRPOpCode.Bool", "offset": 200 }
-    ]
+        {
+            "name": "property_C8",
+            "offset": 200,
+            "typename": "PRPOpCode.Bool"
+        }
+    ],
+    "typename": "ZHM3ItemContainer"
 }

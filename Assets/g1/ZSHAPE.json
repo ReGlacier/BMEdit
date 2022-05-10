@@ -1,6 +1,11 @@
 {
-    "typename": "ZSHAPE",
-    "parent": "ZGEOM",
+    "geomInfo": {
+        "id": 2,
+        "mask": 7,
+        "typeID": 67108898
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZGEOM",
+    "properties": [],
+    "typename": "ZSHAPE"
 }

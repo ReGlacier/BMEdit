@@ -1,8 +1,16 @@
 {
-    "typename": "ZSIMPLEHTML",
-    "parent": "ZCHAROBJ",
+    "geomInfo": {
+        "id": 6540,
+        "mask": 16383,
+        "typeID": 2097226
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZCHAROBJ",
     "properties": [
-        { "name": "Fonts", "typename": "ZREFTAB32" }
-    ]
+        {
+            "name": "Fonts",
+            "typename": "ZREFTAB32"
+        }
+    ],
+    "typename": "ZSIMPLEHTML"
 }

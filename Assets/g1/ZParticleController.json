@@ -1,6 +1,11 @@
 {
-    "typename": "ZParticleController",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 340,
+        "mask": 511,
+        "typeID": 2097380
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZSTDOBJ",
+    "properties": [],
+    "typename": "ZParticleController"
 }

@@ -7,12 +7,14 @@
 #include <QDirIterator>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QStringListModel>
 
 #include <GameLib/TypeRegistry.h>
 #include <GameLib/TypeNotFoundException.h>
 
 #include <Editor/EditorInstance.h>
 #include <Models/SceneObjectsTreeModel.h>
+#include <Models/SceneObjectPropertiesModel.h>
 
 #include <nlohmann/json.hpp>
 
@@ -34,6 +36,7 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->sceneTreeView->setModel(new models::SceneObjectsTreeModel(this));
+	ui->propertiesView->setModel(new models::SceneObjectPropertiesModel(this));
 
 	initStatusBar();
 	connectActions();
@@ -127,6 +130,23 @@ void BMEditMainWindow::connectEditorSignals()
 
 	connect(&instance, &EditorInstance::levelLoadSuccess, [=]() { onLevelLoadSuccess(); });
 	connect(&instance, &EditorInstance::levelLoadFailed, [=](const QString &reason) { onLevelLoadFailed(reason); });
+
+	connect(ui->searchInputField, &QLineEdit::textChanged, [=](const QString &query) { onSearchObjectQueryChanged(query); });
+
+	connect(ui->sceneTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
+		if (!selected.indexes().isEmpty()) {
+			auto selectedIndex = reinterpret_cast<const models::SceneObjectsTreeModel::Index *>(selected.indexes().first().constInternalPointer());
+			if (selectedIndex)
+			{
+				onSelectedSceneObject(static_cast<int>(selectedIndex->sceneIndex));
+			}
+		} else if (!deselected.indexes().isEmpty())
+		{
+			onDeselectedSceneObject();
+		}
+	});
+
+	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
 void BMEditMainWindow::onExit()
@@ -173,8 +193,16 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	// Level loaded, show objects tree
 	auto sceneModel = qobject_cast<models::SceneObjectsTreeModel *>(ui->sceneTreeView->model());
 	if (sceneModel) {
-		//sceneModel->setLevel(currentLevel);
+		sceneModel->setLevel(currentLevel);
 	}
+
+	auto propertiesModel = qobject_cast<models::SceneObjectPropertiesModel *>(ui->propertiesView->model());
+	if (propertiesModel) {
+		propertiesModel->setLevel(currentLevel);
+	}
+
+	ui->searchInputField->clear();
+	ui->searchInputField->setEnabled(true);
 }
 
 void BMEditMainWindow::onLevelLoadFailed(const QString &reason)
@@ -201,6 +229,54 @@ void BMEditMainWindow::onLevelLoadProgressChanged(int totalPercentsProgress, con
 	{
 		m_operationCommentLabel->setText(QString("LOAD LEVEL: %1").arg(currentOperationTag));
 	}
+}
+
+void BMEditMainWindow::onSearchObjectQueryChanged(const QString &query)
+{
+	ui->sceneTreeView->keyboardSearch(query);
+}
+
+void BMEditMainWindow::onSelectedSceneObject(int selectedSceneObjectIdx)
+{
+	auto sceneObjectPropertiesModel = qobject_cast<models::SceneObjectPropertiesModel *>(ui->propertiesView->model());
+	if (!sceneObjectPropertiesModel)
+	{
+		return;
+	}
+
+	auto &entities = editor::EditorInstance::getInstance().getActiveLevel()->getSceneProperties()->header.getEntries().getGeomEntities();
+	if (selectedSceneObjectIdx < 0 || selectedSceneObjectIdx >= entities.size())
+	{
+		return;
+	}
+
+	auto &sceneEnt = entities.at(selectedSceneObjectIdx);
+	auto type = gamelib::TypeRegistry::getInstance().findTypeByHash(sceneEnt.getTypeId());
+
+	if (!type)
+	{
+		return;
+	}
+
+	ui->sceneObjectName->setText(QString::fromStdString(sceneEnt.getName()));
+	ui->sceneObjectTypeCombo->setEnabled(true);
+	ui->sceneObjectTypeCombo->setCurrentText(QString::fromStdString(type->getName()));
+
+	sceneObjectPropertiesModel->setGeomIndex(selectedSceneObjectIdx);
+}
+
+void BMEditMainWindow::onDeselectedSceneObject()
+{
+	auto sceneObjectPropertiesModel = qobject_cast<models::SceneObjectPropertiesModel *>(ui->propertiesView->model());
+	if (!sceneObjectPropertiesModel)
+	{
+		return;
+	}
+
+	ui->sceneObjectTypeCombo->setEnabled(false);
+	ui->sceneObjectName->clear();
+
+	sceneObjectPropertiesModel->resetGeomIndex();
 }
 
 void BMEditMainWindow::loadTypesDataBase()
@@ -279,6 +355,11 @@ void BMEditMainWindow::loadTypesDataBase()
 	try
 	{
 		registry.registerTypes(std::move(typeInfos), std::move(typesToHashes));
+
+		QStringList allAvailableTypes;
+		gamelib::TypeRegistry::getInstance().forEachType([&allAvailableTypes](const gamelib::Type *type) { allAvailableTypes.push_back(QString::fromStdString(type->getName())); });
+		ui->sceneObjectTypeCombo->setModel(new QStringListModel(allAvailableTypes, this));
+
 		m_operationProgress->setValue(0);
 		m_operationCommentLabel->setText("Ready to open level");
 	}

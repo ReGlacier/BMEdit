@@ -1,8 +1,17 @@
 {
-    "typename": "ZSNDOBJ",
-    "parent": "ZSTDOBJ",
+    "geomInfo": {
+        "id": 412,
+        "mask": 511,
+        "typeID": 2097170
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZSTDOBJ",
     "properties": [
-        { "name": "Sound",  "typename": "ZAUDIOREF", "offset": 12 }
-    ]
+        {
+            "name": "Sound",
+            "offset": 12,
+            "typename": "ZAUDIOREF"
+        }
+    ],
+    "typename": "ZSNDOBJ"
 }

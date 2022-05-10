@@ -94,12 +94,34 @@ namespace gamelib
 				}
 			}
 
+			std::unique_ptr<TypeComplex> result = nullptr;
+
 			if (parentTypeName.empty())
 			{
-				return std::make_unique<TypeComplex>(typeName, std::move(properties), nullptr, allowToSkipUnexposedProperties);
+				result = std::make_unique<TypeComplex>(typeName, std::move(properties), nullptr, allowToSkipUnexposedProperties);
+			}
+			else
+			{
+				result = std::make_unique<TypeComplex>(typeName, std::move(properties), parentTypeName, allowToSkipUnexposedProperties);
 			}
 
-			return std::make_unique<TypeComplex>(typeName, std::move(properties), parentTypeName, allowToSkipUnexposedProperties);
+			if (json.contains("geomInfo"))
+			{
+				const auto &geomInfo = json["geomInfo"];
+
+				if (geomInfo.contains("id") && geomInfo["id"].is_number_integer() &&
+					geomInfo.contains("mask") && geomInfo["mask"].is_number_integer() &&
+					geomInfo.contains("typeID") && geomInfo["typeID"].is_number_integer())
+				{
+					auto &geomBasedInfo = result->createGeomInfo();
+					geomBasedInfo = GeomBasedTypeInfo(
+						geomInfo["typeID"].get<uint32_t>(),
+					    geomInfo["mask"].get<uint32_t>(),
+					        geomInfo["id"].get<uint32_t>());
+				}
+			}
+
+			return result;
 		}
 		break;
 		case TypeKind::ENUM: {

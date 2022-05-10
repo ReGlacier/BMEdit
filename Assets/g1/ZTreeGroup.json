@@ -1,10 +1,24 @@
 {
-    "typename": "ZTreeGroup",
-    "parent": "ZGROUP",
+    "geomInfo": {
+        "id": 133,
+        "mask": 255,
+        "typeID": 1048608
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZGROUP",
     "properties": [
-        { "name": "bIsDynamicContainer", "typename": "PRPOpCode.Bool" },
-        { "name": "bIsPrivate", "typename": "PRPOpCode.Bool" },
-        { "name": "bIsStaticContainer", "typename": "PRPOpCode.Bool" }
-    ]
+        {
+            "name": "bIsDynamicContainer",
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "bIsPrivate",
+            "typename": "PRPOpCode.Bool"
+        },
+        {
+            "name": "bIsStaticContainer",
+            "typename": "PRPOpCode.Bool"
+        }
+    ],
+    "typename": "ZTreeGroup"
 }

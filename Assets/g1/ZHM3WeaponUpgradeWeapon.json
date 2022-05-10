@@ -1,8 +1,17 @@
 {
-    "typename": "ZHM3WeaponUpgradeWeapon",
-    "parent": "ZGROUP",
+    "geomInfo": {
+        "id": 69,
+        "mask": 255,
+        "typeID": 1049664
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZGROUP",
     "properties": [
-        { "name": "property_48", "typename": "ZREFTAB32", "offset": 72 }
-    ]
+        {
+            "name": "property_48",
+            "offset": 72,
+            "typename": "ZREFTAB32"
+        }
+    ],
+    "typename": "ZHM3WeaponUpgradeWeapon"
 }

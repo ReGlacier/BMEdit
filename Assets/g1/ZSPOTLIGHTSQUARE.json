@@ -1,6 +1,11 @@
 {
-    "typename": "ZSPOTLIGHTSQUARE",
-    "parent": "ZLIGHT",
+    "geomInfo": {
+        "id": 38,
+        "mask": 63,
+        "typeID": 8388640
+    },
     "kind": "TypeKind.COMPLEX",
-    "properties": []
+    "parent": "ZLIGHT",
+    "properties": [],
+    "typename": "ZSPOTLIGHTSQUARE"
 }

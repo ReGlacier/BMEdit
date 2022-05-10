@@ -1,22 +1,85 @@
 {
-    "typename": "ZHM3ItemTemplateWeapon",
-    "parent": "ZItemTemplateWeapon",
+    "geomInfo": {
+        "id": 2837,
+        "mask": 4095,
+        "typeID": 1049641
+    },
     "kind": "TypeKind.COMPLEX",
+    "parent": "ZItemTemplateWeapon",
     "properties": [
-        { "name": "RecoilRandom", "typename": "ZHM3ItemTemplateWeapon.EHM3RecoilRandom", "offset": 360 },
-        { "name": "property_16C", "typename": "PRPOpCode.Float32", "offset": 364 },
-        { "name": "property_170", "typename": "PRPOpCode.Float32", "offset": 368 },
-        { "name": "ScopeType", "typename": "ZHM3ItemTemplateWeapon.EHM3WeaponScope", "offset": 372 },
-        { "name": "property_178", "typename": "PRPOpCode.String", "offset": 372 },
-        { "name": "property_17C", "typename": "PRPOpCode.String", "offset": 376 },
-        { "name": "property_180", "typename": "PRPOpCode.String", "offset": 380 },
-        { "name": "property_184", "typename": "PRPOpCode.String", "offset": 384 },
-        { "name": "property_188", "typename": "PRPOpCode.Float32", "offset": 388 },
-        { "name": "property_18C", "typename": "PRPOpCode.Float32", "offset": 392 },
-        { "name": "property_190", "typename": "PRPOpCode.Float32", "offset": 396 },
-        { "name": "property_194", "typename": "PRPOpCode.Float32", "offset": 400 },
-        { "name": "ClipParticle", "typename": "ZGEOMREF" },
-        { "name": "FirstShellParticle", "typename": "ZGEOMREF" },
-        { "name": "SilencerType", "typename": "ZHM3ItemTemplateWeapon.ESilencerType", "offset": 404 }
-    ]
+        {
+            "name": "RecoilRandom",
+            "offset": 360,
+            "typename": "ZHM3ItemTemplateWeapon.EHM3RecoilRandom"
+        },
+        {
+            "name": "property_16C",
+            "offset": 364,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_170",
+            "offset": 368,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "ScopeType",
+            "offset": 372,
+            "typename": "ZHM3ItemTemplateWeapon.EHM3WeaponScope"
+        },
+        {
+            "name": "property_178",
+            "offset": 372,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_17C",
+            "offset": 376,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_180",
+            "offset": 380,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_184",
+            "offset": 384,
+            "typename": "PRPOpCode.String"
+        },
+        {
+            "name": "property_188",
+            "offset": 388,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_18C",
+            "offset": 392,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_190",
+            "offset": 396,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "property_194",
+            "offset": 400,
+            "typename": "PRPOpCode.Float32"
+        },
+        {
+            "name": "ClipParticle",
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "FirstShellParticle",
+            "typename": "ZGEOMREF"
+        },
+        {
+            "name": "SilencerType",
+            "offset": 404,
+            "typename": "ZHM3ItemTemplateWeapon.ESilencerType"
+        }
+    ],
+    "typename": "ZHM3ItemTemplateWeapon"
 }
