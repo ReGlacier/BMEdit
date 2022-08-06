@@ -29,7 +29,7 @@ namespace gamelib
 		[[nodiscard]] bool hasGeomInfo() const;
 		[[nodiscard]] const GeomBasedTypeInfo &getGeomInfo() const;
 
-		[[nodiscard]] Span<prp::PRPInstruction> verifyInstructionSet(const Span<prp::PRPInstruction> &instructions) const override;
+		[[nodiscard]] VerificationResult verify(const Span<prp::PRPInstruction>& instructions) const override;
 		[[nodiscard]] Type::DataMappingResult map(const Span<prp::PRPInstruction> &instructions) const override;
 
 	private:

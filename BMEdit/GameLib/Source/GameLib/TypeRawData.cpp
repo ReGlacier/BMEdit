@@ -10,43 +10,43 @@ namespace gamelib
 	{
 	}
 
-	Span<prp::PRPInstruction> TypeRawData::verifyInstructionSet(const Span<PRPInstruction> &instructions) const
+	Type::VerificationResult TypeRawData::verify(const Span<prp::PRPInstruction>& instructions) const
 	{
 		if (!instructions)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		if (instructions[0].getOpCode() != PRPOpCode::Container || instructions[0].getOpCode() != PRPOpCode::NamedContainer)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		if (!instructions[0].hasValue())
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		if (auto length = instructions[0].getOperand().trivial.i32; length > 0)
 		{
 			if (instructions[1].getOpCode() == PRPOpCode::RawData || instructions[1].getOpCode() == PRPOpCode::NamedRawData)
 			{
-				return instructions.slice(2, instructions.size - 2);
+				return std::make_pair(true, instructions.slice(2, instructions.size - 2));
 			}
 
-			return {};
+			return std::make_pair(false, nullptr);
 		}
-		else
-		{
-			return instructions.slice(1, instructions.size - 1);
-		}
+
+		return std::make_pair(true, instructions.slice(1, instructions.size - 1));
 	}
 
 	Type::DataMappingResult TypeRawData::map(const Span<prp::PRPInstruction> &instructions) const
 	{
-		if (!verifyInstructionSet(instructions))
+		const auto& [verificationResult, _span] = verify(instructions);
+
+		if (!verificationResult)
 		{
-			return Type::DataMappingResult();
+			return {};
 		}
 
 		if (instructions[0].getOperand().trivial.i32 == 0)

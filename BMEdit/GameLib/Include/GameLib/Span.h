@@ -12,6 +12,8 @@ namespace gamelib
 		int64_t size { 0 };
 
 		Span() = default;
+		Span(std::nullptr_t) : data(nullptr), size(0) {}
+
 		Span(const T *d, int64_t s) : data(d), size(s)
 		{
 		}
@@ -29,6 +31,23 @@ namespace gamelib
 			return (data != nullptr);
 		}
 
+		Span<T>& operator++()
+		{
+			if (data && size)
+			{
+				++data;
+				--size;
+			}
+			return *this;
+		}
+
+		Span<T> operator++(int)
+		{
+			Span<T> tmp { *this };
+			++*this;
+			return tmp;
+		}
+
 		[[nodiscard]] const T& operator[](int idx) const
 		{
 			return data[idx];
@@ -42,7 +61,7 @@ namespace gamelib
 
 		Span<T> slice(int64_t offset, int64_t sliceSize) const
 		{
-			if (offset >= size || offset + sliceSize >= size) {
+			if (offset >= size || offset + sliceSize > size) {
 				return Span<T> { nullptr, 0 };
 			}
 

@@ -7,3 +7,6 @@
 [submodule "ThirdParty/zlib"]
 	path = ThirdParty/zlib
 	url = https://github.com/madler/zlib
+[submodule "BMEdit/GameLib/ThirdParty/gtest"]
+	path = BMEdit/GameLib/ThirdParty/gtest
+	url = https://github.com/google/googletest

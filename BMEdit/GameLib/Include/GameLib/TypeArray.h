@@ -18,7 +18,7 @@ namespace gamelib
 		[[nodiscard]] uint32_t getRequiredCapacity() const;
 		[[nodiscard]] const std::vector<ValueView> &getValueViews() const;
 
-		[[nodiscard]] Span<prp::PRPInstruction> verifyInstructionSet(const Span<prp::PRPInstruction> &instructions) const override;
+		[[nodiscard]] VerificationResult verify(const Span<prp::PRPInstruction>& instructions) const override;
 		[[nodiscard]] Type::DataMappingResult map(const Span<prp::PRPInstruction> &instructions) const override;
 	private:
 		prp::PRPOpCode m_entryType { prp::PRPOpCode::ERR_UNKNOWN };

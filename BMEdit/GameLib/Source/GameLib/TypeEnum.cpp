@@ -12,15 +12,15 @@ namespace gamelib
 	{
 	}
 
-	Span<prp::PRPInstruction> TypeEnum::verifyInstructionSet(const Span<prp::PRPInstruction> &instructions) const
+	Type::VerificationResult TypeEnum::verify(const Span<prp::PRPInstruction> &instructions) const
 	{
 		if (!instructions) {
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		const auto& decl = instructions[0];
 		if (!decl.hasValue()) {
-			return {}; // unset value is invalid
+			return std::make_pair(false, nullptr);; // unset value is invalid
 		}
 
 		const auto& opCode = decl.getOpCode();
@@ -29,7 +29,7 @@ namespace gamelib
 		if (opCode != PRPOpCode::StringOrArray_E && opCode != PRPOpCode::StringOrArray_8E)
 		{
 			// Operand must be StringOrArray_E or StringOrArray_8E
-			return {};
+			return std::make_pair(false, nullptr);;
 		}
 
 		//NOTE: In some implementations enum value must be represented as operand.trivial.i32 but we ignoring that here
@@ -37,22 +37,24 @@ namespace gamelib
 		{
 			if (name == operand.str)
 			{
-				return instructions.slice(1, instructions.size - 1);
+				return std::make_pair(true, instructions.slice(1, instructions.size - 1));
 			}
 		}
 
-		return {};
+		return std::make_pair(false, nullptr);
 	}
 
 	Type::DataMappingResult TypeEnum::map(const Span<prp::PRPInstruction> &instructions) const
 	{
-		if (!verifyInstructionSet(instructions.slice(0, 1)))
+		const auto& [verificationResult, newSlice] = verify(instructions);
+
+		if (!verificationResult)
 		{
 			return Type::DataMappingResult(std::nullopt, Span<prp::PRPInstruction>());
 		}
 
 		std::vector<prp::PRPInstruction> valueData { instructions[0] };
-		return Type::DataMappingResult(Value(this, std::move(valueData)), instructions.slice(1, instructions.size - 1));
+		return Type::DataMappingResult(Value(this, std::move(valueData), { ValueView("Value", instructions[0].getOpCode(), this) }), newSlice);
 	}
 
 	const TypeEnum::Entries &TypeEnum::getPossibleValues() const

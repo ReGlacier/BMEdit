@@ -16,37 +16,39 @@ namespace gamelib
 		return m_possibleOptions;
 	}
 
-	Span<prp::PRPInstruction> TypeBitfield::verifyInstructionSet(const Span<PRPInstruction> &instructions) const
+	Type::VerificationResult TypeBitfield::verify(const Span<prp::PRPInstruction>& instructions) const
 	{
 		if (!instructions)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		if (instructions[0].getOpCode() != PRPOpCode::StringArray)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		for (const auto &entry: instructions[0].getOperand().stringArray)
 		{
 			if (!m_possibleOptions.contains(entry))
 			{
-				return {};
+				return std::make_pair(false, nullptr);
 			}
 		}
 
-		return instructions.slice(1, instructions.size - 1);
+		return std::make_pair(true, instructions.slice(1, instructions.size - 1));
 	}
 
 	Type::DataMappingResult TypeBitfield::map(const Span<PRPInstruction> &instructions) const
 	{
-		if (!verifyInstructionSet(instructions))
+		const auto& [verificationResult, span] = verify(instructions);
+
+		if (!verificationResult)
 		{
 			return Type::DataMappingResult();
 		}
 
 		std::vector<PRPInstruction> data { instructions[0] };
-		return Type::DataMappingResult(Value(this, std::move(data)), instructions.slice(1, instructions.size - 1));
+		return Type::DataMappingResult(Value(this, std::move(data)), span);
 	}
 }

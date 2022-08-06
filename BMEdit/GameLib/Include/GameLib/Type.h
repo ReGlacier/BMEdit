@@ -22,17 +22,17 @@ namespace gamelib
 		[[nodiscard]] const std::string &getName() const;
 		[[nodiscard]] TypeKind getKind() const;
 
+		using VerificationResult = std::pair<bool, Span<prp::PRPInstruction>>; // [0] - result, [1] - slice of unused instructions
 		/**
-		 * @fn verifyInstructionSet
-		 * @param instructions span of vector of instructions which should represent valid data
-		 * @return true if instruction set represent this type correctly
-		 *
+		 * @fn verify
+		 * @param instructions - span of vector of instructions which should represent valid data
+		 * @return [true, span] - when verification passed, [false, nullptr] - when verification failed
 		 * @example:
 		 * 		If we have enum with possible values "A1", "A2", "A3" and instructionSet is equal to { OpCode: String, StrValue: "ZERO" }
 		 * 		this data will be invalid because enumerator require to have value which enumerated in internal set but "ZERO" value not enumerated in it.
 		 * @note TypeAlias will redirect this check to target class
 		 */
-		[[nodiscard]] virtual Span<prp::PRPInstruction> verifyInstructionSet(const Span<prp::PRPInstruction> &instructions) const;
+		[[nodiscard]] virtual VerificationResult verify(const Span<prp::PRPInstruction>& instructions) const;
 
 		using DataMappingResult = std::pair<std::optional<Value>, Span<prp::PRPInstruction>>; // [0] - mapped data, [1] - new slice of instructions
 		/**

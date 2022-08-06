@@ -36,11 +36,6 @@ namespace gamelib::prp
 
 	bool PRPInstruction::isBeginObject() const
 	{
-		if (!isSet())
-		{
-			return false;
-		}
-
 		return (m_opCode == PRPOpCode::BeginObject) || (m_opCode == PRPOpCode::BeginNamedObject);
 	}
 
@@ -56,31 +51,16 @@ namespace gamelib::prp
 
 	bool PRPInstruction::isEndObject() const
 	{
-		if (!isSet())
-		{
-			return false;
-		}
-
 		return m_opCode == PRPOpCode::EndObject;
 	}
 
 	bool PRPInstruction::isEndArray() const
 	{
-		if (!isSet())
-		{
-			return false;
-		}
-
 		return m_opCode == PRPOpCode::EndArray;
 	}
 
 	bool PRPInstruction::isEndOfStream() const
 	{
-		if (!isSet())
-		{
-			return false;
-		}
-
 		return m_opCode == PRPOpCode::EndOfStream;
 	}
 

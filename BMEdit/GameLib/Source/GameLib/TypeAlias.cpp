@@ -14,29 +14,29 @@ namespace gamelib
 	{
 	}
 
-	Span<prp::PRPInstruction> TypeAlias::verifyInstructionSet(const Span<prp::PRPInstruction> &instructions) const
+	Type::VerificationResult TypeAlias::verify(const Span<prp::PRPInstruction> &instructions) const
 	{
 		// Type is alias to another type
 		if (auto typePtr = std::get_if<const Type *>(&m_resultTypeInfo); typePtr != nullptr) {
-			return (*typePtr)->verifyInstructionSet(instructions);
+			return (*typePtr)->verify(instructions);
 		}
 
 		// Type is alias to op-code
 		if (auto resultOpCode = std::get_if<prp::PRPOpCode>(&m_resultTypeInfo); resultOpCode != nullptr) {
 			if (instructions.size < 1) {
-				return {};
+				return std::make_pair(false, nullptr);
 			}
 
 			const auto &requiredOpCode = *resultOpCode;
 			if (requiredOpCode != instructions[0].getOpCode()) {
-				return {};
+				return std::make_pair(false, nullptr);
 			}
 
-			return instructions.slice(1, instructions.size - 1);
+			return std::make_pair(true, instructions.slice(1, instructions.size - 1));
 		}
 
 		// Alias not inited
-		throw std::runtime_error("TypeAlias::verifyInstructionSet() failed. Alias not inited yet!");
+		throw std::runtime_error("TypeAlias::verify() failed. Alias not inited yet!");
 	}
 
 	Type::DataMappingResult TypeAlias::map(const Span<prp::PRPInstruction> &instructions) const

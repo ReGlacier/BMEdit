@@ -71,22 +71,24 @@ namespace gamelib
 		return m_geomInfo.value();
 	}
 
-	Span<PRPInstruction> TypeComplex::verifyInstructionSet(const Span<PRPInstruction> &instructions) const
+	Type::VerificationResult TypeComplex::verify(const Span<prp::PRPInstruction>& instructions) const
 	{
 		if (!instructions)
 		{
 			assert(false);
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		Span<PRPInstruction> ourSlice = instructions;
 
 		if (auto parent = getParent(); parent != nullptr) {
-			const auto nextSlice = parent->verifyInstructionSet(instructions);
-			if (!nextSlice)
+			const auto& [result, nextSlice] = parent->verify(instructions);
+
+			if (!result)
 			{
 				// Verify failed
-				return {};
+				assert(false && "Verification failed");
+				return std::make_pair(false, nullptr);
 			}
 
 			ourSlice = nextSlice;
@@ -100,34 +102,37 @@ namespace gamelib
 				auto trivialType = view.getTrivialType();
 				if (!OPCODE_VALID(trivialType))
 				{
-					assert(false);
-					return {};
+					assert(false && "Invalid opcode");
+					return std::make_pair(false, nullptr);
 				}
 
 				if (ourSlice.data[0].getOpCode() != trivialType) {
-					assert(false);
-					return {};
+					assert(false && "Unexpected type");
+					return std::make_pair(false, nullptr);
 				}
 
 				ourSlice = ourSlice.slice(1, ourSlice.size - 1);
 				continue; // skip next part
 			}
 
+			// Type is not a trivial, need to find view's type pointer and validate it
 			auto type = view.getType();
 			if (!type)
 			{
-				assert(false);
-				return {};
+				assert(false && "Bad type reference");
+				return std::make_pair(false, nullptr);
 			}
 
-			ourSlice = type->verifyInstructionSet(ourSlice);
-			if (!ourSlice)
+			const auto& [result, nextSlice] = type->verify(ourSlice);
+			if (!result)
 			{
-				return {};
+				return std::make_pair(false, nullptr);
 			}
+
+			ourSlice = nextSlice;
 		}
 
-		return ourSlice;
+		return std::make_pair(true, ourSlice);
 	}
 
 	GeomBasedTypeInfo &TypeComplex::createGeomInfo()
@@ -141,9 +146,11 @@ namespace gamelib
 
 	Type::DataMappingResult TypeComplex::map(const Span<PRPInstruction> &instructions) const
 	{
-		if (!verifyInstructionSet(instructions))
+		const auto& [result, _span] = verify(instructions);
+
+		if (!result)
 		{
-			return Type::DataMappingResult();
+			return {};
 		}
 
 		auto ourSlice = instructions;
@@ -157,7 +164,7 @@ namespace gamelib
 			if (!newSlice || !value.has_value())
 			{
 				// Mapping failed
-				return Type::DataMappingResult();
+				return {};
 			}
 
 			resultValue += value.value();
@@ -181,7 +188,7 @@ namespace gamelib
 					return {};
 				}
 
-				resultValue += Value(this, { ourSlice[0] }, { view });
+				resultValue += std::make_pair(view.getName(), Value(this, { ourSlice[0] }, { view }));
 				ourSlice = ourSlice.slice(1, ourSlice.size - 1);
 				continue; // skip next part
 			}
@@ -197,10 +204,11 @@ namespace gamelib
 			if (!newSlice || !value.has_value())
 			{
 				// Property mapping failed
-				return Type::DataMappingResult();
+				return {};
 			}
 
-			resultValue += value.value();
+			// Compress complex value into single view
+			resultValue += std::make_pair(view.getName(), Value(viewType, value.value().getInstructions(), { ValueView(view.getName(), viewType, this) }));
 			ourSlice = newSlice;
 		}
 

@@ -1,4 +1,5 @@
 #include <GameLib/TypeArray.h>
+#include <sstream>
 
 
 namespace gamelib
@@ -38,55 +39,57 @@ namespace gamelib
 		return m_valueViews;
 	}
 
-	Span<prp::PRPInstruction> TypeArray::verifyInstructionSet(const Span<PRPInstruction> &instructions) const
+	Type::VerificationResult TypeArray::verify(const Span<prp::PRPInstruction>& instructions) const
 	{
 		if (!instructions || instructions.size < 2)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		if (instructions[0].getOpCode() != PRPOpCode::Array && instructions[0].getOpCode() != PRPOpCode::NamedArray)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		if (!instructions[0].hasValue())
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		const int capacity = instructions[0].getOperand().trivial.i32;
 		if (capacity != m_requiredCapacity || (instructions.size < (2 + capacity))) // capacity must be same to inner size and we need to have 2 + capacity instructions in deck (2 - begin & end)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		for (int i = 0; i < capacity; i++)
 		{
 			if (!instructions[1 + i].hasValue() || instructions[1 + i].getOpCode() != m_entryType)
 			{
-				return {};
+				return std::make_pair(false, nullptr);
 			}
 		}
 
-		if (instructions[2 + capacity].getOpCode() != PRPOpCode::EndArray)
+		if (instructions[1 + capacity].getOpCode() != PRPOpCode::EndArray)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
-		return instructions.slice((2 + capacity), instructions.size - (2 + capacity));
+		return std::make_pair(true, instructions.slice((2 + capacity), instructions.size - (2 + capacity)));
 	}
 
 	Type::DataMappingResult TypeArray::map(const Span<prp::PRPInstruction> &instructions) const
 	{
 		if (!instructions)
 		{
-			return Type::DataMappingResult();
+			return {};
 		}
 
-		if (!verifyInstructionSet(instructions))
+		const auto& [verificationResult, _nextSpan] = verify(instructions);
+
+		if (!verificationResult)
 		{
-			return Type::DataMappingResult();
+			return {};
 		}
 
 		const int capacity = instructions[0].getOperand().trivial.i32;
@@ -101,9 +104,24 @@ namespace gamelib
 			ent = instructions[i];
 		}
 
-		return Type::DataMappingResult(
-			Value(this, std::move(data), m_valueViews),
-			instructions.slice(sliceSize, instructions.size - sliceSize)
-		);
+		std::vector<ValueView> views = m_valueViews;
+
+		if (views.empty())
+		{
+			// Here we need to generate value views
+			views.resize(m_requiredCapacity);
+
+			for (auto i = 0; i < m_requiredCapacity; i++)
+			{
+				std::stringstream ss;
+				ss << "[" << i << "]";
+
+				views[i] = ValueView(ss.str(), m_entryType, this);
+			}
+		}
+
+		return std::make_pair(
+		    Value(this, std::move(data), views),
+		    instructions.slice(sliceSize, instructions.size - sliceSize));
 	}
 }

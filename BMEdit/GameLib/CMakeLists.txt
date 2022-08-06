@@ -9,6 +9,8 @@ add_subdirectory(ThirdParty/ZBinaryIO)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(ThirdParty/json)
 
+add_subdirectory(ThirdParty/gtest)
+
 set(GAME_LIB_SOURCES)
 file(GLOB_RECURSE GAME_LIB_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp)
 
@@ -26,3 +28,6 @@ target_include_directories(GameLib PRIVATE
         $<TARGET_FILE_DIR:zlibstatic>/..
         $<TARGET_FILE_DIR:zlibstatic>
         $<TARGET_PROPERTY:zlibstatic,INCLUDE_DIRECTORIES>)
+
+# --- Tests
+add_subdirectory(Tests)

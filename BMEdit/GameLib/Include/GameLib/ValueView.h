@@ -26,6 +26,9 @@ namespace gamelib
 		[[nodiscard]] const Type *getOwnerType() const;
 		[[nodiscard]] const std::string &getName() const;
 
+		[[nodiscard]] bool operator==(const ValueView& other) const noexcept;
+		[[nodiscard]] bool operator!=(const ValueView& other) const noexcept;
+
 	private:
 		std::variant<std::string, const Type *, prp::PRPOpCode> m_type;
 		const Type *m_ownerType { nullptr };

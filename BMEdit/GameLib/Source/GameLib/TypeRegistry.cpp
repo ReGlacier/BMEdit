@@ -57,6 +57,55 @@ namespace gamelib
 			}
 		}
 
+		linkTypes();
+	}
+
+	const Type *TypeRegistry::findTypeByName(const std::string &typeName) const
+	{
+		auto it = m_typesByName.find(typeName);
+		if (it == m_typesByName.end())
+		{
+			return nullptr;
+		}
+
+		return it->second;
+	}
+
+	const Type *TypeRegistry::findTypeByHash(const std::string &hash) const
+	{
+		auto it = m_typesByHash.find(hash);
+		if (it == m_typesByHash.end())
+		{
+			return nullptr;
+		}
+
+		return it->second;
+	}
+
+	const Type *TypeRegistry::findTypeByHash(std::size_t typeId) const
+	{
+		std::stringstream stringStream;
+		stringStream << "0x" << std::hex << std::uppercase << typeId;
+		auto str = stringStream.str();
+
+		return findTypeByHash(str);
+	}
+
+	void TypeRegistry::forEachType(const std::function<void(const Type *)> &predicate)
+	{
+		if (!predicate)
+		{
+			return;
+		}
+
+		for (const auto& type: m_types)
+		{
+			predicate(type.get());
+		}
+	}
+
+	void TypeRegistry::linkTypes()
+	{
 		// Resolve links
 		for (const auto& type: m_types)
 		{
@@ -102,6 +151,8 @@ namespace gamelib
 						{
 							throw TypeNotFoundException("Failed to resolve link to property type '" + *propertyTypeNamePtr + "' from type '" + complex->getName() + "'!");
 						}
+
+						property.m_type = newPropertyType;
 					}
 
 					if (property.m_ownerType == nullptr)
@@ -122,50 +173,6 @@ namespace gamelib
 					}
 				}
 			}
-		}
-	}
-
-	const Type *TypeRegistry::findTypeByName(const std::string &typeName) const
-	{
-		auto it = m_typesByName.find(typeName);
-		if (it == m_typesByName.end())
-		{
-			return nullptr;
-		}
-
-		return it->second;
-	}
-
-	const Type *TypeRegistry::findTypeByHash(const std::string &hash) const
-	{
-		auto it = m_typesByHash.find(hash);
-		if (it == m_typesByHash.end())
-		{
-			return nullptr;
-		}
-
-		return it->second;
-	}
-
-	const Type *TypeRegistry::findTypeByHash(std::size_t typeId) const
-	{
-		std::stringstream stringStream;
-		stringStream << "0x" << std::hex << std::uppercase << typeId;
-		auto str = stringStream.str();
-
-		return findTypeByHash(str);
-	}
-
-	void TypeRegistry::forEachType(const std::function<void(const Type *)> &predicate)
-	{
-		if (!predicate)
-		{
-			return;
-		}
-
-		for (const auto& type: m_types)
-		{
-			predicate(type.get());
 		}
 	}
 }

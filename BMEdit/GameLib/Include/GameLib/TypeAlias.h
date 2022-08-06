@@ -15,7 +15,7 @@ namespace gamelib
 		TypeAlias(std::string name, std::string resultType);
 		TypeAlias(std::string name, prp::PRPOpCode resultType);
 
-		[[nodiscard]] Span<prp::PRPInstruction> verifyInstructionSet(const Span<prp::PRPInstruction> &instructions) const override;
+		[[nodiscard]] VerificationResult verify(const Span<prp::PRPInstruction>& instructions) const override;
 		[[nodiscard]] Type::DataMappingResult map(const Span<prp::PRPInstruction> &instructions) const override;
 	private:
 		TypeReference m_resultTypeInfo;

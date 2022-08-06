@@ -60,4 +60,20 @@ namespace gamelib
 	{
 		return m_name;
 	}
+
+	bool ValueView::operator==(const gamelib::ValueView &other) const noexcept
+	{
+		if (m_name != other.m_name)
+			return false;
+
+		if (m_ownerType != other.m_ownerType)
+			return false;
+
+		return m_type == other.m_type;
+	}
+
+	bool ValueView::operator!=(const gamelib::ValueView &other) const noexcept
+	{
+		return !operator==(other);
+	}
 }

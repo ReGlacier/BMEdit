@@ -10,32 +10,34 @@ namespace gamelib
 	{
 	}
 
-	Span<PRPInstruction> TypeContainer::verifyInstructionSet(const Span<PRPInstruction> &instructions) const
+	Type::VerificationResult TypeContainer::verify(const Span<prp::PRPInstruction> &instructions) const
 	{
 		if (!instructions || !instructions[0].hasValue())
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		if (instructions[0].getOpCode() != PRPOpCode::Container && instructions[0].getOpCode() != PRPOpCode::NamedContainer)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
 		const int capacity = instructions[0].getOperand().trivial.i32;
 		if (instructions.size < capacity + 1)
 		{
-			return {};
+			return std::make_pair(false, nullptr);
 		}
 
-		return instructions.slice(capacity + 1, instructions.size - (capacity + 1));
+		return std::make_pair(true, instructions.slice(capacity + 1, instructions.size - (capacity + 1)));
 	}
 
 	Type::DataMappingResult TypeContainer::map(const Span<PRPInstruction> &instructions) const
 	{
-		if (!verifyInstructionSet(instructions))
+		const auto& [verificationResult, _span] = verify(instructions);
+
+		if (!verificationResult)
 		{
-			return Type::DataMappingResult();
+			return {};
 		}
 
 		const int capacity = instructions[0].getOperand().trivial.i32;

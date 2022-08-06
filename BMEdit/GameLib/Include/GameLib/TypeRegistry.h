@@ -37,6 +37,25 @@ namespace gamelib
 
 		void forEachType(const std::function<void(const Type *)> &predicate);
 
+		void linkTypes();
+
+		template <typename T>
+		T* registerType(std::unique_ptr<T>&& constructedType) requires (std::is_base_of_v<Type, T>)
+		{
+			if (!constructedType)
+				return nullptr;
+
+			T* ptr = constructedType.get();
+
+			const auto& [_iter, res] = m_typesByName.try_emplace(ptr->getName(), ptr);
+			if (!res)
+				return nullptr;
+
+			m_types.emplace_back(std::move(constructedType));
+
+			return ptr;
+		}
+
 	private:
 		std::vector<std::unique_ptr<Type>> m_types;
 		std::unordered_map<std::string, Type*> m_typesByHash;

@@ -36,15 +36,22 @@ namespace gamelib
 		[[nodiscard]] const LevelProperties *getLevelProperties() const;
 		[[nodiscard]] const SceneProperties *getSceneProperties() const;
 
+		[[nodiscard]] const std::vector<scene::SceneObject::Ptr> &getSceneObjects() const;
+
 	private:
 		bool loadLevelProperties();
 		bool loadLevelScene();
 
 	private:
+		// Core
 		std::unique_ptr<io::IOLevelAssetsProvider> m_assetProvider;
-		std::vector<std::unique_ptr<scene::SceneObject>> m_sceneObjects;
+		bool m_isLevelLoaded { false };
+
+		// Raw data
 		LevelProperties m_levelProperties;
 		SceneProperties m_sceneProperties;
-		bool m_isLevelLoaded { false };
+
+		// Managed objects
+		std::vector<scene::SceneObject::Ptr> m_sceneObjects {};
 	};
 }

@@ -22,13 +22,36 @@ namespace gamelib
 
 	Value &Value::operator+=(const Value &another)
 	{
-		// Copy data instructions
+		// Copy data instructions (in any case)
 		std::copy(another.m_data.begin(), another.m_data.end(), std::back_inserter(m_data));
 
 		// Copy views
 		std::copy(another.m_views.begin(), another.m_views.end(), std::back_inserter(m_views));
 
 		// Return self
+		return *this;
+	}
+
+	Value &Value::operator+=(const std::pair<std::string, Value> &another)
+	{
+		const auto& [chunkName, chunkData] = another;
+
+		// Save instructions pointer
+		auto ip = m_data.size();
+
+		// Copy instructions
+		std::copy(chunkData.m_data.begin(), chunkData.m_data.end(), std::back_inserter(m_data));
+
+		// Create entry
+		auto& newEnt = m_entries.emplace_back();
+		newEnt.name = chunkName;
+		newEnt.instructions.iOffset = static_cast<int64_t>(ip);
+		newEnt.instructions.iSize = static_cast<int64_t>(chunkData.m_data.size());
+
+		// Copy views
+		std::copy(chunkData.m_views.begin(), chunkData.m_views.end(), std::back_inserter(newEnt.views));
+		std::copy(chunkData.m_views.begin(), chunkData.m_views.end(), std::back_inserter(m_views)); //TODO: Remove
+
 		return *this;
 	}
 
@@ -42,62 +65,8 @@ namespace gamelib
 		return m_data;
 	}
 
-	int Value::getInstructionsCount() const
+	Span<ValueEntry> Value::getEntries() const
 	{
-		return static_cast<int>(m_data.size());
-	}
-
-	const std::vector<ValueView> &Value::getViews() const
-	{
-		return m_views;
-	}
-
-	const ValueView& Value::getView(int instructionIndex) const
-	{
-		static const ValueView kNullView { "", nullptr, nullptr };
-
-		if (instructionIndex >= 0 && instructionIndex < m_views.size())
-		{
-			return m_views[instructionIndex];
-		}
-
-		return kNullView;
-	}
-
-	bool Value::hasView(int instructionIndex) const
-	{
-		if (instructionIndex < 0 || instructionIndex >= m_views.size()) {
-			return false;
-		}
-
-		return true;
-	}
-
-	bool Value::setInstruction(int instructionIndex, const prp::PRPInstruction &instruction)
-	{
-		if (instructionIndex < 0 || instructionIndex >= m_data.size())
-		{
-			return false;
-		}
-
-		if (!prp::areOpCodesHasSameKind(m_data[instructionIndex].getOpCode(), instruction.getOpCode()))
-		{
-			// Instructions must be of the same kind
-			return false;
-		}
-
-		m_data[instructionIndex] = instruction;
-		return true;
-	}
-
-	bool Value::getInstruction(int instructionIndex, prp::PRPInstruction &instruction)
-	{
-		if (instructionIndex < 0 || instructionIndex >= m_data.size())
-		{
-			return false;
-		}
-
-		instruction = m_data[instructionIndex];
-		return true;
+		return Span<ValueEntry>(m_entries);
 	}
 }
