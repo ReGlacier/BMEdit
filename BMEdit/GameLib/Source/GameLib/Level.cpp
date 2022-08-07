@@ -148,9 +148,10 @@ namespace gamelib
 			}
 
 			// Visit properties
-			scene::SceneObjectPropertiesVisitor::visit(
-			    m_sceneObjects,
-			    Span<prp::PRPInstruction> { m_levelProperties.rawProperties });
+			//TODO: Fixme
+//			scene::SceneObjectPropertiesVisitor::visit(
+//			    m_sceneObjects,
+//			    Span<prp::PRPInstruction> { m_levelProperties.rawProperties });
 		}
 
 		return true;
