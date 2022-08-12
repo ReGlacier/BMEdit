@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 # --- Global dependencies
 add_subdirectory(ThirdParty/zlib)
+add_subdirectory(ThirdParty/fmt)
 
 # --- Project modules
 add_subdirectory(BMEdit/Editor)

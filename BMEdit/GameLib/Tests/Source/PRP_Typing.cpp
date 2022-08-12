@@ -95,7 +95,7 @@ protected:
 TEST_F(PRP_Typing, SimpleTypeRecognition)
 {
 	const uint8_t kByteCode[] = {
-	    // Matrix represented as StringOrArray_E or StringOrArray_8E op-code
+	    // BoundingBox represented as StringOrArray_E or StringOrArray_8E op-code
 	    (uint8_t)(PRPOpCode::StringOrArray_E), 0x00, 0x00, 0x00, 0x00, // Operand is index of string in token table
 
 	    // Matrix represented as BeginArray + 4 bytes capacity + N entries + EndArray

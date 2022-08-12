@@ -1,10 +1,10 @@
-#include <GameLib/Level.h>
-#include <GameLib/Type.h>
-#include <GameLib/TypeRegistry.h>
-#include <GameLib/PRP/PRPReader.h>
 #include <GameLib/GMS/GMSReader.h>
 #include <GameLib/GMS/GMSStructureError.h>
-#include <GameLib/Scene/SceneObjectPropertiesVisitor.h>
+#include <GameLib/Level.h>
+#include <GameLib/PRP/PRPReader.h>
+#include <GameLib/Scene/SceneObjectPropertiesLoader.h>
+#include <GameLib/Type.h>
+#include <GameLib/TypeRegistry.h>
 
 
 namespace gamelib
@@ -148,10 +148,15 @@ namespace gamelib
 			}
 
 			// Visit properties
-			//TODO: Fixme
-//			scene::SceneObjectPropertiesVisitor::visit(
-//			    m_sceneObjects,
-//			    Span<prp::PRPInstruction> { m_levelProperties.rawProperties });
+			using scene::SceneObject;
+			using scene::SceneObject;
+
+//			SceneObjectPropertiesLoader::visit(
+//			    Span(m_sceneObjects),
+//			    Span(m_levelProperties.rawProperties),
+//			    [](const SceneObject::Ptr& sceneObject, const Value& properties, const std::map<std::string, Value>& controllers) -> EVR {
+//				    return EVR::VR_CONTINUE;
+//			    });
 		}
 
 		return true;

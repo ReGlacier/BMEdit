@@ -10,3 +10,6 @@
 [submodule "BMEdit/GameLib/ThirdParty/gtest"]
 	path = BMEdit/GameLib/ThirdParty/gtest
 	url = https://github.com/google/googletest
+[submodule "ThirdParty/fmt"]
+	path = ThirdParty/fmt
+	url = https://github.com/fmtlib/fmt

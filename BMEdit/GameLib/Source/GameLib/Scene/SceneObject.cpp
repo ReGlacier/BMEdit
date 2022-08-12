@@ -46,6 +46,26 @@ namespace gamelib::scene
 		return m_rawProperties;
 	}
 
+	const SceneObject::Controllers &SceneObject::getControllers() const
+	{
+		return m_controllers;
+	}
+
+	SceneObject::Controllers &SceneObject::getControllers()
+	{
+		return m_controllers;
+	}
+
+	const Value &SceneObject::getProperties() const
+	{
+		return m_properties;
+	}
+
+	Value &SceneObject::getProperties()
+	{
+		return m_properties;
+	}
+
 	const gms::GMSGeomEntity &SceneObject::getGeomInfo() const
 	{
 		return m_geom;

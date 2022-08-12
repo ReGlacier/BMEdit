@@ -175,4 +175,16 @@ namespace gamelib
 			}
 		}
 	}
+
+	void TypeRegistry::addHashAssociation(std::size_t hash, const std::string &typeName)
+	{
+		if (auto typePtr = findTypeByName(typeName))
+		{
+			std::stringstream stringStream;
+			stringStream << "0x" << std::hex << std::uppercase << hash;
+			auto str = stringStream.str();
+
+			m_typesByHash[str] = const_cast<Type*>(typePtr);
+		}
+	}
 }

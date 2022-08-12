@@ -38,6 +38,7 @@ namespace gamelib
 		void forEachType(const std::function<void(const Type *)> &predicate);
 
 		void linkTypes();
+		void addHashAssociation(std::size_t hash, const std::string &typeName);
 
 		template <typename T>
 		T* registerType(std::unique_ptr<T>&& constructedType) requires (std::is_base_of_v<Type, T>)

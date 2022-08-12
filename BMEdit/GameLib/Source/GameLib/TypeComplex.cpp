@@ -170,7 +170,7 @@ namespace gamelib
 			// Import fields (but we need to change parenthesis referencing)
 			for (const auto& [name, ip, views]: value->getEntries())
 			{
-				resultValue += std::make_pair(name, Value(value->getType(), Span<PRPInstruction>(value->getInstructions()).slice(ip).as<std::vector<PRPInstruction>>(), views));
+				resultValue += std::make_pair(name, Value(value->getType(), Span(value->getInstructions()).slice(ip).as<std::vector<PRPInstruction>>(), views));
 			}
 
 			ourSlice = newSlice;

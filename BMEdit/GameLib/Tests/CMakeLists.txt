@@ -7,6 +7,7 @@ add_executable(GameLib_Tests
         Source/Entry.cpp
         Source/PRP.cpp
         Source/PRP_Typing.cpp
+        Source/PRP_ComplexPack.cpp
 )
 
 target_include_directories(GameLib_Tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Include)
