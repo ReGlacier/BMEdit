@@ -17,7 +17,7 @@ namespace gamelib
 			return std::make_pair(false, nullptr);
 		}
 
-		if (instructions[0].getOpCode() != PRPOpCode::Container || instructions[0].getOpCode() != PRPOpCode::NamedContainer)
+		if (instructions[0].getOpCode() != PRPOpCode::Container && instructions[0].getOpCode() != PRPOpCode::NamedContainer)
 		{
 			return std::make_pair(false, nullptr);
 		}
