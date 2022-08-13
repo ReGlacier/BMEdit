@@ -59,6 +59,7 @@ namespace gamelib
 
 		[[nodiscard]] const Type* getType() const;
 		[[nodiscard]] const std::vector<prp::PRPInstruction>& getInstructions() const;
+		[[nodiscard]] std::vector<prp::PRPInstruction>& getInstructions();
 		[[nodiscard]] Span<ValueEntry> getEntries() const;
 	private:
 		const Type *m_type {nullptr}; // type

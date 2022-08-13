@@ -91,6 +91,37 @@ namespace gamelib
 		return findTypeByHash(str);
 	}
 
+	const Type *TypeRegistry::findTypeByShortName(const std::string &requestedTypeName) const
+	{
+		for (const auto& type: m_types)
+		{
+			const std::string &typeName = type->getName();
+			if (typeName.empty())
+				continue;
+
+			const bool hasClassPrefix = typeName[0] == 'Z' || typeName[0] == 'C';
+
+			// >>> IOI Hacks starts here <<<
+			// #0 : trivial equality
+			if (typeName == requestedTypeName)
+				return type.get();
+
+			// #1 : IOI G1 codegen remove Z & C prefix from typename
+			if (hasClassPrefix && ((typeName.length() - 1) == requestedTypeName.length() && std::equal(typeName.begin() + 1, typeName.end(), requestedTypeName.begin())))
+				return type.get();
+
+			// #2 : IOI G1 codegen remove Event postfix from typename too
+			if (hasClassPrefix && (typeName.ends_with("Event") && (typeName.length() > 5) && (typeName.substr(1, static_cast<std::size_t>(typeName.length() - 5)) == requestedTypeName)))
+				return type.get();
+
+			// #3 : IOI G1 codegen for Hitman Blood Money (HM3) removing HM3 prefix
+			if (hasClassPrefix && (typeName.substr(1).starts_with("HM3")) && (typeName.substr(4) == requestedTypeName))
+				return type.get();
+		}
+
+		return nullptr;
+	}
+
 	void TypeRegistry::forEachType(const std::function<void(const Type *)> &predicate)
 	{
 		if (!predicate)

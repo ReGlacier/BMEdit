@@ -34,6 +34,7 @@ namespace gamelib
 		[[nodiscard]] const Type *findTypeByName(const std::string &typeName) const;
 		[[nodiscard]] const Type *findTypeByHash(const std::string &hash) const;
 		[[nodiscard]] const Type *findTypeByHash(std::size_t hash) const;
+		[[nodiscard]] const Type *findTypeByShortName(const std::string &typeName) const;
 
 		void forEachType(const std::function<void(const Type *)> &predicate);
 

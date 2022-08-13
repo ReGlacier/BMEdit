@@ -65,6 +65,11 @@ namespace gamelib
 		return m_data;
 	}
 
+	std::vector<prp::PRPInstruction> &Value::getInstructions()
+	{
+		return m_data;
+	}
+
 	Span<ValueEntry> Value::getEntries() const
 	{
 		return Span<ValueEntry>(m_entries);

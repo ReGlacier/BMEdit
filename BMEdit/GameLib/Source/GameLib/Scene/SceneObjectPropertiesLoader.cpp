@@ -2,6 +2,9 @@
 #include <GameLib/Scene/SceneObjectTypeNotFoundException.h>
 #include <GameLib/Scene/SceneObjectVisitorException.h>
 #include <GameLib/TypeRegistry.h>
+#include <GameLib/TypeComplex.h>
+
+#include <fmt/format.h>
 
 #define NEXT_IP (++ip);
 #define NEXT_OBJECT (++objectIdx);
@@ -128,10 +131,16 @@ namespace gamelib::scene
 				NEXT_IP
 
 				// Find type
-				const Type* controllerType = TypeRegistry::getInstance().findTypeByName(controllerName);
+				const Type* controllerType = TypeRegistry::getInstance().findTypeByShortName(controllerName);
 				if (!controllerType)
 				{
 					throw SceneObjectTypeNotFoundException(objectIdx, controllerName);
+				}
+
+				if (controllerType->getKind() != TypeKind::COMPLEX)
+				{
+					// Only complex types are allowed to be controllers
+					throw SceneObjectVisitorException(objectIdx, fmt::format("Type '{}' not allowed to be controller because it's not COMPLEX"));
 				}
 
 				// Map controller properties
@@ -146,7 +155,33 @@ namespace gamelib::scene
 
 				controllers[controllerName] = controllerMapResult.value();
 
-				if (ip[0].getOpCode() == PRPOpCode::EndObject)
+				if (ip[0].getOpCode() != PRPOpCode::EndObject && reinterpret_cast<const TypeComplex*>(controllerType)->areUnexposedInstructionsAllowed())
+				{
+					// Here we need to extract all instructions until 'EndObject'
+					Span<PRPInstruction> begin = ip, end = ip;
+					int64_t endOffset = 0;
+
+					// Find nearest 'EndObject' instruction and instruction before it will be our last instruction
+					while (!end.empty() && end[0].getOpCode() != PRPOpCode::EndObject)
+					{
+						end = end.slice(1, end.size - 1);
+						++endOffset;
+					}
+
+					if (end.empty())
+					{
+						throw SceneObjectVisitorException(objectIdx, fmt::format("Invalid controller definition: We have controller '{}' with unexposed instructions and without EndObject instruction!", controllerName));
+					}
+
+					auto unexposedInstructions = begin.slice(0, ip.size - endOffset).as<std::vector<PRPInstruction>>();
+
+					auto& orgInstructionsRef = controllers[controllerName].getInstructions();
+					orgInstructionsRef.insert(orgInstructionsRef.end(), unexposedInstructions.begin(), unexposedInstructions.end());
+
+					ip = ip.slice(endOffset, ip.size - endOffset);
+				}
+
+				if (ip[0].getOpCode() != PRPOpCode::EndObject)
 				{
 					throw SceneObjectVisitorException(objectIdx, "Invalid controller definition (Expected EndObject)");
 				}
@@ -182,6 +217,7 @@ namespace gamelib::scene
 				currentObject->setParent(parent);
 			}
 
+			NEXT_OBJECT
 			visitImpl(currentObject, objects[0], objects.slice(1, objects.size - 1), ip);
 
 			if (ip[0].getOpCode() != PRPOpCode::EndObject)
