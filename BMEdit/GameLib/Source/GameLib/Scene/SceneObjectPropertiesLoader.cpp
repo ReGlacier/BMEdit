@@ -18,6 +18,7 @@ namespace gamelib::scene
 	struct InternalContext
 	{
 		uint32_t objectIdx = 0;
+		Span<PRPInstruction> ip;
 
 		void visitImpl(const SceneObject::Ptr& parent, const SceneObject::Ptr& currentObject, Span<SceneObject::Ptr> objects, Span<PRPInstruction> instructions);
 	};
@@ -28,6 +29,7 @@ namespace gamelib::scene
 			return;
 
 		InternalContext ctx;
+		ctx.ip = instructions;
 		ctx.visitImpl(nullptr, objects[0], objects.slice(1, objects.size - 1), instructions);
 	}
 
@@ -54,8 +56,6 @@ namespace gamelib::scene
 		 */
 
 		/// ------------ STAGE 1: PROPERTIES ------------
-		Span<PRPInstruction> ip = instructions;
-
 		if (ip[0].getOpCode() != PRPOpCode::BeginObject && ip[0].getOpCode() != PRPOpCode::BeginNamedObject)
 		{
 			throw SceneObjectVisitorException(objectIdx, "Invalid object definition (expected BeginObject/BeginNamedObject)");
@@ -212,11 +212,6 @@ namespace gamelib::scene
 
 		for (int childrenGeomIdx = 0; childrenGeomIdx < childrenCount; ++childrenGeomIdx)
 		{
-			if (parent)
-			{
-				currentObject->setParent(parent);
-			}
-
 			NEXT_OBJECT
 			visitImpl(currentObject, objects[0], objects.slice(1, objects.size - 1), ip);
 
@@ -226,6 +221,11 @@ namespace gamelib::scene
 			}
 
 			NEXT_IP
+		}
+
+		if (parent)
+		{
+			currentObject->setParent(parent);
 		}
 	}
 }

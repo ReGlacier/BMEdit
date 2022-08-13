@@ -522,7 +522,6 @@ TEST_F(PRP_ComplexPack, DeclWithMultipleControllers)
 	ASSERT_EQ(sceneObjects[0]->getControllers()["Tie"].getInstructions()[1].getOperand().trivial.i32, 255);
 }
 
-
 TEST_F(PRP_ComplexPack, UnexposedTypeDecl)
 {
 	/**
@@ -655,4 +654,245 @@ TEST_F(PRP_ComplexPack, UnexposedTypeDecl)
 	ASSERT_EQ(sceneObjects[0]->getControllers()["ScriptC"].getEntries()[0].instructions.iOffset, 0);
 }
 
-//TODO: Check children iteration (1 children, 2 children, two parallel objects with abstract ROOT)
+TEST_F(PRP_ComplexPack, ObjectsHierarchySimple)
+{
+	const uint8_t kByteCode[] = {
+	    /// ---------------- GEOM # 0 ----------------
+	    // Begin Object
+	    (uint8_t)(PRPOpCode::BeginObject),
+
+	    // BoundingBox represented as StringOrArray_E or StringOrArray_8E op-code
+	    (uint8_t)(PRPOpCode::StringOrArray_E), 0x00, 0x00, 0x00, 0x00, // Operand is index of string in token table
+
+	    // Matrix represented as BeginArray + 4 bytes capacity + N entries + EndArray
+	    (uint8_t)(PRPOpCode::Array), 0x09, 0x00, 0x00, 0x00, //9 entries
+
+	    // First row
+	    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+	    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+	    (uint8_t)(PRPOpCode::Float32), 0x3F, 0x80, 0x00, 0x00,
+
+	    // Second row
+	    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+	    (uint8_t)(PRPOpCode::Float32), 0x3F, 0x80, 0x00, 0x00,
+	    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+
+	    // Third row
+	    (uint8_t)(PRPOpCode::Float32), 0x3F, 0x80, 0x00, 0x00,
+	    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+	    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+
+	    (uint8_t)(PRPOpCode::EndArray),
+	    // Vector represented as BeginArray + Int32 cap + N entries + EndArray
+	    (uint8_t)(PRPOpCode::Array), 0x03, 0x00, 0x00, 0x00, // 3 entries
+
+	    (uint8_t)(PRPOpCode::Float32), 0x3F, 0x99, 0x99, 0x9A, //X = 1.2f
+	    (uint8_t)(PRPOpCode::Float32), 0x41, 0x20, 0x00, 0x00, //Y = 10.f
+	    (uint8_t)(PRPOpCode::Float32), 0xC0, 0xA8, 0x00, 0x00, //Z = -5.25f
+
+	    (uint8_t)(PRPOpCode::EndArray),
+
+	    // IsInactive - PRPOpCode::Bool
+	    (uint8_t)(PRPOpCode::Bool), 0x1,
+
+	    // PrimId - PRPOpCode::Int32
+	    (uint8_t)(PRPOpCode::Int32), 0x05, 0x00, 0x00, 0x00,
+
+	    // (ZSTDOBJ) - Invisible
+	    (uint8_t)(PRPOpCode::Bool), 0x0,
+
+	    // End Object
+	    (uint8_t)(PRPOpCode::EndObject),
+
+	    // Controllers (no controllers)
+	    (uint8_t)(PRPOpCode::Container), 0x00, 0x00, 0x00, 0x00,
+
+	    // Children (1)
+	    (uint8_t)(PRPOpCode::Container), 0x01, 0x00, 0x00, 0x00,
+
+	    /// ---------------- GEOM # 1 ----------------
+		    // Begin Object
+		    (uint8_t)(PRPOpCode::BeginObject),
+
+		    // BoundingBox represented as StringOrArray_E or StringOrArray_8E op-code
+		    (uint8_t)(PRPOpCode::StringOrArray_E), 0x00, 0x00, 0x00, 0x00, // Operand is index of string in token table
+
+		    // Matrix represented as BeginArray + 4 bytes capacity + N entries + EndArray
+		    (uint8_t)(PRPOpCode::Array), 0x09, 0x00, 0x00, 0x00, //9 entries
+
+		    // First row
+		    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+		    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+		    (uint8_t)(PRPOpCode::Float32), 0x3F, 0x80, 0x00, 0x00,
+
+		    // Second row
+		    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+		    (uint8_t)(PRPOpCode::Float32), 0x3F, 0x80, 0x00, 0x00,
+		    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+
+		    // Third row
+		    (uint8_t)(PRPOpCode::Float32), 0x3F, 0x80, 0x00, 0x00,
+		    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+		    (uint8_t)(PRPOpCode::Float32), 0x00, 0x00, 0x00, 0x00,
+
+		    (uint8_t)(PRPOpCode::EndArray),
+		    // Vector represented as BeginArray + Int32 cap + N entries + EndArray
+		    (uint8_t)(PRPOpCode::Array), 0x03, 0x00, 0x00, 0x00, // 3 entries
+
+		    (uint8_t)(PRPOpCode::Float32), 0x3F, 0x99, 0x99, 0x9A, //X = 1.2f
+		    (uint8_t)(PRPOpCode::Float32), 0x41, 0x20, 0x00, 0x00, //Y = 10.f
+		    (uint8_t)(PRPOpCode::Float32), 0xC0, 0xA8, 0x00, 0x00, //Z = -5.25f
+
+		    (uint8_t)(PRPOpCode::EndArray),
+
+		    // IsInactive - PRPOpCode::Bool
+		    (uint8_t)(PRPOpCode::Bool), 0x1,
+
+		    // PrimId - PRPOpCode::Int32
+		    (uint8_t)(PRPOpCode::Int32), 0x10, 0x00, 0x00, 0x00,
+
+		    // End Object
+		    (uint8_t)(PRPOpCode::EndObject),
+
+		    // Controllers (no controllers)
+		    (uint8_t)(PRPOpCode::Container), 0x00, 0x00, 0x00, 0x00,
+
+		    // Children (no children)
+		    (uint8_t)(PRPOpCode::Container), 0x00, 0x00, 0x00, 0x00,
+
+		    // End of GEOM 1
+		    (uint8_t)(PRPOpCode::EndObject),
+
+	    // End of GEOM 0
+	    (uint8_t)(PRPOpCode::EndObject),
+	    /// ---------------- END OF STREAM ----------------
+	    (uint8_t)(PRPOpCode::EndOfStream)
+	};
+
+	PRPHeader header(6u, false, false, true);
+
+	PRPTokenTable tokenTable;
+	tokenTable.addToken("BOUNDING_DynamicAutoAssign");
+
+	PRPByteCode byteCode;
+	ASSERT_TRUE(byteCode.parse(&kByteCode[0], sizeof(kByteCode), &header, &tokenTable));
+
+	// Then create list of scene objects (just one object for this test)
+	std::vector<SceneObject::Ptr> sceneObjects;
+
+	{
+		gamelib::gms::GMSGeomEntity heroGeomInfo, bodyGeomInfo;
+		SceneObject::Instructions heroInstructions, bodyInstructions;
+
+		sceneObjects = {
+		    std::make_shared<SceneObject>("Hero", 0x200002, TypeRegistry::getInstance().findTypeByName("ZSTDOBJ"), std::move(heroGeomInfo), std::move(heroInstructions)),
+		    std::make_shared<SceneObject>("Body", 0x0, TypeRegistry::getInstance().findTypeByName("ZGEOM"), std::move(bodyGeomInfo), std::move(bodyInstructions))
+		};
+	}
+
+	// And then we may to map data to scene entities
+	const auto& instructions = byteCode.getInstructions();
+	Span ip { instructions };
+	ASSERT_NO_THROW(SceneObjectPropertiesLoader::load(Span(sceneObjects), ip));
+
+	// Check parent
+	ASSERT_TRUE(sceneObjects[0]->getParent().expired());
+	ASSERT_FALSE(sceneObjects[1]->getParent().expired());
+
+	// Check properties
+	auto geomType = TypeRegistry::getInstance().findTypeByName("ZGEOM");
+	ASSERT_NE(geomType, nullptr);
+
+	auto stdObj = TypeRegistry::getInstance().findTypeByName("ZSTDOBJ");
+	ASSERT_NE(stdObj, nullptr);
+
+	const Type* pVector3FType = TypeRegistry::getInstance().findTypeByName("ZVector3F");
+	ASSERT_NE(pVector3FType, nullptr);
+
+	const Type* pZMatrix33FType = TypeRegistry::getInstance().findTypeByName("ZMatrix33F");
+	ASSERT_NE(pZMatrix33FType, nullptr);
+
+	const Type* pEBoundingBoxType = TypeRegistry::getInstance().findTypeByName("EBoundingBox");
+	ASSERT_NE(pEBoundingBoxType, nullptr);
+
+	{
+		const auto& entries = sceneObjects[0]->getProperties().getEntries();
+		ASSERT_EQ(entries.size, 6);
+
+		ASSERT_EQ(entries[0].instructions.size(), 1);
+		ASSERT_EQ(entries[0].views.size(), 1);
+		ASSERT_EQ(entries[0].name, "BoundingBox");
+		ASSERT_EQ(entries[0].views[0].getType(), pEBoundingBoxType);
+		ASSERT_EQ(entries[0].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[1].instructions.size(), 11);
+		ASSERT_EQ(entries[1].views.size(), 1);
+		ASSERT_EQ(entries[1].name, "Matrix");
+		ASSERT_EQ(entries[1].views[0].getType(), pZMatrix33FType);
+		ASSERT_EQ(entries[1].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[2].instructions.size(), 5);
+		ASSERT_EQ(entries[2].views.size(), 1);
+		ASSERT_EQ(entries[2].name, "Position");
+		ASSERT_EQ(entries[2].views[0].getType(), pVector3FType);
+		ASSERT_EQ(entries[2].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[3].instructions.size(), 1);
+		ASSERT_EQ(entries[3].views.size(), 1);
+		ASSERT_EQ(entries[3].name, "IsInactive");
+		ASSERT_TRUE(entries[3].views[0].isTrivialType());
+		ASSERT_EQ(entries[3].views[0].getTrivialType(), PRPOpCode::Bool);
+		ASSERT_EQ(entries[3].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[4].instructions.size(), 1);
+		ASSERT_EQ(entries[4].views.size(), 1);
+		ASSERT_EQ(entries[4].name, "PrimId");
+		ASSERT_TRUE(entries[4].views[0].isTrivialType());
+		ASSERT_EQ(entries[4].views[0].getTrivialType(), PRPOpCode::Int32);
+		ASSERT_EQ(entries[4].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[5].instructions.size(), 1);
+		ASSERT_EQ(entries[5].views.size(), 1);
+		ASSERT_EQ(entries[5].name, "Invisible");
+		ASSERT_TRUE(entries[5].views[0].isTrivialType());
+		ASSERT_EQ(entries[5].views[0].getTrivialType(), PRPOpCode::Bool);
+		ASSERT_EQ(entries[5].views[0].getOwnerType(), stdObj);
+	}
+
+	{
+		const auto& entries = sceneObjects[1]->getProperties().getEntries();
+		ASSERT_EQ(entries.size, 5);
+
+		ASSERT_EQ(entries[0].instructions.size(), 1);
+		ASSERT_EQ(entries[0].views.size(), 1);
+		ASSERT_EQ(entries[0].name, "BoundingBox");
+		ASSERT_EQ(entries[0].views[0].getType(), pEBoundingBoxType);
+		ASSERT_EQ(entries[0].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[1].instructions.size(), 11);
+		ASSERT_EQ(entries[1].views.size(), 1);
+		ASSERT_EQ(entries[1].name, "Matrix");
+		ASSERT_EQ(entries[1].views[0].getType(), pZMatrix33FType);
+		ASSERT_EQ(entries[1].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[2].instructions.size(), 5);
+		ASSERT_EQ(entries[2].views.size(), 1);
+		ASSERT_EQ(entries[2].name, "Position");
+		ASSERT_EQ(entries[2].views[0].getType(), pVector3FType);
+		ASSERT_EQ(entries[2].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[3].instructions.size(), 1);
+		ASSERT_EQ(entries[3].views.size(), 1);
+		ASSERT_EQ(entries[3].name, "IsInactive");
+		ASSERT_TRUE(entries[3].views[0].isTrivialType());
+		ASSERT_EQ(entries[3].views[0].getTrivialType(), PRPOpCode::Bool);
+		ASSERT_EQ(entries[3].views[0].getOwnerType(), geomType);
+
+		ASSERT_EQ(entries[4].instructions.size(), 1);
+		ASSERT_EQ(entries[4].views.size(), 1);
+		ASSERT_EQ(entries[4].name, "PrimId");
+		ASSERT_TRUE(entries[4].views[0].isTrivialType());
+		ASSERT_EQ(entries[4].views[0].getTrivialType(), PRPOpCode::Int32);
+		ASSERT_EQ(entries[4].views[0].getOwnerType(), geomType);
+	}
+}
