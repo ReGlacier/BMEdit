@@ -2,22 +2,54 @@
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
     <Type Name="gamelib::Span&lt;*&gt;">
         <Expand>
-            <DisplayString Condition="data == nullptr &amp;&amp; size == 0">
+            <DisplayString Condition="m_data == nullptr &amp;&amp; m_size == 0">
                 nullptr
             </DisplayString>
 
-            <DisplayString Condition="size > 0 &amp;&amp; data != nullptr">
-                Size: {size}
-                First: {data[0]}
-                Last: {data[size-1]}
-            </DisplayString>
-
-            <Item Name="Size">size</Item>
+            <Item Name="Size">m_size</Item>
 
             <ArrayItems>
-                <Size>size</Size>
-                <ValuePointer>data</ValuePointer>
+                <Size>m_size</Size>
+                <ValuePointer>m_data</ValuePointer>
             </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="gamelib::prp::PRPInstruction">
+        <!-- Intrinsics -->
+        <Intrinsic Name="isContainer" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::Container || m_opCode == gamelib::prp::PRPOpCode::NamedContainer" />
+        <Intrinsic Name="isFloat32" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::Float32 || m_opCode == gamelib::prp::PRPOpCode::NamedFloat32" />
+        <Intrinsic Name="isFloat64" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::Float64 || m_opCode == gamelib::prp::PRPOpCode::NamedFloat64" />
+        <Intrinsic Name="isInt32" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::Int32 || m_opCode == gamelib::prp::PRPOpCode::NamedInt32" />
+        <Intrinsic Name="isInt16" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::Int16 || m_opCode == gamelib::prp::PRPOpCode::NamedInt16" />
+        <Intrinsic Name="isInt8" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::Int8 || m_opCode == gamelib::prp::PRPOpCode::NamedInt8" />
+        <Intrinsic Name="isBool" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::Bool || m_opCode == gamelib::prp::PRPOpCode::NamedBool" />
+        <Intrinsic Name="isString" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::String || m_opCode == gamelib::prp::PRPOpCode::NamedString" />
+        <Intrinsic Name="isStringArray" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::StringArray" />
+        <Intrinsic Name="isEnum" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::StringOrArray_E || m_opCode == gamelib::prp::PRPOpCode::StringOrArray_8E" />
+        <Intrinsic Name="isChar" Expression="m_isSet &amp;&amp; m_opCode == gamelib::prp::PRPOpCode::Char || m_opCode == gamelib::prp::PRPOpCode::NamedChar" />
+
+        <!-- Display -->
+        <DisplayString>OpCode: {m_opCode}, IsSet: {m_isSet}</DisplayString>
+
+        <Expand>
+            <Item Name="OpCode">m_opCode</Item>
+            <Item Name="IsNamed">m_isNamed</Item>
+            <Item Name="IsDeclarator">m_isDeclarator</Item>
+
+            <!-- Views -->
+            <Item Name="Value" Condition="isContainer()">m_operand.trivial.i32</Item>
+            <Item Name="Value" Condition="isInt32()">m_operand.trivial.i32</Item>
+            <Item Name="Value" Condition="isInt16()">m_operand.trivial.i16</Item>
+            <Item Name="Value" Condition="isInt8()">m_operand.trivial.i8</Item>
+            <Item Name="Value" Condition="isBool()">m_operand.trivial.b</Item>
+            <Item Name="Value" Condition="isFloat32()">m_operand.trivial.f32</Item>
+            <Item Name="Value" Condition="isFloat64()">m_operand.trivial.f64</Item>
+            <Item Name="Value" Condition="isString()">m_operand.str</Item>
+            <Item Name="Value" Condition="isEnum()">Enum: (m_operand.str)</Item>
+            <Item Name="Value" Condition="isStringArray()">m_operand.stringArray</Item>
+            <Item Name="Value" Condition="isChar()">m_operand.trivial.c</Item>
+            <Item Name="[Raw Value]">m_operand</Item>
         </Expand>
     </Type>
 </AutoVisualizer>
