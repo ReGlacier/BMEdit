@@ -32,12 +32,12 @@ namespace gamelib
 			return std::make_pair(false, nullptr);;
 		}
 
-		//NOTE: In some implementations enum value must be represented as operand.trivial.i32 but we ignoring that here
+		//NOTE: In some implementations enum value must be represented as operand.trivial.i32, but we're ignoring that here
 		for (const auto& [name, _value]: m_possibleValues)
 		{
 			if (name == operand.str)
 			{
-				return std::make_pair(true, instructions.slice(1, instructions.size - 1));
+				return std::make_pair(true, instructions.slice(1, instructions.size() - 1));
 			}
 		}
 

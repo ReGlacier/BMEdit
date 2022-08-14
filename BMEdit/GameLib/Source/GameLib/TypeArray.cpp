@@ -41,7 +41,7 @@ namespace gamelib
 
 	Type::VerificationResult TypeArray::verify(const Span<prp::PRPInstruction>& instructions) const
 	{
-		if (!instructions || instructions.size < 2)
+		if (!instructions || instructions.size() < 2)
 		{
 			return std::make_pair(false, nullptr);
 		}
@@ -57,7 +57,7 @@ namespace gamelib
 		}
 
 		const int capacity = instructions[0].getOperand().trivial.i32;
-		if (capacity != m_requiredCapacity || (instructions.size < (2 + capacity))) // capacity must be same to inner size and we need to have 2 + capacity instructions in deck (2 - begin & end)
+		if (capacity != m_requiredCapacity || (instructions.size() < (2 + capacity))) // capacity must be same to inner size, and we need to have 2 + capacity instructions in deck (2 - begin & end)
 		{
 			return std::make_pair(false, nullptr);
 		}
@@ -75,7 +75,7 @@ namespace gamelib
 			return std::make_pair(false, nullptr);
 		}
 
-		return std::make_pair(true, instructions.slice((2 + capacity), instructions.size - (2 + capacity)));
+		return std::make_pair(true, instructions.slice((2 + capacity), instructions.size() - (2 + capacity)));
 	}
 
 	Type::DataMappingResult TypeArray::map(const Span<prp::PRPInstruction> &instructions) const
@@ -122,6 +122,6 @@ namespace gamelib
 
 		return std::make_pair(
 		    Value(this, std::move(data), views),
-		    instructions.slice(sliceSize, instructions.size - sliceSize));
+		    instructions.slice(sliceSize, instructions.size() - sliceSize));
 	}
 }

@@ -100,18 +100,20 @@ namespace gamelib
 			if (view.isTrivialType()) // If property presented as trivial type - process it as single op code
 			{
 				auto trivialType = view.getTrivialType();
+				const auto currentType = ourSlice[0].getOpCode();
+
 				if (!OPCODE_VALID(trivialType))
 				{
 					assert(false && "Invalid opcode");
 					return std::make_pair(false, nullptr);
 				}
 
-				if (ourSlice.data[0].getOpCode() != trivialType) {
+				if (ourSlice[0].getOpCode() != trivialType) {
 					assert(false && "Unexpected type");
 					return std::make_pair(false, nullptr);
 				}
 
-				ourSlice = ourSlice.slice(1, ourSlice.size - 1);
+				ourSlice = ourSlice.slice(1, ourSlice.size() - 1);
 				continue; // skip next part
 			}
 
@@ -188,13 +190,13 @@ namespace gamelib
 					return {};
 				}
 
-				if (ourSlice.data[0].getOpCode() != trivialType) {
+				if (ourSlice[0].getOpCode() != trivialType) {
 					assert(false);
 					return {};
 				}
 
 				resultValue += std::make_pair(view.getName(), Value(this, { ourSlice[0] }, { view }));
-				ourSlice = ourSlice.slice(1, ourSlice.size - 1);
+				ourSlice = ourSlice.slice(1, ourSlice.size() - 1);
 				continue; // skip next part
 			}
 

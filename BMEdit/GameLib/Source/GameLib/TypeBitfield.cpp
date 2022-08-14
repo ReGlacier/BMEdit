@@ -36,7 +36,7 @@ namespace gamelib
 			}
 		}
 
-		return std::make_pair(true, instructions.slice(1, instructions.size - 1));
+		return std::make_pair(true, instructions.slice(1, instructions.size() - 1));
 	}
 
 	Type::DataMappingResult TypeBitfield::map(const Span<PRPInstruction> &instructions) const

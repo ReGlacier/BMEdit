@@ -23,7 +23,7 @@ namespace gamelib
 
 		// Type is alias to op-code
 		if (auto resultOpCode = std::get_if<prp::PRPOpCode>(&m_resultTypeInfo); resultOpCode != nullptr) {
-			if (instructions.size < 1) {
+			if (instructions.empty()) {
 				return std::make_pair(false, nullptr);
 			}
 
@@ -32,7 +32,7 @@ namespace gamelib
 				return std::make_pair(false, nullptr);
 			}
 
-			return std::make_pair(true, instructions.slice(1, instructions.size - 1));
+			return std::make_pair(true, instructions.slice(1, instructions.size() - 1));
 		}
 
 		// Alias not inited
@@ -48,7 +48,7 @@ namespace gamelib
 
 		// Take instruction
 		if (auto typeOpCodeValue = std::get_if<prp::PRPOpCode>(&m_resultTypeInfo); typeOpCodeValue != nullptr) {
-			if (instructions.size < 1) {
+			if (instructions.empty()) {
 				return Type::DataMappingResult();
 			}
 
@@ -57,7 +57,7 @@ namespace gamelib
 				return Type::DataMappingResult();
 			}
 
-			return Type::DataMappingResult(Value(this, { instructions[0] }), instructions.slice(1, instructions.size - 1));
+			return Type::DataMappingResult(Value(this, { instructions[0] }), instructions.slice(1, instructions.size() - 1));
 		}
 
 		// Not inited yet

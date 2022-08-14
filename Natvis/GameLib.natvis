@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="gamelib::Span&lt;*&gt;">
+        <Expand>
+            <DisplayString Condition="data == nullptr &amp;&amp; size == 0">
+                nullptr
+            </DisplayString>
+
+            <DisplayString Condition="size > 0 &amp;&amp; data != nullptr">
+                Size: {size}
+                First: {data[0]}
+                Last: {data[size-1]}
+            </DisplayString>
+
+            <Item Name="Size">size</Item>
+
+            <ArrayItems>
+                <Size>size</Size>
+                <ValuePointer>data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+</AutoVisualizer>

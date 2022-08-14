@@ -44,7 +44,7 @@ namespace gamelib::prp
 					operandDataPtr = &operandMemory[0];
 
 					// Extract N bytes from ctx and skip 'em
-					std::memcpy(operandDataPtr, &buffer.data[context.getIndex()], operandSize);
+					std::memcpy(operandDataPtr, &buffer[context.getIndex()], operandSize);
 					context += operandSize;
 				}
 
@@ -154,8 +154,7 @@ namespace gamelib::prp
 			return false;
 		}
 
-		m_buffer.data = data;
-		m_buffer.size = size;
+		m_buffer = Span { data, size };
 
 		PRPByteCodeContext byteCodeContext(0); // Start from 0 instruction
 

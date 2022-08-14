@@ -13,45 +13,43 @@ namespace gamelib
 	};
 
 	template <typename T>
-	struct Span
+	class Span
 	{
-		const T *data { nullptr };
-		int64_t size { 0 };
+		const T *m_data { nullptr };
+		int64_t m_size { 0 };
 
+	public:
 		Span() = default;
-		Span(std::nullptr_t) : data(nullptr), size(0) {}
+		Span(std::nullptr_t) : m_data(nullptr), m_size(0) {}
+		Span(const T *d, int64_t s) : m_data(d), m_size(s) {}
 
-		Span(const T *d, int64_t s) : data(d), size(s)
-		{
-		}
 		explicit Span(const std::vector<T> &vector)
 		{
 			if (!vector.empty())
 			{
-				data = vector.data();
-				size = static_cast<int64_t>(vector.size());
+				m_data = vector.data();
+				m_size = static_cast<int64_t>(vector.size());
 			}
 		}
 
-		[[nodiscard]] const T* cbegin() const { return data; }
-		[[nodiscard]] const T* cend() const { return data ? data + size : nullptr; }
+		[[nodiscard]] const T* cbegin() const { return m_data; }
+		[[nodiscard]] const T* cend() const { return m_data ? m_data + m_size : nullptr; }
 
-		[[nodiscard]] T* begin() { return const_cast<T*>(data); }
-		[[nodiscard]] T* end() { return data ? const_cast<T*>(data + size) : nullptr; }
+		[[nodiscard]] T* begin() { return const_cast<T*>(m_data); }
+		[[nodiscard]] T* end() { return m_data ? const_cast<T*>(m_data + m_size) : nullptr; }
 
-		[[nodiscard]] bool empty() const { return size == 0; }
+		[[nodiscard]] bool empty() const { return m_size == 0; }
+		[[nodiscard]] int64_t size() const { return m_size; }
+		[[nodiscard]] T* data() { return m_data; }
 
-		[[nodiscard]] explicit operator bool() const noexcept
-		{
-			return (data != nullptr);
-		}
+		[[nodiscard]] explicit operator bool() const noexcept { return (m_data != nullptr); }
 
 		Span<T>& operator++()
 		{
-			if (data && size)
+			if (m_data && m_size)
 			{
-				++data;
-				--size;
+				++m_data;
+				--m_size;
 			}
 			return *this;
 		}
@@ -65,34 +63,28 @@ namespace gamelib
 
 		[[nodiscard]] const T& operator[](int idx) const
 		{
-			return data[idx];
+			return m_data[idx];
 		}
 
 		void reset()
 		{
-			data = nullptr;
-			size = 0;
+			m_data = nullptr;
+			m_size = 0;
 		}
 
 		Span<T> slice(int64_t offset, int64_t sliceSize) const
 		{
-			if (offset >= size || offset + sliceSize > size) {
+			if (offset >= m_size || offset + sliceSize > m_size) {
 				return Span<T> { nullptr, 0 };
 			}
 
-			return Span<T> { data + offset, sliceSize };
+			return Span<T> { m_data + offset, sliceSize };
 		}
 
 		template <typename TV>
-		Span<T> slice(const TV& v) const requires(IsUnpackableConcept<TV>)
-		{
-			return slice(v.offset(), v.size());
-		}
+		Span<T> slice(const TV& v) const requires(IsUnpackableConcept<TV>) { return slice(v.offset(), v.size()); }
 
 		template <typename TR>
-		TR as() const requires(std::is_constructible_v<TR, decltype(data), decltype(data + size)> && std::is_default_constructible_v<TR>)
-		{
-			return empty() ? TR {} : TR { data, data + size };
-		}
+		TR as() const requires(std::is_constructible_v<TR, decltype(m_data), decltype(m_data + m_size)> && std::is_default_constructible_v<TR>) { return empty() ? TR {} : TR { m_data, m_data + m_size }; }
 	};
 }

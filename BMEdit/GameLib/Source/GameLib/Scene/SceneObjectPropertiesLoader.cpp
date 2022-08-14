@@ -30,7 +30,7 @@ namespace gamelib::scene
 
 		InternalContext ctx;
 		ctx.ip = instructions;
-		ctx.visitImpl(nullptr, objects[0], objects.slice(1, objects.size - 1), instructions);
+		ctx.visitImpl(nullptr, objects[0], objects.slice(1, objects.size() - 1), instructions);
 	}
 
 	void InternalContext::visitImpl(const SceneObject::Ptr &parent, const SceneObject::Ptr &currentObject, Span<SceneObject::Ptr> objects, Span<PRPInstruction> instructions)
@@ -97,6 +97,7 @@ namespace gamelib::scene
 		}
 
 		NEXT_IP
+		NEXT_OBJECT
 
 		/// ------------ STAGE 2: CONTROLLERS ------------
 		if (ip[0].getOpCode() != PRPOpCode::Container && ip[0].getOpCode() == PRPOpCode::NamedContainer)
@@ -164,7 +165,7 @@ namespace gamelib::scene
 					// Find nearest 'EndObject' instruction and instruction before it will be our last instruction
 					while (!end.empty() && end[0].getOpCode() != PRPOpCode::EndObject)
 					{
-						end = end.slice(1, end.size - 1);
+						end = end.slice(1, end.size() - 1);
 						++endOffset;
 					}
 
@@ -173,12 +174,12 @@ namespace gamelib::scene
 						throw SceneObjectVisitorException(objectIdx, fmt::format("Invalid controller definition: We have controller '{}' with unexposed instructions and without EndObject instruction!", controllerName));
 					}
 
-					auto unexposedInstructions = begin.slice(0, ip.size - endOffset).as<std::vector<PRPInstruction>>();
+					auto unexposedInstructions = begin.slice(0, ip.size() - endOffset).as<std::vector<PRPInstruction>>();
 
 					auto& orgInstructionsRef = controllers[controllerName].getInstructions();
 					orgInstructionsRef.insert(orgInstructionsRef.end(), unexposedInstructions.begin(), unexposedInstructions.end());
 
-					ip = ip.slice(endOffset, ip.size - endOffset);
+					ip = ip.slice(endOffset, ip.size() - endOffset);
 				}
 
 				if (ip[0].getOpCode() != PRPOpCode::EndObject)
@@ -207,12 +208,29 @@ namespace gamelib::scene
 		}
 
 		const int32_t childrenCount = ip[0].getOperand().trivial.i32;
-
 		NEXT_IP
 
+		if (childrenCount > 0)
+		{
+			if (ip[0].getOpCode() != PRPOpCode::BeginObject && ip[0].getOpCode() != PRPOpCode::BeginNamedObject)
+			{
+				throw SceneObjectVisitorException(objectIdx, "Invalid children definition (expected BeginObject/BeginNamedObject)");
+			}
+
+			for (int32_t geomIdx = 0; geomIdx < childrenCount; ++geomIdx)
+			{
+				visitImpl(currentObject, objects[0], objects.slice(1, objects.size() - 1), ip);
+			}
+		}
+
+		if (parent)
+		{
+			currentObject->setParent(parent);
+		}
+
+#if 0
 		for (int childrenGeomIdx = 0; childrenGeomIdx < childrenCount; ++childrenGeomIdx)
 		{
-			NEXT_OBJECT
 			visitImpl(currentObject, objects[0], objects.slice(1, objects.size - 1), ip);
 
 			if (ip[0].getOpCode() != PRPOpCode::EndObject)
@@ -227,6 +245,7 @@ namespace gamelib::scene
 		{
 			currentObject->setParent(parent);
 		}
+#endif
 	}
 }
 

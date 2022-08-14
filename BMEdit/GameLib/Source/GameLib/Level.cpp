@@ -151,12 +151,7 @@ namespace gamelib
 			using scene::SceneObject;
 			using scene::SceneObject;
 
-//			SceneObjectPropertiesLoader::visit(
-//			    Span(m_sceneObjects),
-//			    Span(m_levelProperties.rawProperties),
-//			    [](const SceneObject::Ptr& sceneObject, const Value& properties, const std::map<std::string, Value>& controllers) -> EVR {
-//				    return EVR::VR_CONTINUE;
-//			    });
+			scene::SceneObjectPropertiesLoader::load(Span(m_sceneObjects), Span(m_levelProperties.rawProperties));
 		}
 
 		return true;
