@@ -18,6 +18,7 @@ namespace models
 		int rowCount(const QModelIndex &parent) const override;
 		int columnCount(const QModelIndex &parent) const override;
 		QVariant data(const QModelIndex &index, int role) const override;
+		bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 		QVariant headerData(int section, Qt::Orientation orientation,
 		                    int role = Qt::DisplayRole) const override;
 

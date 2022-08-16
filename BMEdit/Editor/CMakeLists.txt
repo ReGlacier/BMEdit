@@ -33,7 +33,6 @@ file(
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Models/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Delegates/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Widgets/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/Include/Items/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Data/*.h
 )
 file(GLOB_RECURSE EDITOR_AUTOGEN_UI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/UI/UI/*.ui)

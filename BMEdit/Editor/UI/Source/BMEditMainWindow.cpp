@@ -15,6 +15,7 @@
 #include <Editor/EditorInstance.h>
 #include <Models/SceneObjectsTreeModel.h>
 #include <Models/SceneObjectPropertiesModel.h>
+#include <Delegates/TypePropertyItemDelegate.h>
 
 #include <nlohmann/json.hpp>
 
@@ -37,6 +38,7 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 
     ui->sceneTreeView->setModel(new models::SceneObjectsTreeModel(this));
 	ui->propertiesView->setModel(new models::SceneObjectPropertiesModel(this));
+	ui->propertiesView->setItemDelegateForColumn(1, new delegates::TypePropertyItemDelegate(this));
 
 	initStatusBar();
 	connectActions();
