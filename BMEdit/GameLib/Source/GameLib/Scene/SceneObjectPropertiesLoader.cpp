@@ -6,8 +6,8 @@
 
 #include <fmt/format.h>
 
-#define NEXT_IP (++ip);
-#define NEXT_OBJECT (++objectIdx);
+#define NEXT_IP nextInstruction();
+#define NEXT_OBJECT nextObject();
 
 namespace gamelib::scene
 {
@@ -17,10 +17,28 @@ namespace gamelib::scene
 
 	struct InternalContext
 	{
-		uint32_t objectIdx = 0;
+		int32_t objectIdx = 0;
+		Span<SceneObject::Ptr> objects;
 		Span<PRPInstruction> ip;
 
-		void visitImpl(const SceneObject::Ptr& parent, const SceneObject::Ptr& currentObject, Span<SceneObject::Ptr> objects, Span<PRPInstruction> instructions);
+		void visitImpl(const SceneObject::Ptr& parent = nullptr);
+
+		void nextObject()
+		{
+			assert(!objects.empty());
+
+			++objectIdx;
+		}
+
+		void nextInstruction()
+		{
+			++ip;
+		}
+
+		[[nodiscard]] SceneObject::Ptr getCurrentObject() const
+		{
+			return objects ? objects[objectIdx] : nullptr;
+		}
 	};
 
 	void SceneObjectPropertiesLoader::load(Span<SceneObject::Ptr> objects, Span<PRPInstruction> instructions)
@@ -30,11 +48,18 @@ namespace gamelib::scene
 
 		InternalContext ctx;
 		ctx.ip = instructions;
-		ctx.visitImpl(nullptr, objects[0], objects.slice(1, objects.size() - 1), instructions);
+		ctx.objects = objects;
+		ctx.objectIdx = 0;
+		ctx.visitImpl();
 	}
 
-	void InternalContext::visitImpl(const SceneObject::Ptr &parent, const SceneObject::Ptr &currentObject, Span<SceneObject::Ptr> objects, Span<PRPInstruction> instructions)
+	void InternalContext::visitImpl(const SceneObject::Ptr& parent) // NOLINT(misc-no-recursion)
 	{
+		const auto& currentObject = getCurrentObject();
+
+//		printf("PROCESS UNIT #%d '%s' (of type %.08X)\n", objectIdx, currentObject->getName().data(), currentObject->getTypeId());
+//		fflush(stdout);
+
 		/**
 		 * Generic object declaration rules:
 		 * 		Here we working with Glacier (R) object definition format. This format includes three sections:
@@ -97,7 +122,6 @@ namespace gamelib::scene
 		}
 
 		NEXT_IP
-		NEXT_OBJECT
 
 		/// ------------ STAGE 2: CONTROLLERS ------------
 		if (ip[0].getOpCode() != PRPOpCode::Container && ip[0].getOpCode() == PRPOpCode::NamedContainer)
@@ -194,6 +218,13 @@ namespace gamelib::scene
 		currentObject->getControllers() = controllers;
 		currentObject->getProperties()  = properties;
 
+		if (parent)
+		{
+			currentObject->setParent(parent);
+		}
+
+		NEXT_OBJECT
+
 		/// ------------ STAGE 3: CHILDREN ------------
 		/*
 		 * 		3) Children
@@ -219,33 +250,10 @@ namespace gamelib::scene
 
 			for (int32_t geomIdx = 0; geomIdx < childrenCount; ++geomIdx)
 			{
-				visitImpl(currentObject, objects[0], objects.slice(1, objects.size() - 1), ip);
+				currentObject->getChildren().push_back(getCurrentObject());
+				visitImpl(currentObject);
 			}
 		}
-
-		if (parent)
-		{
-			currentObject->setParent(parent);
-		}
-
-#if 0
-		for (int childrenGeomIdx = 0; childrenGeomIdx < childrenCount; ++childrenGeomIdx)
-		{
-			visitImpl(currentObject, objects[0], objects.slice(1, objects.size - 1), ip);
-
-			if (ip[0].getOpCode() != PRPOpCode::EndObject)
-			{
-				throw SceneObjectVisitorException(objectIdx, "Invalid children definition (Expected EndObject)");
-			}
-
-			NEXT_IP
-		}
-
-		if (parent)
-		{
-			currentObject->setParent(parent);
-		}
-#endif
 	}
 }
 

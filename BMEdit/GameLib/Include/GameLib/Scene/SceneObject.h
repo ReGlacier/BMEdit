@@ -38,6 +38,7 @@ namespace gamelib::scene
 		[[nodiscard]] const Value &getProperties() const;
 		[[nodiscard]] Value &getProperties();
 		[[nodiscard]] const gms::GMSGeomEntity &getGeomInfo() const;
+		[[nodiscard]] gms::GMSGeomEntity &getGeomInfo();
 		[[nodiscard]] const SceneObject::Ref &getParent() const;
 		[[nodiscard]] const std::vector<SceneObject::Ref> &getChildren() const;
 		[[nodiscard]] std::vector<SceneObject::Ref> &getChildren();

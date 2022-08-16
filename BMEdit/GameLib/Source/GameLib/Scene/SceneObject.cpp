@@ -71,6 +71,11 @@ namespace gamelib::scene
 		return m_geom;
 	}
 
+	gms::GMSGeomEntity &SceneObject::getGeomInfo()
+	{
+		return m_geom;
+	}
+
 	const SceneObject::Ref &SceneObject::getParent() const
 	{
 		return m_parent;

@@ -111,12 +111,14 @@ namespace gamelib
 				return type.get();
 
 			// #2 : IOI G1 codegen remove Event postfix from typename too
-			if (hasClassPrefix && (typeName.ends_with("Event") && (typeName.length() > 5) && (typeName.substr(1, static_cast<std::size_t>(typeName.length() - 5)) == requestedTypeName)))
+			if (hasClassPrefix && std::string("Z").append(requestedTypeName).append("Event") == typeName)
 				return type.get();
 
 			// #3 : IOI G1 codegen for Hitman Blood Money (HM3) removing HM3 prefix
-			if (hasClassPrefix && (typeName.substr(1).starts_with("HM3")) && (typeName.substr(4) == requestedTypeName))
+			if (hasClassPrefix && std::string("ZHM3").append(requestedTypeName) == typeName)
 				return type.get();
+
+			//NOTE: Maybe we should optimize this place
 		}
 
 		return nullptr;

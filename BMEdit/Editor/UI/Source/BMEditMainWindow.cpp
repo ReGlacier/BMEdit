@@ -135,10 +135,16 @@ void BMEditMainWindow::connectEditorSignals()
 
 	connect(ui->sceneTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
 		if (!selected.indexes().isEmpty()) {
-			auto selectedIndex = reinterpret_cast<const models::SceneObjectsTreeModel::Index *>(selected.indexes().first().constInternalPointer());
-			if (selectedIndex)
+			/// *** STUPID CODE, WILL FIX LATER ***
+			const auto* sel = reinterpret_cast<const gamelib::scene::SceneObject*>(selected.indexes().first().constInternalPointer());
+			const auto& sceneObjects = editor::EditorInstance::getInstance().getActiveLevel()->getSceneObjects();
+			for (int i = 0; i < sceneObjects.size(); ++i)
 			{
-				onSelectedSceneObject(static_cast<int>(selectedIndex->sceneIndex));
+				if (sceneObjects[i].get() == sel)
+				{
+					onSelectedSceneObject(i);
+					return;
+				}
 			}
 		} else if (!deselected.indexes().isEmpty())
 		{

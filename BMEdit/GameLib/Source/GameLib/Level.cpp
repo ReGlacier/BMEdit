@@ -141,10 +141,12 @@ namespace gamelib
 				    propertyInstructions
 			    );
 
+#if 0 // I guess it's a source of bugs (SEE THE NEXT COMMENT)
 				if (auto parentGeomIndex = currentGeom.getParentGeomIndex(); parentGeomIndex != gms::GMSGeomEntity::kInvalidParent) {
 					m_sceneObjects[sceneObjectIndex]->setParent(m_sceneObjects[parentGeomIndex]);
 					m_sceneObjects[parentGeomIndex]->getChildren().push_back(m_sceneObjects[sceneObjectIndex]);
 				}
+#endif
 			}
 
 			// Visit properties
@@ -152,6 +154,12 @@ namespace gamelib
 			using scene::SceneObject;
 
 			scene::SceneObjectPropertiesLoader::load(Span(m_sceneObjects), Span(m_levelProperties.rawProperties));
+			/**
+			 * THE HIERARCHY ISSUE:
+			 * 		SceneObjectPropertiesLoader::load builds hierarchy from PRP file and it's ok for testing purposes, but in production we need to work with hierarchy from GMS
+			 * 		The main problem is I DON'T UNDERSTAND HOW HIERARCHY ARE STORED INSIDE GMS FILE.
+			 * 		So, I will fix this place when I will understand that.
+			 */
 		}
 
 		return true;

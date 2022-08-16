@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cassert>
 
 
 namespace gamelib
@@ -38,9 +39,12 @@ namespace gamelib
 		[[nodiscard]] T* begin() { return const_cast<T*>(m_data); }
 		[[nodiscard]] T* end() { return m_data ? const_cast<T*>(m_data + m_size) : nullptr; }
 
+		[[nodiscard]] T& front() { assert(!empty()); return const_cast<T&>(m_data[0]); }
+		[[nodiscard]] T& back() { assert(!empty()); return const_cast<T&>(m_data[m_size - 1]); }
+
 		[[nodiscard]] bool empty() const { return m_size == 0; }
 		[[nodiscard]] int64_t size() const { return m_size; }
-		[[nodiscard]] T* data() { return m_data; }
+		[[nodiscard]] T* data() { return const_cast<T*>(m_data); }
 
 		[[nodiscard]] explicit operator bool() const noexcept { return (m_data != nullptr); }
 
