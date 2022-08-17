@@ -37,7 +37,9 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->sceneTreeView->setModel(new models::SceneObjectsTreeModel(this));
+
 	ui->propertiesView->setModel(new models::SceneObjectPropertiesModel(this));
+	ui->propertiesView->setEditTriggers(QAbstractItemView::DoubleClicked);
 	ui->propertiesView->setItemDelegateForColumn(1, new delegates::TypePropertyItemDelegate(this));
 
 	initStatusBar();

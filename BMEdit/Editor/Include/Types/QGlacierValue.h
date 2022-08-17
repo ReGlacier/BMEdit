@@ -11,7 +11,8 @@ namespace types
 	 */
 	struct QGlacierValue
 	{
-		gamelib::Value value {};
+		std::vector<gamelib::prp::PRPInstruction> instructions;
+		std::vector<gamelib::ValueView> views;
 	};
 }
 

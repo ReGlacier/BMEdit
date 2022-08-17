@@ -41,21 +41,43 @@ namespace models
 
 	QVariant SceneObjectPropertiesModel::data(const QModelIndex &index, int role) const
 	{
-		if (role != Qt::DisplayRole)
-		{
-			return QVariant {};
-		}
-
 		const auto &geom = m_level->getSceneObjects().at(m_geomIndex.value());
 		const auto &entList = geom->getProperties().getEntries();
+		const auto& currentEnt = entList[index.row()];
 
 		if (index.column() == ColumnID::NAME)
 		{
-			return QVariant(QString::fromStdString(entList[index.row()].name));
+			if (role == Qt::DisplayRole)
+			{
+				return QVariant(QString::fromStdString(currentEnt.name));
+			}
+			else if (role == Qt::ToolTipRole && !currentEnt.views.empty())
+			{
+				const gamelib::Type* ownerType = currentEnt.views.back().getOwnerType();
+				const QString declaredAtClass = QString::fromStdString(ownerType ? ownerType->getName() : "(Undefined)");
+				const QString propertyName = QString::fromStdString(currentEnt.name);
+				return QString("%1::%2").arg(declaredAtClass, propertyName);
+			}
+			else return {};
 		}
 		else if (index.column() == ColumnID::VALUE)
 		{
-			return QVariant::fromValue<types::QGlacierValue>({ geom->getProperties() });
+			if (role == Qt::EditRole)
+			{
+				types::QGlacierValue value;
+				value.instructions = gamelib::Span(geom->getProperties().getInstructions()).slice(currentEnt.instructions).as<std::vector<gamelib::prp::PRPInstruction>>();
+				value.views = currentEnt.views;
+
+				return QVariant::fromValue<types::QGlacierValue>(value);
+			}
+			else if (role == Qt::DisplayRole)
+			{
+				/**
+				 * FIXME: Weird bug: when we getting into editor mode we have two widgets: caption & editor. Need to understand how to avoid this behaviour :thinking:
+				 */
+				return { QString("String repr") }; //FIXME: Generate repr for this
+			}
+			else return {};
 		}
 
 		return QVariant {};
@@ -70,8 +92,15 @@ namespace models
 
 			const auto val = value.value<types::QGlacierValue>();
 			const auto &geom = m_level->getSceneObjects().at(m_geomIndex.value());
-			geom->getProperties() = val.value; //re-assign props
-			return true;
+
+			// Here we need to check that we have same (by size) containers
+			if (geom->getProperties().getInstructions().size() == val.instructions.size())
+			{
+				geom->getProperties().getInstructions() = val.instructions;
+				return true;
+			}
+
+			return false;
 		}
 
 		return QAbstractItemModel::setData(index, value, role);
@@ -86,6 +115,20 @@ namespace models
 		}
 
 		return QAbstractTableModel::headerData(section, orientation, role);
+	}
+
+	Qt::ItemFlags SceneObjectPropertiesModel::flags(const QModelIndex &index) const
+	{
+		if (index.column() == ColumnID::NAME)
+		{
+			return Qt::ItemFlag::ItemIsSelectable;
+		}
+		else if (index.column() == ColumnID::VALUE)
+		{
+			return Qt::ItemFlag::ItemIsEditable | Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable;
+		}
+
+		return Qt::NoItemFlags;
 	}
 
 	void SceneObjectPropertiesModel::setLevel(const gamelib::Level *level)

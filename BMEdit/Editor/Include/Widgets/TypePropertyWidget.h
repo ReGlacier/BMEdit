@@ -21,10 +21,11 @@ namespace widgets
 
 		QSize sizeHint() const override;
 
-	protected:
-		void paintEvent(QPaintEvent *event) override;
+	private:
+		void rebuildLayout();
 
 	private:
 		types::QGlacierValue m_value {};
+		QSize m_minSize { 10, 10 };
 	};
 }
