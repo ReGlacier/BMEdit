@@ -1,20 +1,41 @@
 #include <Widgets/TypePropertyWidget.h>
-#include <QVBoxLayout>
-#include <QPushButton>
+#include <Factory/TypePresentationWidgetFactory.h>
 #include <QLayout>
+
 
 namespace widgets {
 	TypePropertyWidget::TypePropertyWidget(QWidget* parent) : QWidget(parent) {}
 
-	void TypePropertyWidget::setValue(const types::QGlacierValue &value) { m_value = value; rebuildLayout(); }
-	const types::QGlacierValue &TypePropertyWidget::getValue() const { return m_value; }
-
-	QSize TypePropertyWidget::sizeHint() const
+	void TypePropertyWidget::setValue(const types::QGlacierValue &value)
 	{
-		return m_minSize;
+		m_value = value;
+		rebuildLayout();
+	}
+
+	void TypePropertyWidget::updateValue(const types::QGlacierValue &value)
+	{
+		m_value = value;
+
+		emit valueChanged();
+	}
+
+	const types::QGlacierValue &TypePropertyWidget::getValue() const
+	{
+		return m_value;
 	}
 
 	void TypePropertyWidget::rebuildLayout()
+	{
+		clearLayout();
+
+		// Type hinters
+		if (m_value.instructions.empty() || m_value.views.empty())
+			return;
+
+		factory::TypePresentationWidgetFactory::produceAndPlace(m_value, this);
+	}
+
+	void TypePropertyWidget::clearLayout()
 	{
 		// Clear layout
 		if (layout())
@@ -28,13 +49,5 @@ namespace widgets {
 				delete item;
 			}
 		}
-
-		auto newLayout = new QVBoxLayout(this);
-		setLayout(newLayout);
-
-		//FIXME: Here we need to implement our factory
-		m_minSize = QSize(100, 100);
-		auto btn = new QPushButton("HELLO", this);
-		newLayout->addWidget(btn);
 	}
 }

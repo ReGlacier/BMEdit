@@ -20,6 +20,8 @@ namespace delegates
 		if (index.data(Qt::EditRole).canConvert<types::QGlacierValue>())
 		{
 			auto editor = new widgets::TypePropertyWidget(parent);
+			connect(editor, &widgets::TypePropertyWidget::valueChanged, this, &TypePropertyItemDelegate::commitDataChunk);
+
 			return editor;
 		}
 
@@ -53,5 +55,11 @@ namespace delegates
 		} else {
 			QStyledItemDelegate::setModelData(editor, model, index);
 		}
+	}
+
+	void TypePropertyItemDelegate::commitDataChunk()
+	{
+		auto editor = qobject_cast<widgets::TypePropertyWidget*>(sender());
+		emit commitData(editor);
 	}
 }

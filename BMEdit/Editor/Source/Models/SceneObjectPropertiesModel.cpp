@@ -1,6 +1,6 @@
 #include <Models/SceneObjectPropertiesModel.h>
-
 #include <Types/QGlacierValue.h>
+#include <Editor/PropertyAsStringRepr.h>
 
 #include <GameLib/Type.h>
 #include <GameLib/TypeComplex.h>
@@ -62,12 +62,12 @@ namespace models
 		}
 		else if (index.column() == ColumnID::VALUE)
 		{
+			types::QGlacierValue value;
+			value.instructions = gamelib::Span(geom->getProperties().getInstructions()).slice(currentEnt.instructions).as<std::vector<gamelib::prp::PRPInstruction>>();
+			value.views = currentEnt.views;
+
 			if (role == Qt::EditRole)
 			{
-				types::QGlacierValue value;
-				value.instructions = gamelib::Span(geom->getProperties().getInstructions()).slice(currentEnt.instructions).as<std::vector<gamelib::prp::PRPInstruction>>();
-				value.views = currentEnt.views;
-
 				return QVariant::fromValue<types::QGlacierValue>(value);
 			}
 			else if (role == Qt::DisplayRole)
@@ -75,7 +75,7 @@ namespace models
 				/**
 				 * FIXME: Weird bug: when we getting into editor mode we have two widgets: caption & editor. Need to understand how to avoid this behaviour :thinking:
 				 */
-				return { QString("String repr") }; //FIXME: Generate repr for this
+				return editor::PropertyAsStringRepr::getStringRepresentationOfValue(value);
 			}
 			else return {};
 		}
@@ -94,9 +94,15 @@ namespace models
 			const auto &geom = m_level->getSceneObjects().at(m_geomIndex.value());
 
 			// Here we need to check that we have same (by size) containers
-			if (geom->getProperties().getInstructions().size() == val.instructions.size())
+			const auto& [off, sz] = geom->getProperties().getEntries()[index.row()].instructions;
+
+			if (sz == val.instructions.size())
 			{
-				geom->getProperties().getInstructions() = val.instructions;
+				for (auto i = off; i < off + sz; ++i)
+				{
+					geom->getProperties().getInstructions()[i] = val.instructions[i - off];
+				}
+
 				return true;
 			}
 

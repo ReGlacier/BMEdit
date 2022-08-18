@@ -7,8 +7,7 @@
 namespace widgets
 {
 	/*
-	 * This widget representing inside data as one (or more) standard Qt widgets (QEdit, QLabel, Q...Matrix? Bruh)
-	 * TODO: Impl this please)))0)
+	 * This widget representing inside data as one (or more) standard Qt widgets (QEdit, QLabel, Q...Matrix?)
 	 */
 	class TypePropertyWidget : public QWidget
 	{
@@ -17,15 +16,17 @@ namespace widgets
 		TypePropertyWidget(QWidget* parent = nullptr);
 
 		void setValue(const types::QGlacierValue &value);
+		void updateValue(const types::QGlacierValue &value);
 		[[nodiscard]] const types::QGlacierValue &getValue() const;
 
-		QSize sizeHint() const override;
+	signals:
+		void valueChanged();
 
 	private:
 		void rebuildLayout();
+		void clearLayout();
 
 	private:
 		types::QGlacierValue m_value {};
-		QSize m_minSize { 10, 10 };
 	};
 }
