@@ -17,6 +17,8 @@
 #include <Models/SceneObjectPropertiesModel.h>
 #include <Delegates/TypePropertyItemDelegate.h>
 
+#include <LoadSceneProgressDialog.h>
+
 #include <nlohmann/json.hpp>
 
 
@@ -32,16 +34,15 @@ enum OperationToProgress : int
 
 BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::BMEditMainWindow)
+    ui(new Ui::BMEditMainWindow),
+    m_loadSceneDialog(this)
 {
     ui->setupUi(this);
 
-    ui->sceneTreeView->setModel(new models::SceneObjectsTreeModel(this));
-
-	ui->propertiesView->setModel(new models::SceneObjectPropertiesModel(this));
-	ui->propertiesView->setEditTriggers(QAbstractItemView::DoubleClicked);
-	ui->propertiesView->setItemDelegateForColumn(1, new delegates::TypePropertyItemDelegate(this));
-
+	initSceneTree();
+	initProperties();
+	initControllers();
+	initSceneLoadingDialog();
 	initStatusBar();
 	connectActions();
 	connectDockWidgetActions();
@@ -51,6 +52,11 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 
 BMEditMainWindow::~BMEditMainWindow()
 {
+	delete m_geomTypesModel;
+	delete m_typePropertyItemDelegate;
+	delete m_sceneTreeModel;
+	delete m_sceneObjectPropertiesModel;
+
 	delete m_operationProgress;
 	delete m_operationLabel;
 	delete m_operationCommentLabel;
@@ -138,17 +144,14 @@ void BMEditMainWindow::connectEditorSignals()
 	connect(ui->searchInputField, &QLineEdit::textChanged, [=](const QString &query) { onSearchObjectQueryChanged(query); });
 
 	connect(ui->sceneTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
-		if (!selected.indexes().isEmpty()) {
-			/// *** STUPID CODE, WILL FIX LATER ***
-			const auto* sel = reinterpret_cast<const gamelib::scene::SceneObject*>(selected.indexes().first().constInternalPointer());
-			const auto& sceneObjects = editor::EditorInstance::getInstance().getActiveLevel()->getSceneObjects();
-			for (int i = 0; i < sceneObjects.size(); ++i)
+		const bool somethingSelected = !selected.indexes().isEmpty();
+
+		if (somethingSelected) {
+			const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(selected.indexes().first().data(models::SceneObjectsTreeModel::SceneObjectRole).value<std::intptr_t>());
+
+			if (selectedGeom)
 			{
-				if (sceneObjects[i].get() == sel)
-				{
-					onSelectedSceneObject(i);
-					return;
-				}
+				onSelectedSceneObject(selectedGeom);
 			}
 		} else if (!deselected.indexes().isEmpty())
 		{
@@ -177,6 +180,9 @@ void BMEditMainWindow::onOpenLevel()
 	auto selectedLevel = openLevelDialog.selectedFiles().first().toStdString();
 	auto &editorInstance = editor::EditorInstance::getInstance();
 
+	//TODO: Restore code bellow after async loader will be finished
+//	m_loadSceneDialog.setLevelPath(QString::fromStdString(selectedLevel));
+//	m_loadSceneDialog.show();
 	editor::EditorInstance::getInstance().openLevelFromZIP(selectedLevel);
 }
 
@@ -201,18 +207,23 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	resetStatusToDefault();
 
 	// Level loaded, show objects tree
-	auto sceneModel = qobject_cast<models::SceneObjectsTreeModel *>(ui->sceneTreeView->model());
-	if (sceneModel) {
-		sceneModel->setLevel(currentLevel);
+	{
+		QSignalBlocker blocker { ui->searchInputField };
+		ui->searchInputField->clear();
 	}
 
-	auto propertiesModel = qobject_cast<models::SceneObjectPropertiesModel *>(ui->propertiesView->model());
-	if (propertiesModel) {
-		propertiesModel->setLevel(currentLevel);
+	if (m_sceneTreeModel)
+	{
+		m_sceneTreeModel->setLevel(currentLevel);
+	}
+
+	if (m_sceneObjectPropertiesModel)
+	{
+		m_sceneObjectPropertiesModel->setLevel(currentLevel);
 	}
 
 	ui->searchInputField->clear();
-	ui->searchInputField->setEnabled(true);
+	//ui->searchInputField->setEnabled(true); //TODO: Uncomment when search will be done
 }
 
 void BMEditMainWindow::onLevelLoadFailed(const QString &reason)
@@ -243,42 +254,25 @@ void BMEditMainWindow::onLevelLoadProgressChanged(int totalPercentsProgress, con
 
 void BMEditMainWindow::onSearchObjectQueryChanged(const QString &query)
 {
-	ui->sceneTreeView->keyboardSearch(query);
 }
 
-void BMEditMainWindow::onSelectedSceneObject(int selectedSceneObjectIdx)
+void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* selectedSceneObject)
 {
-	auto sceneObjectPropertiesModel = qobject_cast<models::SceneObjectPropertiesModel *>(ui->propertiesView->model());
-	if (!sceneObjectPropertiesModel)
+	if (!m_sceneObjectPropertiesModel || !selectedSceneObject)
 	{
 		return;
 	}
 
-	auto &entities = editor::EditorInstance::getInstance().getActiveLevel()->getSceneProperties()->header.getEntries().getGeomEntities();
-	if (selectedSceneObjectIdx < 0 || selectedSceneObjectIdx >= entities.size())
-	{
-		return;
-	}
-
-	auto &sceneEnt = entities.at(selectedSceneObjectIdx);
-	auto type = gamelib::TypeRegistry::getInstance().findTypeByHash(sceneEnt.getTypeId());
-
-	if (!type)
-	{
-		return;
-	}
-
-	ui->sceneObjectName->setText(QString::fromStdString(sceneEnt.getName()));
+	ui->sceneObjectName->setText(QString::fromStdString(selectedSceneObject->getName()));
 	ui->sceneObjectTypeCombo->setEnabled(true);
-	ui->sceneObjectTypeCombo->setCurrentText(QString::fromStdString(type->getName()));
+	ui->sceneObjectTypeCombo->setCurrentText(QString::fromStdString(selectedSceneObject->getType()->getName()));
 
-	sceneObjectPropertiesModel->setGeomIndex(selectedSceneObjectIdx);
+	m_sceneObjectPropertiesModel->setGeom(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
 }
 
 void BMEditMainWindow::onDeselectedSceneObject()
 {
-	auto sceneObjectPropertiesModel = qobject_cast<models::SceneObjectPropertiesModel *>(ui->propertiesView->model());
-	if (!sceneObjectPropertiesModel)
+	if (!m_sceneObjectPropertiesModel)
 	{
 		return;
 	}
@@ -286,7 +280,7 @@ void BMEditMainWindow::onDeselectedSceneObject()
 	ui->sceneObjectTypeCombo->setEnabled(false);
 	ui->sceneObjectName->clear();
 
-	sceneObjectPropertiesModel->resetGeomIndex();
+	m_sceneObjectPropertiesModel->resetGeom();
 }
 
 void BMEditMainWindow::loadTypesDataBase()
@@ -368,7 +362,10 @@ void BMEditMainWindow::loadTypesDataBase()
 
 		QStringList allAvailableTypes;
 		gamelib::TypeRegistry::getInstance().forEachType([&allAvailableTypes](const gamelib::Type *type) { allAvailableTypes.push_back(QString::fromStdString(type->getName())); });
-		ui->sceneObjectTypeCombo->setModel(new QStringListModel(allAvailableTypes, this));
+
+		delete m_geomTypesModel;
+		m_geomTypesModel = new QStringListModel(allAvailableTypes, this);
+		ui->sceneObjectTypeCombo->setModel(m_geomTypesModel);
 
 		m_operationProgress->setValue(0);
 		m_operationCommentLabel->setText("Ready to open level");
@@ -390,4 +387,34 @@ void BMEditMainWindow::resetStatusToDefault()
 	m_operationLabel->setText("Progress: ");
 	m_operationCommentLabel->setText("(No active operation)");
 	m_operationProgress->setValue(0);
+}
+
+void BMEditMainWindow::initSceneTree()
+{
+	// Main model
+	m_sceneTreeModel = new models::SceneObjectsTreeModel(this);
+	ui->sceneTreeView->setModel(m_sceneTreeModel);
+}
+
+void BMEditMainWindow::initProperties()
+{
+	m_sceneObjectPropertiesModel = new models::SceneObjectPropertiesModel(this);
+	m_typePropertyItemDelegate = new delegates::TypePropertyItemDelegate(this);
+
+	ui->propertiesView->setModel(m_sceneObjectPropertiesModel);
+	ui->propertiesView->setItemDelegateForColumn(1, m_typePropertyItemDelegate);
+	ui->propertiesView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->propertiesView->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void BMEditMainWindow::initControllers()
+{
+	//TODO: Init this
+}
+
+void BMEditMainWindow::initSceneLoadingDialog()
+{
+	m_loadSceneDialog.setFixedSize(m_loadSceneDialog.size());
+	m_loadSceneDialog.setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+	m_loadSceneDialog.setModal(true);
 }

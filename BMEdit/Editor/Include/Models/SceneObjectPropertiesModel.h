@@ -6,6 +6,10 @@
 #include <QAbstractTableModel>
 #include <optional>
 
+namespace gamelib::scene
+{
+	class SceneObject;
+}
 
 namespace models
 {
@@ -24,12 +28,13 @@ namespace models
 		Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 		void setLevel(const gamelib::Level *level);
-		void setGeomIndex(std::size_t geomIndex);
+		void setGeom(gamelib::scene::SceneObject * geom);
 		void resetLevel();
-		void resetGeomIndex();
+		void resetGeom();
 
 	private:
 		std::optional<std::size_t> m_geomIndex {};
+		gamelib::scene::SceneObject* m_geom { nullptr };
 		const gamelib::Level *m_level { nullptr };
 	};
 }

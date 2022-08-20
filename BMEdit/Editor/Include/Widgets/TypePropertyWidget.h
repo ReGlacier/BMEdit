@@ -1,32 +1,30 @@
 #pragma once
 
 #include <QWidget>
+#include <QStyleOptionViewItem>
 #include <Types/QGlacierValue.h>
 
 
 namespace widgets
 {
 	/*
-	 * This widget representing inside data as one (or more) standard Qt widgets (QEdit, QLabel, Q...Matrix?)
+	 * @class TypePropertyWidget
+	 * @brief Base class for 'editor' widgets
 	 */
 	class TypePropertyWidget : public QWidget
 	{
 		Q_OBJECT
 	public:
-		TypePropertyWidget(QWidget* parent = nullptr);
+		explicit TypePropertyWidget(QWidget* parent = nullptr);
 
-		void setValue(const types::QGlacierValue &value);
-		void updateValue(const types::QGlacierValue &value);
+		virtual void setValue(const types::QGlacierValue &value);
 		[[nodiscard]] const types::QGlacierValue &getValue() const;
 
 	signals:
 		void valueChanged();
+		void editFinished();
 
-	private:
-		void rebuildLayout();
-		void clearLayout();
-
-	private:
+	protected:
 		types::QGlacierValue m_value {};
 	};
 }

@@ -19,7 +19,7 @@ namespace models
 
 	QVariant SceneObjectsTreeModel::data(const QModelIndex &index, int role) const
 	{
-		if (role != Qt::DisplayRole || !isValidLevel())
+		if (!isValidLevel())
 		{
 			return QVariant {};
 		}
@@ -27,7 +27,16 @@ namespace models
 		const auto* so = reinterpret_cast<const SceneObject*>(index.constInternalPointer());
 		if (!so) return {};
 
-		return QVariant(QString::fromStdString(so->getName()));
+		if (role == Qt::DisplayRole)
+		{
+			return QString::fromStdString(so->getName());
+		}
+
+		if (role == SceneObjectRole) {
+			return reinterpret_cast<std::intptr_t>(so);
+		}
+
+		return {};
 	}
 
 	QModelIndex SceneObjectsTreeModel::index(int row, int column, const QModelIndex &parent) const
@@ -123,6 +132,16 @@ namespace models
 			m_level = level;
 		}
 		endResetModel();
+	}
+
+	QModelIndex SceneObjectsTreeModel::getRootIndex() const
+	{
+		if (!m_level || !m_level->getSceneObjects().empty())
+		{
+			return {};
+		}
+
+		return createIndex(0, 0, (const void*)m_level->getSceneObjects()[0].get());
 	}
 
 	bool SceneObjectsTreeModel::isValidLevel() const

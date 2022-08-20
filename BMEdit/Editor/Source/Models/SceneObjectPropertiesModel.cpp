@@ -1,10 +1,10 @@
 #include <Models/SceneObjectPropertiesModel.h>
 #include <Types/QGlacierValue.h>
-#include <Editor/PropertyAsStringRepr.h>
 
 #include <GameLib/Type.h>
 #include <GameLib/TypeComplex.h>
 #include <GameLib/TypeRegistry.h>
+#include <GameLib/Scene/SceneObject.h>
 
 
 namespace models
@@ -22,17 +22,16 @@ namespace models
 
 	int SceneObjectPropertiesModel::rowCount(const QModelIndex &parent) const
 	{
-		if (!m_level || !m_geomIndex.has_value()) {
+		if (!m_level || !m_geom) {
 			return 0;
 		}
 
-		const auto &geom = m_level->getSceneObjects().at(m_geomIndex.value());
-		return static_cast<int>(geom->getProperties().getEntries().size());
+		return static_cast<int>(m_geom->getProperties().getEntries().size());
 	}
 
 	int SceneObjectPropertiesModel::columnCount(const QModelIndex &parent) const
 	{
-		if (!m_level || !m_geomIndex.has_value()) {
+		if (!m_level || !m_geom) {
 			return 0;
 		}
 
@@ -41,8 +40,9 @@ namespace models
 
 	QVariant SceneObjectPropertiesModel::data(const QModelIndex &index, int role) const
 	{
-		const auto &geom = m_level->getSceneObjects().at(m_geomIndex.value());
-		const auto &entList = geom->getProperties().getEntries();
+		if (!m_geom) return {};
+
+		const auto &entList = m_geom->getProperties().getEntries();
 		const auto& currentEnt = entList[index.row()];
 
 		if (index.column() == ColumnID::NAME)
@@ -63,7 +63,7 @@ namespace models
 		else if (index.column() == ColumnID::VALUE)
 		{
 			types::QGlacierValue value;
-			value.instructions = gamelib::Span(geom->getProperties().getInstructions()).slice(currentEnt.instructions).as<std::vector<gamelib::prp::PRPInstruction>>();
+			value.instructions = gamelib::Span(m_geom->getProperties().getInstructions()).slice(currentEnt.instructions).as<std::vector<gamelib::prp::PRPInstruction>>();
 			value.views = currentEnt.views;
 
 			if (role == Qt::EditRole)
@@ -72,10 +72,7 @@ namespace models
 			}
 			else if (role == Qt::DisplayRole)
 			{
-				/**
-				 * FIXME: Weird bug: when we getting into editor mode we have two widgets: caption & editor. Need to understand how to avoid this behaviour :thinking:
-				 */
-				return editor::PropertyAsStringRepr::getStringRepresentationOfValue(value);
+				//TODO: Create repr?
 			}
 			else return {};
 		}
@@ -85,22 +82,23 @@ namespace models
 
 	bool SceneObjectPropertiesModel::setData(const QModelIndex &index, const QVariant &value, int role)
 	{
+		if (!m_geom) return false;
+
 		if (index.column() == ColumnID::VALUE && role == Qt::EditRole)
 		{
 			if (!value.canConvert<types::QGlacierValue>())
 				return false;
 
 			const auto val = value.value<types::QGlacierValue>();
-			const auto &geom = m_level->getSceneObjects().at(m_geomIndex.value());
 
 			// Here we need to check that we have same (by size) containers
-			const auto& [off, sz] = geom->getProperties().getEntries()[index.row()].instructions;
+			const auto& [off, sz] = m_geom->getProperties().getEntries()[index.row()].instructions;
 
 			if (sz == val.instructions.size())
 			{
 				for (auto i = off; i < off + sz; ++i)
 				{
-					geom->getProperties().getInstructions()[i] = val.instructions[i - off];
+					m_geom->getProperties().getInstructions()[i] = val.instructions[i - off];
 				}
 
 				return true;
@@ -142,21 +140,26 @@ namespace models
 		beginResetModel();
 
 		m_level = level;
-		m_geomIndex = std::nullopt;
+		m_geom = nullptr;
 
 		endResetModel();
 	}
 
-	void SceneObjectPropertiesModel::setGeomIndex(std::size_t geomIndex)
+	void SceneObjectPropertiesModel::setGeom(gamelib::scene::SceneObject * geom)
 	{
-		if (!m_level || m_level->getSceneObjects().size() <= geomIndex)
-		{
-			return;
-		}
-
 		beginResetModel();
 
-		m_geomIndex = geomIndex;
+		if (m_level)
+		{
+			for (const auto& sceneGeomSP : m_level->getSceneObjects())
+			{
+				if (sceneGeomSP.get() == geom)
+				{
+					m_geom = geom;
+					break;
+				}
+			}
+		}
 
 		endResetModel();
 	}
@@ -166,16 +169,16 @@ namespace models
 		beginResetModel();
 
 		m_level = nullptr;
-		m_geomIndex = std::nullopt;
+		m_geom = nullptr;
 
 		endResetModel();
 	}
 
-	void SceneObjectPropertiesModel::resetGeomIndex()
+	void SceneObjectPropertiesModel::resetGeom()
 	{
 		beginResetModel();
 
-		m_geomIndex = std::nullopt;
+		m_geom = nullptr;
 
 		endResetModel();
 	}

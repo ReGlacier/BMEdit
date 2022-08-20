@@ -2,6 +2,7 @@
 #include <Include/IO/ZIPLevelAssetProvider.h>
 #include <GameLib/GMS/GMSStructureError.h>
 #include <GameLib/PRP/PRPStructureError.h>
+#include <GameLib/Scene/SceneObjectVisitorException.h>
 #include <GameLib/TypeNotFoundException.h>
 #include <BMEditMainWindow.h>
 #include <QApplication>
@@ -96,6 +97,15 @@ namespace editor {
 				m_currentLevel = std::move(savedLevel);
 			}
 			levelLoadFailed(QString("Unable to locate requried type %1").arg(typeNotFoundException.what()));
+		}
+		catch (const gamelib::scene::SceneObjectVisitorException &sceneObjectException)
+		{
+			if (savedLevel)
+			{
+				m_currentLevel = std::move(savedLevel);
+			}
+
+			levelLoadFailed(QString("Unable to visit geom on scene: %1").arg(sceneObjectException.what()));
 		}
 		catch (const std::runtime_error &runtimeFailure)
 		{
