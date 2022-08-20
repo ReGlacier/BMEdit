@@ -25,6 +25,9 @@ namespace widgets
 		void editFinished();
 
 	protected:
+		static bool areSame(const types::QGlacierValue &current, const types::QGlacierValue &value);
+
+	protected:
 		types::QGlacierValue m_value {};
 	};
 }

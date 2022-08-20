@@ -53,6 +53,19 @@ namespace gamelib::prp
 		explicit PRPOperandVal(StringArray v) : stringArray(std::move(v))
 		{
 		}
+
+		template <typename T> T get() const;
+
+		template <> bool get() const { return trivial.b; }
+		template <> char get() const { return trivial.c; }
+		template <> int8_t get() const { return trivial.i8; }
+		template <> int16_t get() const { return trivial.i16; }
+		template <> int32_t get() const { return trivial.i32; }
+		template <> float get() const { return trivial.f32; }
+		template <> double get() const { return trivial.f64; }
+		template <> const std::string& get() const { return str; }
+		template <> const RawData& get() const { return raw; }
+		template <> const StringArray& get() const { return stringArray; }
 	};
 
 	class PRPInstruction

@@ -18,7 +18,7 @@ namespace widgets
 		void setValue(const types::QGlacierValue &value) override;
 
 		// Static
-		static void paintTrivialView(QPainter *painter, const QStyleOptionViewItem &option, const types::QGlacierValue &data);
+		static void paintPreview(QPainter *painter, const QStyleOptionViewItem &option, const types::QGlacierValue &data);
 	private:
 		void buildLayout(const types::QGlacierValue &value);
 		void updateLayout(const types::QGlacierValue &value);

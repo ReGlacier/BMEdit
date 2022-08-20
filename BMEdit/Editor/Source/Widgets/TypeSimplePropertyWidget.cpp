@@ -35,25 +35,10 @@ constexpr const char* F64_SPINBOX_ID = "Float64SpinBoxID";
 constexpr const char* STR_LINE_EDIT_ID = "StringLineEditorID";
 constexpr const char* ENUM_COMBOBOX_ID = "EnumEditorID";
 
-// Helpers
-static bool areSame(const types::QGlacierValue &current, const types::QGlacierValue &value)
-{
-	if (current.instructions.size() != value.instructions.size()) return false;
-
-	for (auto instructionIndex = 0; instructionIndex < current.instructions.size(); ++instructionIndex)
-	{
-		const auto& c = current.instructions[instructionIndex];
-		const auto& n = value.instructions[instructionIndex];
-
-		if (c.getOpCode() != n.getOpCode()) return false;
-	}
-
-	return true;
-}
 
 void TypeSimplePropertyWidget::setValue(const types::QGlacierValue &value)
 {
-	if (!areSame(m_value, value))
+	if (!Base::areSame(m_value, value))
 	{
 		buildLayout(value);
 	}
@@ -353,7 +338,7 @@ void TypeSimplePropertyWidget::updateEnumLayout(const types::QGlacierValue &valu
 	}
 }
 
-void TypeSimplePropertyWidget::paintTrivialView(QPainter *painter, const QStyleOptionViewItem &option, const types::QGlacierValue &value)
+void TypeSimplePropertyWidget::paintPreview(QPainter *painter, const QStyleOptionViewItem &option, const types::QGlacierValue &value)
 {
 	QTextOption textOptions;
 	textOptions.setAlignment(Qt::AlignCenter);
