@@ -36,20 +36,6 @@ constexpr const char* STR_LINE_EDIT_ID = "StringLineEditorID";
 constexpr const char* ENUM_COMBOBOX_ID = "EnumEditorID";
 
 
-void TypeSimplePropertyWidget::setValue(const types::QGlacierValue &value)
-{
-	if (!Base::areSame(m_value, value))
-	{
-		buildLayout(value);
-	}
-	else
-	{
-		updateLayout(value);
-	}
-
-	Base::setValue(value);
-}
-
 void TypeSimplePropertyWidget::buildLayout(const types::QGlacierValue &value)
 {
 	if (value.instructions[0].isBool())

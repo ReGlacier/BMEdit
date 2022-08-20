@@ -18,20 +18,6 @@ constexpr const char* Z_SPINBOX_ID = "SpinBox_Z";
 enum VectorComponent : int { X = 1, Y = 2, Z = 3 };
 
 
-void TypeVector3PropertyWidget::setValue(const types::QGlacierValue &value)
-{
-	if (!Base::areSame(m_value, value))
-	{
-		buildLayout(value);
-	}
-	else
-	{
-		updateLayout(value);
-	}
-
-	Base::setValue(value);
-}
-
 template <bool Condition, typename TTrue, typename TFalse>
 struct TIfCondition;
 

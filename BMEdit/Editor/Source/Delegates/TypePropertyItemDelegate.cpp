@@ -1,5 +1,6 @@
 #include <Delegates/TypePropertyItemDelegate.h>
 #include <Widgets/TypeVector3PropertyWidget.h>
+#include <Widgets/TypeMatrixPropertyWidget.h>
 #include <Widgets/TypeSimplePropertyWidget.h>
 #include <Widgets/TypePropertyWidget.h>
 #include <Types/QGlacierValue.h>
@@ -13,6 +14,8 @@
 
 namespace delegates
 {
+	enum Matrix3x3 : int { Rows = 3, Columns = 3 };
+
 	static bool isValueCouldBePresentedBySimpleView(const types::QGlacierValue &data)
 	{
 		if (data.instructions.size() == 1)
@@ -34,11 +37,11 @@ namespace delegates
 		return false;
 	}
 
-	static bool isValueCouldBePresentedAsSimpleMatrixWidget(const types::QGlacierValue &data, int elementsNr)
+	static bool isValueCouldBePresentedAsSimpleMatrixWidget(const types::QGlacierValue &data, int rows, int columns)
 	{
-		if (data.instructions.size() == (2 + elementsNr))
+		if (data.instructions.size() == (2 + (rows * columns)))
 		{
-			return data.instructions.front().isBeginArray() && data.instructions.back().isEndArray() && data.instructions.front().getOperand().trivial.i32 == elementsNr;
+			return data.instructions.front().isBeginArray() && data.instructions.back().isEndArray() && data.instructions.front().getOperand().trivial.i32 == (rows * columns);
 		}
 
 		return false;
@@ -70,9 +73,10 @@ namespace delegates
 				// It's vector (3 elements)
 				editor = new widgets::TypeVector3PropertyWidget(parent);
 			}
-			else if (isValueCouldBePresentedAsSimpleMatrixWidget(data, 3*3))
+			else if (isValueCouldBePresentedAsSimpleMatrixWidget(data, Matrix3x3::Rows, Matrix3x3::Columns))
 			{
 				// It's matrix 3x3
+				editor = new widgets::TypeMatrixPropertyWidget(Matrix3x3::Rows, Matrix3x3::Columns, parent);
 			}
 
 			if (!editor)
@@ -136,6 +140,13 @@ namespace delegates
 			{
 				painter->save();
 				widgets::TypeVector3PropertyWidget::paintPreview(painter, option, data);
+				painter->restore();
+				return;
+			}
+			else if (isValueCouldBePresentedAsSimpleMatrixWidget(data, Matrix3x3::Rows, Matrix3x3::Columns))
+			{
+				painter->save();
+				widgets::TypeMatrixPropertyWidget::paintPreview(Matrix3x3::Rows, Matrix3x3::Columns, painter, option, data);
 				painter->restore();
 				return;
 			}

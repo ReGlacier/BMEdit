@@ -17,7 +17,7 @@ namespace widgets
 	public:
 		explicit TypePropertyWidget(QWidget* parent = nullptr);
 
-		virtual void setValue(const types::QGlacierValue &value);
+		void setValue(const types::QGlacierValue &value);
 		[[nodiscard]] const types::QGlacierValue &getValue() const;
 
 	signals:
@@ -26,6 +26,9 @@ namespace widgets
 
 	protected:
 		static bool areSame(const types::QGlacierValue &current, const types::QGlacierValue &value);
+
+		virtual void buildLayout(const types::QGlacierValue &value);
+		virtual void updateLayout(const types::QGlacierValue &value);
 
 	protected:
 		types::QGlacierValue m_value {};

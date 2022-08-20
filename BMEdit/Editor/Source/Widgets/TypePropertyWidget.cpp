@@ -12,6 +12,15 @@ namespace widgets {
 
 	void TypePropertyWidget::setValue(const types::QGlacierValue &value)
 	{
+		if (!areSame(m_value, value))
+		{
+			buildLayout(value);
+		}
+		else
+		{
+			updateLayout(value);
+		}
+
 		m_value = value;
 	}
 
@@ -33,5 +42,13 @@ namespace widgets {
 		}
 
 		return true;
+	}
+
+	void TypePropertyWidget::buildLayout(const types::QGlacierValue &value)
+	{// stub
+	}
+
+	void TypePropertyWidget::updateLayout(const types::QGlacierValue &value)
+	{// stub
 	}
 }
