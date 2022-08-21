@@ -187,7 +187,7 @@ namespace gamelib::scene
 
 				if (!controllerMapResult.has_value())
 				{
-					throw SceneObjectVisitorException(objectIdx, "Failed to map controller");
+					throw SceneObjectVisitorException(objectIdx, fmt::format("Failed to map controller '{}'", controllerName));
 				}
 
 				ip = nextIP;
