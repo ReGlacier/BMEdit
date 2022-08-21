@@ -7,6 +7,8 @@
 #include <QString>
 #include <QStringListModel>
 
+#include <GameLib/IO/AssetKind.h>
+
 #include "LoadSceneProgressDialog.h"
 
 
@@ -40,6 +42,7 @@ public:
 
 private:
 	void initStatusBar();
+	void initSearchInput();
 	void connectActions();
 	void connectDockWidgetActions();
 	void connectEditorSignals();
@@ -62,6 +65,9 @@ public slots:
 	void onSearchObjectQueryChanged(const QString &query);
 	void onSelectedSceneObject(const gamelib::scene::SceneObject* selectedSceneObject);
 	void onDeselectedSceneObject();
+	void onExportProperties();
+	void onAssetExportedSuccessfully(gamelib::io::AssetKind assetKind, const QString &assetName);
+	void onAssetExportFailed(const QString &reason);
 
 private:
     // UI

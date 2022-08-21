@@ -44,6 +44,7 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 	initControllers();
 	initSceneLoadingDialog();
 	initStatusBar();
+	initSearchInput();
 	connectActions();
 	connectDockWidgetActions();
 	connectEditorSignals();
@@ -76,12 +77,18 @@ void BMEditMainWindow::initStatusBar()
 	statusBar()->insertWidget(2, m_operationCommentLabel);
 }
 
+void BMEditMainWindow::initSearchInput()
+{
+	connect(ui->searchInputField, &QLineEdit::textChanged, [=](const QString &query) { onSearchObjectQueryChanged(query); });
+}
+
 void BMEditMainWindow::connectActions()
 {
 	connect(ui->actionExit, &QAction::triggered, [=]() { onExit(); });
 	connect(ui->actionOpen_level, &QAction::triggered, [=]() { onOpenLevel(); });
 	connect(ui->actionRestore_layout, &QAction::triggered, [=]() { onRestoreLayout(); });
 	connect(ui->actionTypes_Viewer, &QAction::triggered, [=]() { onShowTypesViewer(); });
+	connect(ui->actionSave_properties, &QAction::triggered, [=]() { onExportProperties(); });
 }
 
 void BMEditMainWindow::connectDockWidgetActions()
@@ -140,26 +147,8 @@ void BMEditMainWindow::connectEditorSignals()
 
 	connect(&instance, &EditorInstance::levelLoadSuccess, [=]() { onLevelLoadSuccess(); });
 	connect(&instance, &EditorInstance::levelLoadFailed, [=](const QString &reason) { onLevelLoadFailed(reason); });
-
-	connect(ui->searchInputField, &QLineEdit::textChanged, [=](const QString &query) { onSearchObjectQueryChanged(query); });
-
-	connect(ui->sceneTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
-		const bool somethingSelected = !selected.indexes().isEmpty();
-
-		if (somethingSelected) {
-			const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(selected.indexes().first().data(models::SceneObjectsTreeModel::SceneObjectRole).value<std::intptr_t>());
-
-			if (selectedGeom)
-			{
-				onSelectedSceneObject(selectedGeom);
-			}
-		} else if (!deselected.indexes().isEmpty())
-		{
-			onDeselectedSceneObject();
-		}
-	});
-
-	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);
+	connect(&instance, &EditorInstance::exportAssetSuccess, [=](gamelib::io::AssetKind assetKind, const QString &assetName) { onAssetExportedSuccessfully(assetKind, assetName); });
+	connect(&instance, &EditorInstance::exportAssetFailed, [=](const QString &reason) { onAssetExportFailed(reason); });
 }
 
 void BMEditMainWindow::onExit()
@@ -223,6 +212,7 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	}
 
 	ui->searchInputField->clear();
+	ui->actionSave_properties->setEnabled(true);
 	//ui->searchInputField->setEnabled(true); //TODO: Uncomment when search will be done
 }
 
@@ -281,6 +271,25 @@ void BMEditMainWindow::onDeselectedSceneObject()
 	ui->sceneObjectName->clear();
 
 	m_sceneObjectPropertiesModel->resetGeom();
+}
+
+void BMEditMainWindow::onExportProperties()
+{
+	auto& editorInstance = editor::EditorInstance::getInstance();
+	editorInstance.exportAsset(gamelib::io::AssetKind::PROPERTIES);
+}
+
+void BMEditMainWindow::onAssetExportedSuccessfully(gamelib::io::AssetKind assetKind, const QString &assetName)
+{
+	Q_UNUSED(assetKind);
+
+	QMessageBox::information(this, QString("Export asset"), QString("Asset %1 exported successfully!").arg(assetName));
+}
+
+void BMEditMainWindow::onAssetExportFailed(const QString &reason)
+{
+	QMessageBox::critical(this, QString("Export asset"), QString("Unable to export asset: %1").arg(reason));
+	m_operationCommentLabel->setText(QString("Asset export FAILED: %1").arg(reason));
 }
 
 void BMEditMainWindow::loadTypesDataBase()
@@ -393,7 +402,24 @@ void BMEditMainWindow::initSceneTree()
 {
 	// Main model
 	m_sceneTreeModel = new models::SceneObjectsTreeModel(this);
+	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->sceneTreeView->setModel(m_sceneTreeModel);
+
+	connect(ui->sceneTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
+		const bool somethingSelected = !selected.indexes().isEmpty();
+
+		if (somethingSelected) {
+			const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(selected.indexes().first().data(models::SceneObjectsTreeModel::SceneObjectRole).value<std::intptr_t>());
+
+			if (selectedGeom)
+			{
+				onSelectedSceneObject(selectedGeom);
+			}
+		} else if (!deselected.indexes().isEmpty())
+		{
+			onDeselectedSceneObject();
+		}
+	});
 }
 
 void BMEditMainWindow::initProperties()

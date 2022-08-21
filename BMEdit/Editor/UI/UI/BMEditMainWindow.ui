@@ -62,6 +62,7 @@
     <property name="title">
      <string>Scene</string>
     </property>
+    <addaction name="actionSave_properties"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -307,6 +308,14 @@
   <action name="actionTypes_Viewer">
    <property name="text">
     <string>Types Viewer</string>
+   </property>
+  </action>
+  <action name="actionSave_properties">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Save properties</string>
    </property>
   </action>
  </widget>

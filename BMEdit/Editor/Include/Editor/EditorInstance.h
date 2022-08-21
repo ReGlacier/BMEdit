@@ -29,12 +29,17 @@ namespace editor {
 		[[nodiscard]] std::unique_ptr<gamelib::Level> takeLevel();
 		void restoreLevel(std::unique_ptr<gamelib::Level> &&level);
 
+		void exportAsset(gamelib::io::AssetKind assetKind);
+
 	signals:
 		void levelLoadSuccess();
 		void levelLoadProgressChanged(int totalPercentsProgress, const QString &currentOperationTag);
 		void levelLoadFailed(const QString &reason);
+		void exportAssetSuccess(gamelib::io::AssetKind assetKind, const QString &assetName);
+		void exportAssetFailed(const QString &reason);
 
 	private:
 		std::unique_ptr<gamelib::Level> m_currentLevel;
+		std::string m_currentLevelPath;
 	};
 }

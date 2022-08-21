@@ -2,11 +2,44 @@
 #include <string_view>
 #include <filesystem>
 
+extern "C"
+{
+#include <zip.h>
+}
+
 
 namespace editor
 {
+	static constexpr int IOI_FILE_NAME_LIMIT = 512;
 	static constexpr std::string_view kAssetExtensions[gamelib::io::AssetKind::LAST_ASSET_KIND] = {
 		"GMS", "PRP", "TEX", "PRM", "MAT", "OCT", "RMI", "RMC", "LOC", "ANM", "SND", "BUF", "ZGF"
+	};
+
+	class ZipHandlerBackup
+	{
+		unzFile* m_handle;
+		std::string m_path;
+		bool m_shouldRestore{ true };
+	public:
+		ZipHandlerBackup(const std::string &path, unzFile* handle)
+			: m_handle(handle), m_path(path), m_shouldRestore(handle && *handle)
+		{
+			unzClose(*handle);
+			*handle = nullptr;
+		}
+
+		~ZipHandlerBackup()
+		{
+			if (m_shouldRestore)
+			{
+				*m_handle = unzOpen(m_path.data());
+			}
+		}
+
+		ZipHandlerBackup(const ZipHandlerBackup&) = delete;
+		ZipHandlerBackup(ZipHandlerBackup&&) = delete;
+		ZipHandlerBackup& operator=(const ZipHandlerBackup&) = delete;
+		ZipHandlerBackup& operator=(ZipHandlerBackup&&) = delete;
 	};
 
 	ZIPLevelAssetProvider::ZIPLevelAssetProvider(std::string containerPath) : m_path(std::move(containerPath))
@@ -37,7 +70,7 @@ namespace editor
 
 		do
 		{
-			static constexpr int kMaxFileNameLength = 256;
+			static constexpr int kMaxFileNameLength = IOI_FILE_NAME_LIMIT;
 			char fileName[kMaxFileNameLength] = { 0 };
 			unz_file_info fileInfo;
 
@@ -106,26 +139,92 @@ namespace editor
 
 	bool ZIPLevelAssetProvider::hasAssetOfKind(gamelib::io::AssetKind kind) const
 	{
+		return !getAssetFileName(kind).empty();
+	}
+
+	bool ZIPLevelAssetProvider::saveAsset(gamelib::io::AssetKind kind, gamelib::Span<uint8_t> assetBody)
+	{
+		if (!isEditable())
+		{
+			//TODO: Throw exception?
+			return false;
+		}
+
+		auto fileName = getAssetFileName(kind);
+		if (fileName.empty())
+		{
+			//TODO: Throw exception?
+			return false;
+		}
+
+		{
+			ZipHandlerBackup handlerBackup { m_path, &m_zipHandle }; // From this point until scope finished zip handle will be invalid
+			zipFile archive = zipOpen(m_path.data(), APPEND_STATUS_CREATEAFTER); //APPEND_STATUS_ADDINZIP);
+			if (!archive)
+			{
+				//TODO: Throw exception?
+				return false;
+			}
+
+
+			zip_fileinfo zipFileInfo;
+			int res = zipOpenNewFileInZip(archive, fileName.data(), &zipFileInfo, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+			if (res != ZIP_OK)
+			{
+				//TODO: Throw exception
+				return false;
+			}
+
+			res = zipWriteInFileInZip(archive, assetBody.data(), assetBody.size());
+			if (res != ZIP_OK)
+			{
+				//TODO: Throw exception
+				return false;
+			}
+
+			zipCloseFileInZip(archive);
+			zipClose(archive, nullptr);
+		}
+		return true;
+	}
+
+	bool ZIPLevelAssetProvider::isValid() const
+	{
+		return m_zipHandle != nullptr;
+	}
+
+	bool ZIPLevelAssetProvider::isEditable() const
+	{
+		return isValid();
+	}
+
+	std::string ZIPLevelAssetProvider::getAssetFileName(gamelib::io::AssetKind kind) const
+	{
 		if (!m_zipHandle)
 		{
-			return false;
+			return {};
+		}
+
+		if (auto it = m_assetNamesCache.find(kind); it != m_assetNamesCache.end())
+		{
+			return it->second;
 		}
 
 		if (unzGoToFirstFile(m_zipHandle) != UNZ_OK)
 		{
-			return false;
+			return {};
 		}
 
 		do
 		{
-			static constexpr int kMaxFileNameLength = 256;
+			static constexpr int kMaxFileNameLength = IOI_FILE_NAME_LIMIT;
 			char fileName[kMaxFileNameLength] = { 0 };
 			unz_file_info fileInfo;
 
 			auto ret = unzGetCurrentFileInfo(m_zipHandle, &fileInfo, fileName, kMaxFileNameLength, nullptr, 0, nullptr, 0);
 			if (ret != UNZ_OK)
 			{
-				return false;
+				return {};
 			}
 
 			/**
@@ -135,22 +234,21 @@ namespace editor
 			std::string_view currentFileName { fileName };
 			if (currentFileName.ends_with(kAssetExtensions[kind]))
 			{
-				return true;
+				auto& fNameRes = m_assetNamesCache[kind];
+				fNameRes.reserve(currentFileName.size());
+				std::copy(currentFileName.begin(), currentFileName.end(), std::back_inserter(fNameRes));
+
+				return fNameRes;
 			}
 
 			ret = unzGoToNextFile(m_zipHandle);
 			if (ret != UNZ_OK)
 			{
-				return false;
+				return {};
 			}
 		}
 		while (true);
 
-		return false;
-	}
-
-	bool ZIPLevelAssetProvider::isValid() const
-	{
-		return m_zipHandle != nullptr;
+		return {};
 	}
 }

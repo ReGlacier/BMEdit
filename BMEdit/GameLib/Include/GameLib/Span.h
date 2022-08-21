@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <cassert>
+#include <vector>
+#include <array>
 
 
 namespace gamelib
@@ -23,6 +25,7 @@ namespace gamelib
 		Span() = default;
 		Span(std::nullptr_t) : m_data(nullptr), m_size(0) {}
 		Span(const T *d, int64_t s) : m_data(d), m_size(s) {}
+		template <size_t N> explicit Span(const std::array<T, N> &d) : m_data(d.data()), m_size(N) {}
 
 		explicit Span(const std::vector<T> &vector)
 		{
