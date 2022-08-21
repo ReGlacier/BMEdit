@@ -149,24 +149,33 @@ namespace editor {
 
 	void EditorInstance::exportAsset(gamelib::io::AssetKind assetKind)
 	{
-//		auto provider = std::make_unique<ZIPLevelAssetProvider>(m_currentLevelPath);
-//		if (!provider)
-//		{
-//			emit exportAssetFailed(QString("Failed to open '%1' ZIP file").arg(QString::fromStdString(m_currentLevelPath)));
-//			return false;
-//		}
-//
-//		if (!provider->isValid() || !provider->isEditable())
-//		{
-//			emit exportAssetFailed(QString("Invalid IO provider state (not valid or not editable) of ZIP file '%1'").arg(QString::fromStdString(m_currentLevelPath)));
-//			return false;
-//		}
-//
-//		//TODO: Rewrite
-//		std::array<uint8_t, 10> bytes = {
-//		    'H', 'E', 'L', 'L', '0', ' ', 'I', 'O', 'I', '!'
-//		};
-//
-//		return provider->saveAsset(assetKind, gamelib::Span(bytes));
+		auto provider = std::make_unique<ZIPLevelAssetProvider>(m_currentLevelPath);
+		if (!provider)
+		{
+			emit exportAssetFailed(QString("Failed to open '%1' ZIP file").arg(QString::fromStdString(m_currentLevelPath)));
+			return;
+		}
+
+		if (!provider->isValid() || !provider->isEditable())
+		{
+			emit exportAssetFailed(QString("Invalid IO provider state (not valid or not editable) of ZIP file '%1'").arg(QString::fromStdString(m_currentLevelPath)));
+			return;
+		}
+
+		//TODO: Rewrite
+		std::array<uint8_t, 10> bytes = {
+		    'H', 'E', 'L', 'L', '0', ' ', 'I', 'O', 'I', '!'
+		};
+
+		const auto result = provider->saveAsset(assetKind, gamelib::Span(bytes));
+
+		if (!result)
+		{
+			emit exportAssetFailed(QString("saveAsset() failed"));
+		}
+		else
+		{
+			emit exportAssetSuccess(assetKind, QString("N/A"));
+		}
 	}
 }

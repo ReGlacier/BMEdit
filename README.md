@@ -16,7 +16,27 @@ Dependencies
  * [ZBinaryIO](https://github.com/pawREP/ZBinaryIO)
  * [Nlohmann JSON](https://github.com/nlohmann/json)
  * [zlib](https://github.com/madler/zlib)
- * minizip
+ * [conan](https://conan.io) (see "Build" for details)
+
+Build
+-----
+
+First of all you need to install [conan](https://conan.io) dependencies manager on your system.
+
+Then download (or git clone) this repository and do
+```
+conan install . -s build_type=Debug --install-folder=cmake-build-debug
+```
+or
+```
+conan install . -s build_type=Release --install-folder=cmake-build-release
+```
+
+Reload cmake project in your IDE or 
+```
+cd <build_folder>
+cmake --build .
+```
 
 Contact Information
 -------------------

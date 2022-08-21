@@ -4,9 +4,6 @@
 [submodule "BMEdit/GameLib/ThirdParty/json"]
 	path = BMEdit/GameLib/ThirdParty/json
 	url = https://github.com/nlohmann/json
-[submodule "ThirdParty/zlib"]
-	path = ThirdParty/zlib
-	url = https://github.com/madler/zlib
 [submodule "BMEdit/GameLib/ThirdParty/gtest"]
 	path = BMEdit/GameLib/ThirdParty/gtest
 	url = https://github.com/google/googletest

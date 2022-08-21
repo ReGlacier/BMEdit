@@ -212,7 +212,7 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	}
 
 	ui->searchInputField->clear();
-	ui->actionSave_properties->setEnabled(true);
+	//ui->actionSave_properties->setEnabled(true); //TODO: Uncomment when exporter to ZIP will be done
 	//ui->searchInputField->setEnabled(true); //TODO: Uncomment when search will be done
 }
 

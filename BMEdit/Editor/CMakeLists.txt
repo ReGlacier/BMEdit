@@ -40,17 +40,20 @@ file(GLOB_RECURSE EDITOR_AUTOGEN_UI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/UI/UI/*.ui
 qt6_wrap_ui(EDITOR_AUTOGEN_UI_HEADERS ${EDITOR_AUTOGEN_UI_FILES})
 qt6_wrap_cpp(EDITOR_PREPARED_HEADERS ${EDITOR_UI_HEADERS})
 
-# --- Dependencies
-add_subdirectory(ThirdParty/minizip)
-
 # --- Editor is a library
 add_library(Editor STATIC ${EDITOR_SOURCES} ${EDITOR_AUTOGEN_UI_SOURCES} ${EDITOR_AUTOGEN_UI_HEADERS} ${EDITOR_PREPARED_HEADERS})
 target_include_directories(Editor PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/Include)
 target_include_directories(Editor PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(Editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/UI/Include)
+target_compile_definitions(Editor
+        PUBLIC
+            $<$<CONFIG:Debug>:BMEDIT_DEBUG>
+            $<$<CONFIG:RelWithDebInfo>:BMEDIT_DEBUG>
+            $<$<CONFIG:Release>:BMEDIT_RELEASE>
+            $<$<CONFIG:MinSizeRel>:BMEDIT_RELEASE>
+)
 
 # --- Required GameLib & Qt6
 target_link_libraries(Editor PUBLIC Qt6::Widgets OpenGL::GL Qt6::OpenGL Qt6::OpenGLWidgets)
 target_link_libraries(Editor PRIVATE GameLib)
-target_link_libraries(Editor PRIVATE zlibstatic)
-target_link_libraries(Editor PRIVATE minizip)
+target_link_libraries(Editor PRIVATE zip zlib bz2 lzma zstd_static)

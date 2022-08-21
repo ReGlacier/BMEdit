@@ -3,8 +3,15 @@ project(BMEdit)
 
 set(CMAKE_CXX_STANDARD 20)
 
+# --- Conan deps
+if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup()
+else()
+    message(FATAL_ERROR "The file conanbuildinfo.cmake doesn't exist, please, follow README.md \"Build\" for more details!")
+endif()
+
 # --- Global dependencies
-add_subdirectory(ThirdParty/zlib)
 add_subdirectory(ThirdParty/fmt)
 
 # --- Project modules
@@ -28,5 +35,10 @@ if (WIN32)
             env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
             "$<TARGET_FILE:BMEdit>"
             COMMENT "Running windeployqt...")
+
+    # Copy binary dependencies
+    add_custom_command(TARGET BMEdit POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy "${CONAN_BIN_DIRS_LIBZIP}/zip.dll" "$<TARGET_FILE_DIR:BMEdit>"
+            COMMENT "Copy conan dependencies to bin")
 endif()
 # TODO: Support other OS later

@@ -1,0 +1,8 @@
+[requires]
+libzip/1.8.0
+
+[generators]
+cmake
+
+[options]
+libzip:shared=True

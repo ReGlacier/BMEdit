@@ -3,3 +3,4 @@ cmake-build-*
 BMEdit/Editor/UI/UI/*.autosave
 ThirdParty/zlib/zconf.h.included
 Test
+venv

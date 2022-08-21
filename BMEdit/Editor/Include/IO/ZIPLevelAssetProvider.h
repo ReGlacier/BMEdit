@@ -3,11 +3,7 @@
 #include <GameLib/IO/IOLevelAssetsProvider.h>
 #include <GameLib/Span.h>
 #include <unordered_map>
-
-extern "C" {
-#include <unzip.h>
-}
-
+#include <memory>
 
 namespace editor
 {
@@ -33,9 +29,7 @@ namespace editor
 		std::string getAssetFileName(gamelib::io::AssetKind kind) const;
 
 	private:
-		std::string m_path {};
-		void *m_zipHandle { nullptr };
-		mutable std::string m_levelName;
-		mutable std::unordered_map<gamelib::io::AssetKind, std::string> m_assetNamesCache;
+		struct Context;
+		std::unique_ptr<Context> m_ctx { nullptr };
 	};
 }
