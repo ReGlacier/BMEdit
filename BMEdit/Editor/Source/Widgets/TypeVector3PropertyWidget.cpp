@@ -4,7 +4,7 @@
 #include <QSpinBox>
 #include <QPainter>
 
-#include <functional>
+#include <Utils/TSpinboxFactory.hpp>
 
 using namespace widgets;
 using gamelib::prp::PRPOpCode;
@@ -16,53 +16,6 @@ constexpr const char* Y_SPINBOX_ID = "SpinBox_Y";
 constexpr const char* Z_SPINBOX_ID = "SpinBox_Z";
 
 enum VectorComponent : int { X = 1, Y = 2, Z = 3 };
-
-
-template <bool Condition, typename TTrue, typename TFalse>
-struct TIfCondition;
-
-template <typename TTrue, typename TFalse>
-struct TIfCondition<true, TTrue, TFalse>
-{
-	using Result = TTrue;
-};
-
-template <typename TTrue, typename TFalse>
-struct TIfCondition<false, TTrue, TFalse>
-{
-	using Result = TFalse;
-};
-
-template <typename T>
-struct TSpinboxFactory
-{
-	using TSpinWidget = typename TIfCondition<std::is_same_v<T, float> || std::is_same_v<T, double>, QDoubleSpinBox, QSpinBox>::Result;
-	using TValueType = typename TIfCondition<std::is_same_v<T, float> || std::is_same_v<T, double>, double, int>::Result;
-
-	static void createAndSetup(const QString& accessibleName, const types::QGlacierValue &value, int instructionIdx, QWidget* parent, QLayout* layout, const std::function<void(int, T)>& onDataChanged)
-	{
-		auto widget = new TSpinWidget(parent);
-		widget->setMinimum(std::numeric_limits<T>::lowest());
-		widget->setMaximum(std::numeric_limits<T>::max());
-		widget->setAccessibleName(accessibleName);
-		widget->setValue(value.instructions[instructionIdx].getOperand().get<T>());
-
-		parent->connect(widget, &TSpinWidget::valueChanged, [instructionIdx, onDataChanged](TValueType newValue) {
-			onDataChanged(instructionIdx, static_cast<T>(newValue));
-		});
-		layout->addWidget(widget);
-	}
-
-	static void updateValue(const QString& widgetName, const types::QGlacierValue &value, int valueIdx, QWidget *parent)
-	{
-		if (auto widget = parent->template findChild<TSpinWidget*>(widgetName))
-		{
-			QSignalBlocker blocker(widget);
-
-			widget->setValue(value.instructions[valueIdx].getOperand().get<T>());
-		}
-	}
-};
 
 void TypeVector3PropertyWidget::buildLayout(const types::QGlacierValue &value)
 {
@@ -79,9 +32,9 @@ void TypeVector3PropertyWidget::buildLayout(const types::QGlacierValue &value)
 			    valueChanged();
 		    };
 
-		    TSpinboxFactory<int8_t>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
-		    TSpinboxFactory<int8_t>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
-		    TSpinboxFactory<int8_t>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int8_t>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int8_t>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int8_t>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
 	    }
 		    break;
 		case PRPOpCode::Int16:
@@ -93,9 +46,9 @@ void TypeVector3PropertyWidget::buildLayout(const types::QGlacierValue &value)
 			    valueChanged();
 		    };
 
-		    TSpinboxFactory<int16_t>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
-		    TSpinboxFactory<int16_t>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
-		    TSpinboxFactory<int16_t>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int16_t>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int16_t>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int16_t>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
 	    }
 	        break;
 		case PRPOpCode::Int32:
@@ -107,9 +60,9 @@ void TypeVector3PropertyWidget::buildLayout(const types::QGlacierValue &value)
 			    valueChanged();
 		    };
 
-		    TSpinboxFactory<int32_t>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
-		    TSpinboxFactory<int32_t>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
-		    TSpinboxFactory<int32_t>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int32_t>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int32_t>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<int32_t>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
 	    }
 			break;
 		case PRPOpCode::Float32:
@@ -121,9 +74,9 @@ void TypeVector3PropertyWidget::buildLayout(const types::QGlacierValue &value)
 			    valueChanged();
 		    };
 
-		    TSpinboxFactory<float>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
-		    TSpinboxFactory<float>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
-		    TSpinboxFactory<float>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<float>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<float>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<float>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
 	    }
 			break;
 		case PRPOpCode::Float64:
@@ -135,9 +88,9 @@ void TypeVector3PropertyWidget::buildLayout(const types::QGlacierValue &value)
 			    valueChanged();
 		    };
 
-		    TSpinboxFactory<double>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
-		    TSpinboxFactory<double>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
-		    TSpinboxFactory<double>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<double>::createAndSetup(X_SPINBOX_ID, value, VectorComponent::X, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<double>::createAndSetup(Y_SPINBOX_ID, value, VectorComponent::Y, this, layout, onValueChanged);
+		    utils::TSpinboxFactory<double>::createAndSetup(Z_SPINBOX_ID, value, VectorComponent::Z, this, layout, onValueChanged);
 	    }
 			break;
 		default:
@@ -154,41 +107,41 @@ void TypeVector3PropertyWidget::updateLayout(const types::QGlacierValue &value)
 	case PRPOpCode::Int8:
 	case PRPOpCode::NamedInt8:
 	{
-		TSpinboxFactory<int8_t>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
-		TSpinboxFactory<int8_t>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
-		TSpinboxFactory<int8_t>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
+		utils::TSpinboxFactory<int8_t>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
+		utils::TSpinboxFactory<int8_t>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
+		utils::TSpinboxFactory<int8_t>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
 	}
 	break;
 	case PRPOpCode::Int16:
 	case PRPOpCode::NamedInt16:
 	{
-		TSpinboxFactory<int16_t>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
-		TSpinboxFactory<int16_t>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
-		TSpinboxFactory<int16_t>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
+		utils::TSpinboxFactory<int16_t>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
+		utils::TSpinboxFactory<int16_t>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
+		utils::TSpinboxFactory<int16_t>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
 	}
 	break;
 	case PRPOpCode::Int32:
 	case PRPOpCode::NamedInt32:
 	{
-		TSpinboxFactory<int32_t>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
-		TSpinboxFactory<int32_t>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
-		TSpinboxFactory<int32_t>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
+		utils::TSpinboxFactory<int32_t>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
+		utils::TSpinboxFactory<int32_t>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
+		utils::TSpinboxFactory<int32_t>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
 	}
 	break;
 	case PRPOpCode::Float32:
 	case PRPOpCode::NamedFloat32:
 	{
-		TSpinboxFactory<float>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
-		TSpinboxFactory<float>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
-		TSpinboxFactory<float>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
+		utils::TSpinboxFactory<float>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
+		utils::TSpinboxFactory<float>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
+		utils::TSpinboxFactory<float>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
 	}
 	break;
 	case PRPOpCode::Float64:
 	case PRPOpCode::NamedFloat64:
 	{
-		TSpinboxFactory<double>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
-		TSpinboxFactory<double>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
-		TSpinboxFactory<double>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
+		utils::TSpinboxFactory<double>::updateValue(X_SPINBOX_ID, value, VectorComponent::X, this);
+		utils::TSpinboxFactory<double>::updateValue(Y_SPINBOX_ID, value, VectorComponent::Y, this);
+		utils::TSpinboxFactory<double>::updateValue(Z_SPINBOX_ID, value, VectorComponent::Z, this);
 	}
 	break;
 	default:
