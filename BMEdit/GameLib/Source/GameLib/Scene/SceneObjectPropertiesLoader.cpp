@@ -3,6 +3,7 @@
 #include <GameLib/Scene/SceneObjectVisitorException.h>
 #include <GameLib/TypeRegistry.h>
 #include <GameLib/TypeComplex.h>
+#include <GameLib/TypeAlias.h>
 
 #include <fmt/format.h>
 
@@ -164,8 +165,21 @@ namespace gamelib::scene
 
 				if (controllerType->getKind() != TypeKind::COMPLEX)
 				{
-					// Only complex types are allowed to be controllers
-					throw SceneObjectVisitorException(objectIdx, fmt::format("Type '{}' not allowed to be controller because it's not COMPLEX"));
+					bool bIsNotAComplexType = true;
+
+					if (controllerType->getKind() == TypeKind::ALIAS)
+					{
+						if (auto finalType = reinterpret_cast<const TypeAlias*>(controllerType)->getFinalType())
+						{
+							bIsNotAComplexType = finalType->getKind() != TypeKind::COMPLEX;
+						}
+					}
+
+					if (bIsNotAComplexType)
+					{
+						// Only complex types are allowed to be controllers
+						throw SceneObjectVisitorException(objectIdx, fmt::format("Type '{}' not allowed to be controller because it's not COMPLEX", controllerType->getName()));
+					}
 				}
 
 				// Map controller properties

@@ -63,4 +63,24 @@ namespace gamelib
 		// Not inited yet
 		throw std::runtime_error("TypeAlias::map() failed. Alias not inited yet!");
 	}
+
+	const Type* TypeAlias::getFinalType() const
+	{
+		if (auto typePtrPtr = std::get_if<const Type*>(&m_resultTypeInfo); typePtrPtr != nullptr)
+		{
+			return *typePtrPtr;
+		}
+
+		return nullptr;
+	}
+
+	prp::PRPOpCode TypeAlias::getFinalOpCode() const
+	{
+		if (auto typeOpCode = std::get_if<prp::PRPOpCode>(&m_resultTypeInfo); typeOpCode != nullptr)
+		{
+			return *typeOpCode;
+		}
+
+		return prp::PRPOpCode::ERR_UNKNOWN;
+	}
 }

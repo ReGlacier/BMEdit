@@ -153,7 +153,7 @@ namespace gamelib
 						throw TypeNotFoundException("Failed to resolve link to type '" + *referenceStrPtr + "' from type '" + alias->getName() + "'!");
 					}
 
-					alias->m_resultTypeInfo = reinterpret_cast<const Type *>(alias);
+					alias->m_resultTypeInfo = reinterpret_cast<const Type *>(typePtr);
 				}
 			}
 			else if (kind == TypeKind::COMPLEX)

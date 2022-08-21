@@ -94,7 +94,10 @@ namespace editor {
 			return;
 		}
 
-		try {
+#ifndef BMEDIT_DEBUG
+		try
+#endif
+		{
 			if (!m_currentLevel->loadSceneData())
 			{
 				levelLoadFailed(QString("Unable to load scene data!"));
@@ -105,6 +108,7 @@ namespace editor {
 			m_currentLevelPath = path; // Store path to level
 			levelLoadSuccess();
 		}
+#ifndef BMEDIT_DEBUG
 		catch (const gamelib::gms::GMSStructureError &gmsStructureError)
 		{
 			levelLoadFailed(QString("Error in GMS structure: %1").arg(gmsStructureError.what()));
@@ -125,6 +129,7 @@ namespace editor {
 		{
 			levelLoadFailed(QString("RUNTIME ERROR: %1").arg(runtimeFailure.what()));
 		}
+#endif
 	}
 
 	const gamelib::Level *EditorInstance::getActiveLevel()
