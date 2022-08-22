@@ -55,6 +55,31 @@ namespace gamelib
 		return *this;
 	}
 
+	bool Value::operator==(const gamelib::Value &other) const
+	{
+		return !operator!=(other);
+	}
+
+	bool Value::operator!=(const gamelib::Value &other) const
+	{
+		if (this == &other)
+			return false;
+
+		if (m_type != other.m_type)
+			return true;
+
+		if (m_data != other.m_data)
+			return true;
+
+		if (m_entries != other.m_entries)
+			return true;
+
+		if (m_views != other.m_views)
+			return true;
+
+		return false;
+	}
+
 	const Type *Value::getType() const
 	{
 		return m_type;

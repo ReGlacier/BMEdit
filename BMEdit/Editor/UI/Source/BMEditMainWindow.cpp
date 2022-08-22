@@ -16,6 +16,7 @@
 #include <Models/SceneObjectsTreeModel.h>
 #include <Models/SceneObjectPropertiesModel.h>
 #include <Delegates/TypePropertyItemDelegate.h>
+#include <Widgets/GeomControllersWidget.h>
 
 #include <LoadSceneProgressDialog.h>
 
@@ -211,9 +212,14 @@ void BMEditMainWindow::onLevelLoadSuccess()
 		m_sceneObjectPropertiesModel->setLevel(currentLevel);
 	}
 
+	// Load controllers index
+	ui->geomControllers->switchToDefaults();
+
 	ui->searchInputField->clear();
 	//ui->actionSave_properties->setEnabled(true); //TODO: Uncomment when exporter to ZIP will be done
 	//ui->searchInputField->setEnabled(true); //TODO: Uncomment when search will be done
+
+	QApplication::beep();
 }
 
 void BMEditMainWindow::onLevelLoadFailed(const QString &reason)
@@ -258,6 +264,9 @@ void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* 
 	ui->sceneObjectTypeCombo->setCurrentText(QString::fromStdString(selectedSceneObject->getType()->getName()));
 
 	m_sceneObjectPropertiesModel->setGeom(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
+
+	ui->geomControllers->setGeom(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
+	ui->geomControllers->switchToFirstController();
 }
 
 void BMEditMainWindow::onDeselectedSceneObject()

@@ -230,29 +230,9 @@
         <attribute name="title">
          <string>Controllers</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_7">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QComboBox" name="currentController"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="editControllersList">
-             <property name="maximumSize">
-              <size>
-               <width>100</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Add/Remove</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTableView" name="controllerProperties"/>
+          <widget class="widgets::GeomControllersWidget" name="geomControllers" native="true"/>
          </item>
         </layout>
        </widget>
@@ -319,6 +299,14 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>widgets::GeomControllersWidget</class>
+   <extends>QWidget</extends>
+   <header>Widgets/GeomControllersWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

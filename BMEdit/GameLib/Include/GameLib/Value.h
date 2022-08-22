@@ -28,6 +28,22 @@ namespace gamelib
 			[[nodiscard]] size_t size()   const { return static_cast<size_t>(iSize); }
 		} instructions;
 		std::vector<ValueView> views;
+
+		[[nodiscard]] bool operator==(const ValueEntry &other) const
+		{
+			if (this == &other) return true;
+
+			return
+			    name == other.name &&
+			    views == other.views &&
+			    instructions.iOffset == other.instructions.iOffset &&
+			    instructions.iSize == other.instructions.iSize;
+		}
+
+		[[nodiscard]] bool operator!=(const ValueEntry &other) const
+		{
+			return !operator==(other);
+		}
 	};
 
 	/**
@@ -56,6 +72,9 @@ namespace gamelib
 		 * @return
 		 */
 		Value& operator+=(const std::pair<std::string, Value>& another);
+
+		[[nodiscard]] bool operator==(const Value &other) const;
+		[[nodiscard]] bool operator!=(const Value &other) const;
 
 		[[nodiscard]] const Type* getType() const;
 		[[nodiscard]] const std::vector<prp::PRPInstruction>& getInstructions() const;

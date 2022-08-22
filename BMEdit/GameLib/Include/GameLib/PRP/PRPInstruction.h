@@ -92,6 +92,9 @@ namespace gamelib::prp
 		[[nodiscard]] PRPOpCode getOpCode() const;
 		[[nodiscard]] const PRPOperandVal &getOperand() const;
 
+		[[nodiscard]] bool operator==(const PRPInstruction &other) const;
+		[[nodiscard]] bool operator!=(const PRPInstruction &other) const;
+
 	private:
 		void updateFlags();
 		void updateIsNamedFlag();

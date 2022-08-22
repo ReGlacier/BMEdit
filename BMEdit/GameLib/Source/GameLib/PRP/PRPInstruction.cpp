@@ -167,4 +167,80 @@ namespace gamelib::prp
 		m_isDeclarator |= (m_opCode == PRPOpCode::EndObject);
 		m_isDeclarator |= (m_opCode == PRPOpCode::SkipMark);
 	}
+
+	bool PRPInstruction::operator==(const PRPInstruction &other) const
+	{
+		if (this == &other)
+			return true;
+
+		if (m_opCode != other.m_opCode)
+			return false;
+
+		if (m_isSet != other.m_isSet)
+			return false;
+
+		if (m_isNamed != other.m_isNamed)
+			return false;
+
+		if (m_isDeclarator != other.m_isDeclarator)
+			return false;
+
+		if (isDeclarator()) // No operand here
+			return true;
+
+		// Compare operand:
+		// Why I will not create PRPOperandVal::operator== ? Because, we are unable to compare operands without their contexts
+		switch (m_opCode)
+		{
+			case PRPOpCode::Char:
+			case PRPOpCode::Bool:
+			case PRPOpCode::Int8:
+			case PRPOpCode::NamedChar:
+			case PRPOpCode::NamedBool:
+			case PRPOpCode::NamedInt8:
+				return m_operand.trivial.i8 == other.m_operand.trivial.i8;
+
+			case PRPOpCode::Int16:
+			case PRPOpCode::NamedInt16:
+				return m_operand.trivial.i16 == other.m_operand.trivial.i16;
+
+			case PRPOpCode::Int32:
+			case PRPOpCode::NamedInt32:
+			case PRPOpCode::Bitfield:
+			case PRPOpCode::NameBitfield:
+			case PRPOpCode::Array:
+			case PRPOpCode::NamedArray:
+				return m_operand.trivial.i32 == other.m_operand.trivial.i32;
+
+			case PRPOpCode::NamedFloat32:
+			case PRPOpCode::Float32:
+				return m_operand.trivial.f32 == other.m_operand.trivial.f32; // It's okay, we assume that OPC1 == OPC2 byte by byte
+
+			case PRPOpCode::NamedFloat64:
+			case PRPOpCode::Float64:
+				return m_operand.trivial.f64 == other.m_operand.trivial.f64; // Same as Float32
+
+			case PRPOpCode::String:
+			case PRPOpCode::NamedString:
+				return m_operand.str == other.m_operand.str;
+
+			case PRPOpCode::RawData:
+			case PRPOpCode::NamedRawData:
+				return m_operand.raw == other.m_operand.raw;
+
+			case PRPOpCode::StringOrArray_E:
+			case PRPOpCode::StringOrArray_8E:
+				return m_operand.str == other.m_operand.str;
+			case PRPOpCode::StringArray:
+				return m_operand.stringArray == other.m_operand.stringArray;
+
+			default:
+				return true;
+		}
+	}
+
+	bool PRPInstruction::operator!=(const PRPInstruction &other) const
+	{
+		return !operator==(other);
+	}
 }
