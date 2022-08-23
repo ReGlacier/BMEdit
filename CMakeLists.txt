@@ -8,7 +8,7 @@ if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup()
 else()
-    message(FATAL_ERROR "The file conanbuildinfo.cmake doesn't exist, please, follow README.md \"Build\" for more details!")
+    message(FATAL_ERROR "The file conanbuildinfo.cmake doesn't exist (lookup ${CMAKE_BINARY_DIR}), please, follow README.md \"Build\" for more details!")
 endif()
 
 # --- Global dependencies

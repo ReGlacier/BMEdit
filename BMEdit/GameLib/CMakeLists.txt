@@ -9,8 +9,6 @@ add_subdirectory(ThirdParty/ZBinaryIO)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(ThirdParty/json)
 
-add_subdirectory(ThirdParty/gtest)
-
 set(GAME_LIB_SOURCES)
 file(GLOB_RECURSE GAME_LIB_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp)
 
@@ -23,5 +21,6 @@ target_link_libraries(GameLib PRIVATE ZBinaryReader) # Private libs
 target_link_libraries(GameLib PUBLIC nlohmann_json::nlohmann_json fmt::fmt-header-only) # Public library to work with json
 target_link_libraries(GameLib PUBLIC zlib) # Public library to work with compressed streams
 
-# --- Tests
-add_subdirectory(Tests)
+# --- Tests (temporary disabled)
+#add_subdirectory(ThirdParty/gtest)
+#add_subdirectory(Tests)
