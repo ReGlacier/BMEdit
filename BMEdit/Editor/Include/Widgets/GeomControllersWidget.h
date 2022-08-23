@@ -8,7 +8,7 @@
 
 namespace models
 {
-	class ValueModelBase;
+	class SceneObjectControllerModel;
 }
 
 namespace delegates
@@ -56,7 +56,7 @@ namespace widgets
 		gamelib::scene::SceneObject* m_sceneObject;
 		QString m_currentController;
 		QStringListModel *m_controllersListModel{ nullptr };
-		models::ValueModelBase *m_controllerPropertiesModel{ nullptr };
+		models::SceneObjectControllerModel *m_controllerPropertiesModel{ nullptr };
 		delegates::TypePropertyItemDelegate *m_controllerEditorDelegate{ nullptr };
 	};
 }

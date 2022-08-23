@@ -1,7 +1,7 @@
 #include "ui_GeomControllersWidget.h"
 #include <Widgets/GeomControllersWidget.h>
 #include <Delegates/TypePropertyItemDelegate.h>
-#include <Models/ValueModelBase.h>
+#include <Models/SceneObjectControllerModel.h>
 
 using namespace widgets;
 
@@ -10,7 +10,7 @@ GeomControllersWidget::GeomControllersWidget(QWidget *parent)
     : QWidget(parent)
     , m_ui(new Ui::GeomControllersWidget())
     , m_controllersListModel(new QStringListModel(this))
-    , m_controllerPropertiesModel(new models::ValueModelBase(this))
+    , m_controllerPropertiesModel(new models::SceneObjectControllerModel(this))
 	, m_controllerEditorDelegate(new delegates::TypePropertyItemDelegate(this))
 {
 	m_ui->setupUi(this);
@@ -57,7 +57,7 @@ void GeomControllersWidget::setGeom(gamelib::scene::SceneObject *sceneObject)
 			m_ui->controllerSelector->setEnabled(false);
 		}
 
-		m_controllerPropertiesModel->resetValue(); // Destroy old ctx
+		m_controllerPropertiesModel->setGeom(sceneObject);
 
 		m_sceneObject = sceneObject;
 		m_currentController = {};
@@ -88,7 +88,7 @@ void GeomControllersWidget::setController(const QString &controllerName)
 		QSignalBlocker selectorBlocker(m_ui->controllerSelector);
 
 		m_ui->controllerSelector->setCurrentText(controllerName);
-		m_controllerPropertiesModel->setValue(m_sceneObject->getControllers().at(m_currentController.toStdString()));
+		m_controllerPropertiesModel->setControllerName(controllerName.toStdString());
 	}
 
 	emit controllerSelectionChanged(m_currentController);
