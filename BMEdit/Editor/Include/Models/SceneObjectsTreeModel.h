@@ -24,6 +24,7 @@ namespace models
 		QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
 
 		void setLevel(const gamelib::Level *level);
+		void resetLevel();
 		QModelIndex getRootIndex() const;
 
 	private:

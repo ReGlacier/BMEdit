@@ -166,7 +166,7 @@ namespace gamelib::prp
 						                        binaryReader.tell());
 					}
 
-					value = binaryReader.read<uint32_t, ZBio::Endianness::LE>();
+					value = binaryReader.read<float, ZBio::Endianness::LE>();
 				}
 
 				// Check for EndArray op-code
@@ -255,6 +255,21 @@ namespace gamelib::prp
 	const std::vector<PRPDefinition> &PRPZDefines::getDefinitions() const
 	{
 		return m_definitions;
+	}
+
+	std::vector<PRPDefinition> &PRPZDefines::getDefinitions()
+	{
+		return m_definitions;
+	}
+
+	bool PRPZDefines::operator==(const PRPZDefines &other) const
+	{
+		return m_definitions == other.m_definitions;
+	}
+
+	bool PRPZDefines::operator!=(const PRPZDefines &other) const
+	{
+		return m_definitions != other.m_definitions;
 	}
 
 	void PRPZDefines::serialize(const PRPZDefines &defines,

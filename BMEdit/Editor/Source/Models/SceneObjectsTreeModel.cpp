@@ -128,9 +128,14 @@ namespace models
 	void SceneObjectsTreeModel::setLevel(const gamelib::Level *level)
 	{
 		beginResetModel();
-		{
-			m_level = level;
-		}
+		m_level = level;
+		endResetModel();
+	}
+
+	void SceneObjectsTreeModel::resetLevel()
+	{
+		beginResetModel();
+		m_level = nullptr;
 		endResetModel();
 	}
 

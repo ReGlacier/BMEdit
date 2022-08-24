@@ -28,6 +28,10 @@ namespace gamelib::prp {
 		void read(const uint8_t *data, int64_t size, const PRPTokenTable *tokenTable, ReadResult& result);
 
 		[[nodiscard]] const std::vector<PRPDefinition> &getDefinitions() const;
+		[[nodiscard]] std::vector<PRPDefinition> &getDefinitions();
+
+		[[nodiscard]] bool operator==(const PRPZDefines &other) const;
+		[[nodiscard]] bool operator!=(const PRPZDefines &other) const;
 
 		static void serialize(const PRPZDefines &defines, const PRPTokenTable *tokenTable, ZBio::ZBinaryWriter::BinaryWriter *binaryWriter);
 

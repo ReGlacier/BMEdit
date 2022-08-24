@@ -35,6 +35,9 @@ namespace gamelib::prp
 
 		explicit operator bool() const noexcept;
 
+		[[nodiscard]] bool operator==(const PRPDefinition &other) const;
+		[[nodiscard]] bool operator!=(const PRPDefinition &other) const;
+
 	private:
 		static PRPDefinitionType valueToType(const PRPDefinitionValue& value);
 		void updateIsSet();

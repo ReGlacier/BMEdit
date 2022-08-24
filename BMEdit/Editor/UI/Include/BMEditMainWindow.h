@@ -20,11 +20,13 @@ namespace models
 {
 	class SceneObjectPropertiesModel;
 	class SceneObjectsTreeModel;
+	class ScenePropertiesModel;
 }
 
 namespace delegates
 {
 	class TypePropertyItemDelegate;
+	class ScenePropertyTypeDelegate;
 }
 
 namespace gamelib::scene
@@ -50,6 +52,7 @@ private:
 	void resetStatusToDefault();
 	void initSceneTree();
 	void initProperties();
+	void initSceneProperties();
 	void initControllers();
 	void initSceneLoadingDialog();
 
@@ -68,6 +71,7 @@ public slots:
 	void onExportProperties();
 	void onAssetExportedSuccessfully(gamelib::io::AssetKind assetKind, const QString &assetName);
 	void onAssetExportFailed(const QString &reason);
+	void onCloseLevel();
 
 private:
     // UI
@@ -82,9 +86,11 @@ private:
 	QStringListModel *m_geomTypesModel { nullptr };
 	models::SceneObjectsTreeModel *m_sceneTreeModel { nullptr };
 	models::SceneObjectPropertiesModel *m_sceneObjectPropertiesModel { nullptr };
+	models::ScenePropertiesModel *m_scenePropertiesModel { nullptr };
 
 	// Delegates
 	delegates::TypePropertyItemDelegate *m_typePropertyItemDelegate { nullptr };
+	delegates::ScenePropertyTypeDelegate *m_scenePropertyItemDelegate { nullptr };
 
 	// Dialogs
 	LoadSceneProgressDialog m_loadSceneDialog;

@@ -58,6 +58,23 @@ namespace gamelib::prp
 		updateIsSet();
 	}
 
+	bool PRPDefinition::operator==(const gamelib::prp::PRPDefinition &other) const
+	{
+		if (m_isSet == other.m_isSet && !m_isSet) return true;
+
+		if (m_isSet != other.m_isSet) return false;
+		if (m_name != other.m_name) return false;
+		if (m_type != other.m_type) return false;
+		if (m_value != other.m_value) return false;
+
+		return true;
+	}
+
+	bool PRPDefinition::operator!=(const gamelib::prp::PRPDefinition &other) const
+	{
+		return !operator==(other);
+	}
+
 	PRPDefinition::operator bool() const noexcept
 	{
 		return m_isSet;

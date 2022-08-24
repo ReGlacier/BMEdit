@@ -13,9 +13,14 @@
 #include <GameLib/TypeNotFoundException.h>
 
 #include <Editor/EditorInstance.h>
+
 #include <Models/SceneObjectsTreeModel.h>
 #include <Models/SceneObjectPropertiesModel.h>
+#include <Models/ScenePropertiesModel.h>
+
 #include <Delegates/TypePropertyItemDelegate.h>
+#include <Delegates/ScenePropertyTypeDelegate.h>
+
 #include <Widgets/GeomControllersWidget.h>
 
 #include <LoadSceneProgressDialog.h>
@@ -43,6 +48,7 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 	initSceneTree();
 	initProperties();
 	initControllers();
+	initSceneProperties();
 	initSceneLoadingDialog();
 	initStatusBar();
 	initSearchInput();
@@ -212,6 +218,11 @@ void BMEditMainWindow::onLevelLoadSuccess()
 		m_sceneObjectPropertiesModel->setLevel(currentLevel);
 	}
 
+	if (m_scenePropertiesModel)
+	{
+		m_scenePropertiesModel->setLevel(const_cast<gamelib::Level*>(currentLevel));
+	}
+
 	// Load controllers index
 	ui->geomControllers->switchToDefaults();
 
@@ -219,6 +230,7 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	//ui->actionSave_properties->setEnabled(true); //TODO: Uncomment when exporter to ZIP will be done
 	//ui->searchInputField->setEnabled(true); //TODO: Uncomment when search will be done
 
+	// Finished
 	QApplication::beep();
 }
 
@@ -299,6 +311,17 @@ void BMEditMainWindow::onAssetExportFailed(const QString &reason)
 {
 	QMessageBox::critical(this, QString("Export asset"), QString("Unable to export asset: %1").arg(reason));
 	m_operationCommentLabel->setText(QString("Asset export FAILED: %1").arg(reason));
+}
+
+void BMEditMainWindow::onCloseLevel()
+{
+	// Cleanup models
+	if (m_sceneTreeModel) m_sceneTreeModel->resetLevel();
+	if (m_sceneObjectPropertiesModel) m_sceneObjectPropertiesModel->resetLevel();
+	if (m_scenePropertiesModel) m_scenePropertiesModel->resetLevel();
+
+	// Reset widget states
+	ui->geomControllers->resetGeom();
 }
 
 void BMEditMainWindow::loadTypesDataBase()
@@ -440,6 +463,18 @@ void BMEditMainWindow::initProperties()
 	ui->propertiesView->setItemDelegateForColumn(1, m_typePropertyItemDelegate);
 	ui->propertiesView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->propertiesView->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+}
+
+void BMEditMainWindow::initSceneProperties()
+{
+	m_scenePropertiesModel = new models::ScenePropertiesModel(this);
+	m_scenePropertyItemDelegate = new delegates::ScenePropertyTypeDelegate(this);
+
+	ui->sceneProperties->setModel(m_scenePropertiesModel);
+	ui->sceneProperties->setItemDelegateForColumn(1, m_scenePropertyItemDelegate);
+
+	ui->sceneProperties->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->sceneProperties->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
 void BMEditMainWindow::initControllers()

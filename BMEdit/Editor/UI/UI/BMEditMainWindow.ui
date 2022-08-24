@@ -95,7 +95,7 @@
    <property name="minimumSize">
     <size>
      <width>260</width>
-     <height>139</height>
+     <height>189</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -105,36 +105,76 @@
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="sceneDockContents">
-    <layout class="QVBoxLayout" name="verticalLayout_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="searchObjectLabel">
-         <property name="text">
-          <string>Node name:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="searchInputField">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QTreeView" name="sceneTreeView">
-       <property name="editTriggers">
-        <set>QAbstractItemView::AllEditTriggers</set>
+      <widget class="QTabWidget" name="sceneTabs">
+       <property name="tabShape">
+        <enum>QTabWidget::Rounded</enum>
        </property>
-       <property name="rootIsDecorated">
-        <bool>true</bool>
+       <property name="currentIndex">
+        <number>0</number>
        </property>
-       <property name="animated">
-        <bool>true</bool>
+       <property name="elideMode">
+        <enum>Qt::ElideNone</enum>
        </property>
+       <property name="documentMode">
+        <bool>false</bool>
+       </property>
+       <property name="tabsClosable">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="sceneTreeTab">
+        <attribute name="title">
+         <string>Scene Tree</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="searchObjectLabel">
+             <property name="text">
+              <string>Node name:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="searchInputField">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTreeView" name="sceneTreeView">
+           <property name="editTriggers">
+            <set>QAbstractItemView::AllEditTriggers</set>
+           </property>
+           <property name="rootIsDecorated">
+            <bool>true</bool>
+           </property>
+           <property name="animated">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="scenePropertiesTab">
+        <attribute name="title">
+         <string>Scene Properties</string>
+        </attribute>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QTableView" name="sceneProperties">
+           <property name="editTriggers">
+            <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::SelectedClicked</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
     </layout>

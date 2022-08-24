@@ -49,12 +49,12 @@ namespace gamelib
 
 	const LevelProperties *Level::getLevelProperties() const
 	{
-		if (m_isLevelLoaded)
-		{
-			return &m_levelProperties;
-		}
+		return m_isLevelLoaded ? &m_levelProperties : nullptr;
+	}
 
-		return nullptr;
+	LevelProperties *Level::getLevelProperties()
+	{
+		return m_isLevelLoaded ? &m_levelProperties : nullptr;
 	}
 
 	const SceneProperties *Level::getSceneProperties() const
