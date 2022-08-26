@@ -200,7 +200,7 @@ namespace gamelib::scene
 					// Find nearest 'EndObject' instruction and instruction before it will be our last instruction
 					while (!end.empty() && end[0].getOpCode() != PRPOpCode::EndObject)
 					{
-						end = end.slice(1, end.size() - 1);
+						++end;
 						++endOffset;
 					}
 
@@ -209,11 +209,11 @@ namespace gamelib::scene
 						throw SceneObjectVisitorException(objectIdx, fmt::format("Invalid controller definition: We have controller '{}' with unexposed instructions and without EndObject instruction!", controllerName));
 					}
 
-					auto unexposedInstructions = begin.slice(0, ip.size() - endOffset).as<std::vector<PRPInstruction>>();
+					auto unexposedInstructions = begin.slice(0, endOffset).as<std::vector<PRPInstruction>>();
 
-					//FIXME: Do it better!!!
-//					auto& orgInstructionsRef = controllers[controllerName].getInstructions();
-//					orgInstructionsRef.insert(orgInstructionsRef.end(), unexposedInstructions.begin(), unexposedInstructions.end());
+					// NOTE: maybe we should think about how to avoid copies here?
+					auto& orgInstructionsRef = currentObject->getControllers().at(controllerName).getInstructions();
+					orgInstructionsRef.insert(orgInstructionsRef.end(), unexposedInstructions.begin(), unexposedInstructions.end());
 
 					ip = ip.slice(endOffset, ip.size() - endOffset);
 				}
