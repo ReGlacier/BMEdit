@@ -209,11 +209,10 @@ namespace editor
 				if (replaceResult != 0)
 				{
 					zip_source_free(fileSource); // Should be released here
-					assert(false && "Failed to remove file");
+					assert(false && "Failed to replace file");
 					return false;
 				}
 
-				int rt = zip_source_commit_write(fileSource);
 				return true;
 			}
 		}
