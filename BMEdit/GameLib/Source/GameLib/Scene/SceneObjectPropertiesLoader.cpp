@@ -97,7 +97,6 @@ namespace gamelib::scene
 		}
 
 		// Read properties
-		Value properties;
 		{
 			const auto& [vRes, _newInstructions] = objectType->verify(ip);
 			if (!vRes)
@@ -112,7 +111,7 @@ namespace gamelib::scene
 				throw SceneObjectVisitorException(objectIdx, "Invalid instructions set (verification failed) [2]");
 			}
 
-			properties = *value;
+			currentObject->getProperties() = *value;
 			ip = newIP; // Assign new ip
 		}
 
@@ -133,8 +132,6 @@ namespace gamelib::scene
 		const auto controllersCount = ip[0].getOperand().trivial.i32;
 
 		NEXT_IP
-
-		std::map<std::string, Value> controllers;
 
 		if (controllersCount > 0)
 		{
@@ -192,7 +189,7 @@ namespace gamelib::scene
 
 				ip = nextIP;
 
-				controllers[controllerName] = controllerMapResult.value();
+				currentObject->getControllers()[controllerName] = controllerMapResult.value();
 
 				if (ip[0].getOpCode() != PRPOpCode::EndObject && reinterpret_cast<const TypeComplex*>(controllerType)->areUnexposedInstructionsAllowed())
 				{
@@ -214,8 +211,9 @@ namespace gamelib::scene
 
 					auto unexposedInstructions = begin.slice(0, ip.size() - endOffset).as<std::vector<PRPInstruction>>();
 
-					auto& orgInstructionsRef = controllers[controllerName].getInstructions();
-					orgInstructionsRef.insert(orgInstructionsRef.end(), unexposedInstructions.begin(), unexposedInstructions.end());
+					//FIXME: Do it better!!!
+//					auto& orgInstructionsRef = controllers[controllerName].getInstructions();
+//					orgInstructionsRef.insert(orgInstructionsRef.end(), unexposedInstructions.begin(), unexposedInstructions.end());
 
 					ip = ip.slice(endOffset, ip.size() - endOffset);
 				}
@@ -228,9 +226,6 @@ namespace gamelib::scene
 				NEXT_IP
 			}
 		}
-
-		currentObject->getControllers() = controllers;
-		currentObject->getProperties()  = properties;
 
 		if (parent)
 		{
