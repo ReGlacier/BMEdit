@@ -5,12 +5,18 @@
 #include <QStyleOptionViewItem>
 #include <Types/QSceneProperty.h>
 
+namespace visitors
+{
+	class WidgetCreatorVisitor;
+}
 
 namespace widgets
 {
 	class ScenePropertyWidget : public QWidget
 	{
 		Q_OBJECT
+
+		friend class visitors::WidgetCreatorVisitor;
 	public:
 		ScenePropertyWidget(QWidget *parent = nullptr);
 
