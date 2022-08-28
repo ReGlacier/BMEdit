@@ -295,6 +295,7 @@ void BMEditMainWindow::onDeselectedSceneObject()
 
 	ui->sceneObjectTypeCombo->setEnabled(false);
 	ui->sceneObjectName->clear();
+	ui->geomControllers->resetGeom();
 
 	m_sceneObjectPropertiesModel->resetGeom();
 }

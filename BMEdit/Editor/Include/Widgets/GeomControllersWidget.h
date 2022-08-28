@@ -1,14 +1,13 @@
 #pragma once
 
 #include <QWidget>
-#include <QStringListModel>
-
 #include <GameLib/Scene/SceneObject.h>
 
 
 namespace models
 {
 	class SceneObjectControllerModel;
+	class GeomControllerListModel;
 }
 
 namespace delegates
@@ -33,10 +32,9 @@ namespace widgets
 
 		void setGeom(gamelib::scene::SceneObject* sceneObject);
 		void resetGeom();
-		void setController(const QString& controllerName);
+		void setController(int controllerIndex);
 
 		[[nodiscard]] const gamelib::scene::SceneObject* getGeom() const;
-		[[nodiscard]] const QString &getController() const;
 
 		void switchToDefaults();
 		void switchToFirstController();
@@ -45,7 +43,6 @@ namespace widgets
 		void geomChanged();
 		void geomReset();
 		void editControllers();
-		void controllerSelectionChanged(const QString& controllerName);
 
 	private:
 		void setup();
@@ -54,8 +51,7 @@ namespace widgets
 		Ui::GeomControllersWidget *m_ui { nullptr };
 
 		gamelib::scene::SceneObject* m_sceneObject;
-		QString m_currentController;
-		QStringListModel *m_controllersListModel{ nullptr };
+		models::GeomControllerListModel *m_geomControllersListModel { nullptr };
 		models::SceneObjectControllerModel *m_controllerPropertiesModel{ nullptr };
 		delegates::TypePropertyItemDelegate *m_controllerEditorDelegate{ nullptr };
 	};

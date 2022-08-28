@@ -2,6 +2,7 @@
 
 #include <Models/ValueModelBase.h>
 #include <GameLib/Scene/SceneObject.h>
+#include <Types/QGlacierController.h>
 
 
 namespace models
@@ -14,14 +15,14 @@ namespace models
 
 		void setGeom(gamelib::scene::SceneObject *geom);
 		void resetGeom();
-		void setControllerName(const std::string &controllerName);
-		void resetControllerName();
+		void setControllerIndex(int controllerIndex);
+		void resetController();
 
 	private slots:
 		void onValueChanged();
 
 	private:
 		gamelib::scene::SceneObject *m_geom { nullptr };
-		std::string m_controllerName {};
+		int m_currentControllerIndex = -1;
 	};
 }

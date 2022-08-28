@@ -14,7 +14,7 @@ void SceneObjectControllerModel::setGeom(gamelib::scene::SceneObject *geom)
 	const bool isNewGeom = m_geom != geom;
 	beginResetModel();
 	m_geom = geom;
-	m_controllerName.clear();
+	m_currentControllerIndex = -1;
 	endResetModel();
 
 	if (isNewGeom)
@@ -27,34 +27,30 @@ void SceneObjectControllerModel::resetGeom()
 {
 	beginResetModel();
 	m_geom = nullptr;
-	m_controllerName.clear();
+	m_currentControllerIndex = -1;
 	endResetModel();
 
 	resetValue();
 }
 
-void SceneObjectControllerModel::setControllerName(const std::string &controllerName)
+void SceneObjectControllerModel::setControllerIndex(int controllerIndex)
 {
-	assert(false);
-//	if (!m_geom || !m_geom->getControllers().count(controllerName)) return;
-//
-//	if (auto controllerIt = std::find(m_geom->getControllers().begin(), m_geom->getControllers().end(), ))
-//	const bool isNewController = controllerName != m_controllerName;
-//
-//	beginResetModel();
-//	m_controllerName = controllerName;
-//	endResetModel();
-//
-//	if (isNewController)
-//	{
-//		setValue(m_geom->getControllers().at(controllerName));
-//	}
+	if (!m_geom || controllerIndex < 0 || controllerIndex >= m_geom->getControllers().size() || m_currentControllerIndex == controllerIndex)
+	{
+		return;
+	}
+
+	beginResetModel();
+	m_currentControllerIndex = controllerIndex;
+	endResetModel();
+
+	setValue(m_geom->getControllers().at(controllerIndex).properties);
 }
 
-void SceneObjectControllerModel::resetControllerName()
+void SceneObjectControllerModel::resetController()
 {
 	beginResetModel();
-	m_controllerName.clear();
+	m_currentControllerIndex = -1;
 	endResetModel();
 
 	resetValue();
@@ -62,9 +58,8 @@ void SceneObjectControllerModel::resetControllerName()
 
 void SceneObjectControllerModel::onValueChanged()
 {
-	assert(false);
-//	if (m_geom && !m_controllerName.empty() && getValue().has_value())
-//	{
-//		m_geom->getControllers().at(m_controllerName) = getValue().value();
-//	}
+	if (m_geom && m_currentControllerIndex != -1 && m_currentControllerIndex >= 0 && m_currentControllerIndex < m_geom->getControllers().size())
+	{
+		m_geom->getControllers().at(m_currentControllerIndex).properties = getValue().value();
+	}
 }
