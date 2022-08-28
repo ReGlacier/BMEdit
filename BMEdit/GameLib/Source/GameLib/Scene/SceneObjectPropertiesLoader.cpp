@@ -189,7 +189,9 @@ namespace gamelib::scene
 
 				ip = nextIP;
 
-				currentObject->getControllers()[controllerName] = controllerMapResult.value();
+				auto& controller = currentObject->getControllers().emplace_back();
+				controller.name = controllerName;
+				controller.properties = controllerMapResult.value();
 
 				if (ip[0].getOpCode() != PRPOpCode::EndObject && reinterpret_cast<const TypeComplex*>(controllerType)->areUnexposedInstructionsAllowed())
 				{
@@ -212,8 +214,7 @@ namespace gamelib::scene
 					auto unexposedInstructions = begin.slice(0, endOffset).as<std::vector<PRPInstruction>>();
 
 					// NOTE: maybe we should think about how to avoid copies here?
-					auto& orgInstructionsRef = currentObject->getControllers().at(controllerName).getInstructions();
-					orgInstructionsRef.insert(orgInstructionsRef.end(), unexposedInstructions.begin(), unexposedInstructions.end());
+					std::copy(unexposedInstructions.begin(), unexposedInstructions.end(), std::back_inserter(controller.properties.getInstructions()));
 
 					ip = ip.slice(endOffset, ip.size() - endOffset);
 				}

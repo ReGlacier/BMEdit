@@ -180,6 +180,8 @@ namespace gamelib::gms
 
 	void GMSHeader::buildSceneHierarchy(GMSHeader &header)
 	{
+		return;
+
 #if 0
 		// Pre-cache clusters
 		using FilledCluster = std::array<GMSGeomEntity*, 24>;

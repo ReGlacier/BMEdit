@@ -96,6 +96,7 @@ void BMEditMainWindow::connectActions()
 	connect(ui->actionRestore_layout, &QAction::triggered, [=]() { onRestoreLayout(); });
 	connect(ui->actionTypes_Viewer, &QAction::triggered, [=]() { onShowTypesViewer(); });
 	connect(ui->actionSave_properties, &QAction::triggered, [=]() { onExportProperties(); });
+	connect(ui->actionExport_PRP_properties, &QAction::triggered, [=]() { onExportPRP(); });
 }
 
 void BMEditMainWindow::connectDockWidgetActions()
@@ -226,6 +227,10 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	// Load controllers index
 	ui->geomControllers->switchToDefaults();
 
+	// Export action
+	ui->menuExport->setEnabled(true);
+	ui->actionExport_PRP_properties->setEnabled(true);
+
 	ui->searchInputField->clear();
 	//ui->actionSave_properties->setEnabled(true); //TODO: Uncomment when exporter to ZIP will be done
 	//ui->searchInputField->setEnabled(true); //TODO: Uncomment when search will be done
@@ -322,6 +327,33 @@ void BMEditMainWindow::onCloseLevel()
 
 	// Reset widget states
 	ui->geomControllers->resetGeom();
+
+	// Reset export menu
+	ui->menuExport->setEnabled(false);
+	ui->actionExport_PRP_properties->setEnabled(false);
+}
+
+void BMEditMainWindow::onExportPRP()
+{
+	QFileDialog savePRPDialog(this, QString("Save PRP"), QString(), QString("Scene properties (*.PRP)"));
+	savePRPDialog.setViewMode(QFileDialog::ViewMode::Detail);
+	savePRPDialog.setFileMode(QFileDialog::FileMode::AnyFile);
+	savePRPDialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+	savePRPDialog.selectFile(QString("%1.PRP").arg(QString::fromStdString(editor::EditorInstance::getInstance().getActiveLevel()->getLevelName())));
+	if (!savePRPDialog.exec())
+	{
+		return;
+	}
+
+	if (savePRPDialog.selectedFiles().empty())
+	{
+		return;
+	}
+
+	const auto saveAsPath = savePRPDialog.selectedFiles().first();
+	editor::EditorInstance::getInstance().exportPRP(saveAsPath);
+
+	QMessageBox::information(this, "Export PRP", QString("PRP file exported successfully to %1").arg(saveAsPath));
 }
 
 void BMEditMainWindow::loadTypesDataBase()

@@ -35,17 +35,20 @@ void SceneObjectControllerModel::resetGeom()
 
 void SceneObjectControllerModel::setControllerName(const std::string &controllerName)
 {
-	if (!m_geom || !m_geom->getControllers().count(controllerName)) return;
-	const bool isNewController = controllerName != m_controllerName;
-
-	beginResetModel();
-	m_controllerName = controllerName;
-	endResetModel();
-
-	if (isNewController)
-	{
-		setValue(m_geom->getControllers().at(controllerName));
-	}
+	assert(false);
+//	if (!m_geom || !m_geom->getControllers().count(controllerName)) return;
+//
+//	if (auto controllerIt = std::find(m_geom->getControllers().begin(), m_geom->getControllers().end(), ))
+//	const bool isNewController = controllerName != m_controllerName;
+//
+//	beginResetModel();
+//	m_controllerName = controllerName;
+//	endResetModel();
+//
+//	if (isNewController)
+//	{
+//		setValue(m_geom->getControllers().at(controllerName));
+//	}
 }
 
 void SceneObjectControllerModel::resetControllerName()
@@ -59,8 +62,9 @@ void SceneObjectControllerModel::resetControllerName()
 
 void SceneObjectControllerModel::onValueChanged()
 {
-	if (m_geom && !m_controllerName.empty() && getValue().has_value())
-	{
-		m_geom->getControllers().at(m_controllerName) = getValue().value();
-	}
+	assert(false);
+//	if (m_geom && !m_controllerName.empty() && getValue().has_value())
+//	{
+//		m_geom->getControllers().at(m_controllerName) = getValue().value();
+//	}
 }

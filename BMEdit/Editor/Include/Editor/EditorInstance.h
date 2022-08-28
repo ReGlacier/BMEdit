@@ -30,6 +30,7 @@ namespace editor {
 		void restoreLevel(std::unique_ptr<gamelib::Level> &&level);
 
 		void exportAsset(gamelib::io::AssetKind assetKind);
+		bool exportPRP(const QString &filePath);
 
 	signals:
 		void levelLoadSuccess();

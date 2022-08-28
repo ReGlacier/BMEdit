@@ -5,6 +5,26 @@
 
 namespace gamelib::scene
 {
+	bool SceneObject::Controller::operator==(const std::string &controllerName) const
+	{
+		return name == controllerName;
+	}
+
+	bool SceneObject::Controller::operator!=(const std::string &controllerName) const
+	{
+		return !operator==(controllerName);
+	}
+
+	bool SceneObject::Controller::operator==(const SceneObject::Controller &other) const
+	{
+		return name == other.name && properties == other.properties;
+	}
+
+	bool SceneObject::Controller::operator!=(const SceneObject::Controller &other) const
+	{
+		return !operator==(other);
+	}
+
 	SceneObject::SceneObject() = default;
 
 	SceneObject::SceneObject(std::string name, uint32_t typeId, const Type *type, gms::GMSGeomEntity geomEntity, Instructions rawProperties)

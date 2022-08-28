@@ -2,9 +2,13 @@
 #include <GameLib/GMS/GMSStructureError.h>
 #include <GameLib/Level.h>
 #include <GameLib/PRP/PRPReader.h>
+
 #include <GameLib/Scene/SceneObjectPropertiesLoader.h>
+#include <GameLib/Scene/SceneObjectPropertiesDumper.h>
+
 #include <GameLib/Type.h>
 #include <GameLib/TypeRegistry.h>
+#include <GameLib/PRM/PRMReader.h>
 
 
 namespace gamelib
@@ -27,6 +31,11 @@ namespace gamelib
 		}
 
 		if (!loadLevelScene())
+		{
+			return false;
+		}
+
+		if (!loadLevelPrimitives())
 		{
 			return false;
 		}
@@ -67,9 +76,28 @@ namespace gamelib
 		return nullptr;
 	}
 
+	const LevelGeometry *Level::getLevelGeometry() const
+	{
+		return &m_levelGeometry;
+	}
+
+	LevelGeometry *Level::getLevelGeometry()
+	{
+		return &m_levelGeometry;
+	}
+
 	const std::vector<scene::SceneObject::Ptr> &Level::getSceneObjects() const
 	{
 		return m_sceneObjects;
+	}
+
+	void Level::dumpAsset(io::AssetKind assetKind, std::vector<uint8_t> &outBuffer) const
+	{
+		if (assetKind == io::AssetKind::PROPERTIES)
+		{
+			scene::SceneObjectPropertiesDumper dumper;
+			dumper.dump(this, &outBuffer);
+		}
 	}
 
 	bool Level::loadLevelProperties()
@@ -140,13 +168,6 @@ namespace gamelib
 				    currentGeom,
 				    propertyInstructions
 			    );
-
-#if 0 // I guess it's a source of bugs (SEE THE NEXT COMMENT)
-				if (auto parentGeomIndex = currentGeom.getParentGeomIndex(); parentGeomIndex != gms::GMSGeomEntity::kInvalidParent) {
-					m_sceneObjects[sceneObjectIndex]->setParent(m_sceneObjects[parentGeomIndex]);
-					m_sceneObjects[parentGeomIndex]->getChildren().push_back(m_sceneObjects[sceneObjectIndex]);
-				}
-#endif
 			}
 
 			// Visit properties
@@ -160,6 +181,26 @@ namespace gamelib
 			 * 		The main problem is I DON'T UNDERSTAND HOW HIERARCHY ARE STORED INSIDE GMS FILE.
 			 * 		So, I will fix this place when I will understand that.
 			 */
+		}
+
+		return true;
+	}
+
+	bool Level::loadLevelPrimitives()
+	{
+		// Read PRM file
+		int64_t prmFileSize = 0;
+		auto prmFileBuffer = m_assetProvider->getAsset(gamelib::io::AssetKind::GEOMETRY, prmFileSize);
+
+		if (!prmFileSize || !prmFileBuffer)
+		{
+			return false;
+		}
+
+		prm::PRMReader reader;
+		if (!reader.read(Span(prmFileBuffer.get(), prmFileSize)))
+		{
+			return false;
 		}
 
 		return true;

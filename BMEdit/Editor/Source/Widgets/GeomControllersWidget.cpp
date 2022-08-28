@@ -115,13 +115,13 @@ void GeomControllersWidget::switchToDefaults()
 
 void GeomControllersWidget::switchToFirstController()
 {
-	if (!m_sceneObject || m_sceneObject->getControllers().empty())
-	{
-		return;
-	}
-
-	setController(QString::fromStdString(m_sceneObject->getControllers().begin()->first));
-	m_ui->controllerSelector->setCurrentText(m_currentController);
+//	if (!m_sceneObject || m_sceneObject->getControllers().empty())
+//	{
+//		return;
+//	}
+//
+//	setController(QString::fromStdString(m_sceneObject->getControllers().begin()->first));
+//	m_ui->controllerSelector->setCurrentText(m_currentController);
 }
 
 void GeomControllersWidget::setup()
@@ -133,7 +133,7 @@ void GeomControllersWidget::setup()
 	m_ui->controllerProperties->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	m_ui->controllerProperties->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
-	connect(m_ui->controllerSelector, &QComboBox::currentTextChanged, [=](const QString &nextControllerName) {
-		setController(nextControllerName);
-	});
+//	connect(m_ui->controllerSelector, &QComboBox::currentTextChanged, [=](const QString &nextControllerName) {
+//		setController(nextControllerName);
+//	});
 }

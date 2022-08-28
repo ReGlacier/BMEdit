@@ -72,6 +72,7 @@ public slots:
 	void onAssetExportedSuccessfully(gamelib::io::AssetKind assetKind, const QString &assetName);
 	void onAssetExportFailed(const QString &reason);
 	void onCloseLevel();
+	void onExportPRP();
 
 private:
     // UI

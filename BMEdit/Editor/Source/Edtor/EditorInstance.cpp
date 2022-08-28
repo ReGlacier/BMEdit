@@ -5,7 +5,9 @@
 #include <GameLib/Scene/SceneObjectVisitorException.h>
 #include <GameLib/TypeNotFoundException.h>
 #include <BMEditMainWindow.h>
+
 #include <QApplication>
+#include <QFile>
 
 
 namespace editor {
@@ -154,33 +156,61 @@ namespace editor {
 
 	void EditorInstance::exportAsset(gamelib::io::AssetKind assetKind)
 	{
-		auto provider = std::make_unique<ZIPLevelAssetProvider>(m_currentLevelPath);
-		if (!provider)
+//		auto provider = std::make_unique<ZIPLevelAssetProvider>(m_currentLevelPath);
+//		if (!provider)
+//		{
+//			emit exportAssetFailed(QString("Failed to open '%1' ZIP file").arg(QString::fromStdString(m_currentLevelPath)));
+//			return;
+//		}
+//
+//		if (!provider->isValid() || !provider->isEditable())
+//		{
+//			emit exportAssetFailed(QString("Invalid IO provider state (not valid or not editable) of ZIP file '%1'").arg(QString::fromStdString(m_currentLevelPath)));
+//			return;
+//		}
+//
+//		//TODO: Rewrite
+//		std::array<uint8_t, 10> bytes = {
+//		    'H', 'E', 'L', 'L', '0', ' ', 'I', 'O', 'I', '!'
+//		};
+//
+//		const auto result = provider->saveAsset(assetKind, gamelib::Span(bytes));
+//
+//		if (!result)
+//		{
+//			emit exportAssetFailed(QString("saveAsset() failed"));
+//		}
+//		else
+//		{
+//			emit exportAssetSuccess(assetKind, QString("N/A"));
+//		}
+	}
+
+	bool EditorInstance::exportPRP(const QString &filePath)
+	{
+		std::vector<uint8_t> prpFileBuffer;
+
+		if (!m_currentLevel)
 		{
-			emit exportAssetFailed(QString("Failed to open '%1' ZIP file").arg(QString::fromStdString(m_currentLevelPath)));
-			return;
+			return false;
 		}
 
-		if (!provider->isValid() || !provider->isEditable())
+		QFile prpFile(filePath);
+		if (!prpFile.open(QIODeviceBase::OpenModeFlag::WriteOnly | QIODeviceBase::OpenModeFlag::Truncate | QIODeviceBase::OpenModeFlag::Unbuffered))
 		{
-			emit exportAssetFailed(QString("Invalid IO provider state (not valid or not editable) of ZIP file '%1'").arg(QString::fromStdString(m_currentLevelPath)));
-			return;
+			return false;
 		}
 
-		//TODO: Rewrite
-		std::array<uint8_t, 10> bytes = {
-		    'H', 'E', 'L', 'L', '0', ' ', 'I', 'O', 'I', '!'
-		};
+		m_currentLevel->dumpAsset(gamelib::io::AssetKind::PROPERTIES, prpFileBuffer);
 
-		const auto result = provider->saveAsset(assetKind, gamelib::Span(bytes));
+		if (prpFileBuffer.empty())
+		{
+			return false;
+		}
 
-		if (!result)
-		{
-			emit exportAssetFailed(QString("saveAsset() failed"));
-		}
-		else
-		{
-			emit exportAssetSuccess(assetKind, QString("N/A"));
-		}
+		QByteArray raw(reinterpret_cast<const char*>(prpFileBuffer.data()), static_cast<qsizetype>(prpFileBuffer.size()));
+		prpFile.write(raw);
+
+		return true;
 	}
 }

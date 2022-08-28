@@ -7,36 +7,46 @@
 
 namespace gamelib::prp
 {
+	struct ZDefineStringVisitor
+	{
+		uint32_t &dataOffset;
+		PRPTokenTable &tokenTable;
+
+		ZDefineStringVisitor(uint32_t &offset, PRPTokenTable &tokTable) : dataOffset(offset), tokenTable(tokTable) {}
+
+		void operator()(const StringRef &stringRef)
+		{
+			if (tokenTable.addToken(stringRef))
+			{
+				dataOffset += stringRef.length() + 1;
+			}
+		}
+
+		void operator()(const StringRefTab &stringRefTab)
+		{
+			for (const auto& token: stringRefTab)
+			{
+				operator()(token);
+			}
+		}
+
+		void operator()(const ArrayI32&) {} // Do nothing
+		void operator()(const ArrayF32&) {} // Do nothing
+	};
+
 	void buildTokenTableAndCacheObjectsCount(const PRPZDefines &definitions, const std::vector<PRPInstruction> &instructions, PRPTokenTable &tokenTable, int &objectsCount, uint32_t &dataOffset)
 	{
+		ZDefineStringVisitor visitor(dataOffset, tokenTable);
+
 		// Save string references from ZDefines
 		for (const auto &def: definitions.getDefinitions())
 		{
-			const auto defType = def.getType();
-
-			dataOffset += tokenTable.addToken(def.getName()) * (def.getName().length() + 1);
-
-			if ((defType >= PRPDefinitionType::StringRef_1 && defType <= PRPDefinitionType::StringRef_3) || defType == PRPDefinitionType::StringRefTab)
+			if (tokenTable.addToken(def.getName()))
 			{
-				std::visit(
-					[&tokenTable, &dataOffset](auto&& value)
-					{
-						using T = std::decay_t<decltype(value)>;
-
-						if constexpr (std::is_same_v<T, StringRef>)
-						{
-							dataOffset += tokenTable.addToken(value) * (value.length() + 1);
-						}
-						else if constexpr (std::is_same_v<T, StringRefTab>)
-						{
-							for (const auto& tok: value)
-							{
-								dataOffset += tokenTable.addToken(tok) * (tok.length() + 1);
-							}
-						}
-					},
-					def.getValue());
+				dataOffset += (def.getName().length() + 1);
 			}
+
+			std::visit(visitor, def.getValue());
 		}
 
 		// Save string references from instructions
@@ -53,9 +63,12 @@ namespace gamelib::prp
 				}
 			}
 
-			if (
-				opCode == PRPOpCode::String || opCode == PRPOpCode::NamedString ||
-				opCode == PRPOpCode::StringOrArray_E || opCode == PRPOpCode::StringOrArray_8E)
+			if (opCode == PRPOpCode::String || opCode == PRPOpCode::NamedString)
+			{
+				const auto& tok = instruction.getOperand().str;
+				dataOffset += tokenTable.addToken(tok) * (tok.length() + 1);
+			}
+			else if (opCode == PRPOpCode::StringOrArray_E || opCode == PRPOpCode::StringOrArray_8E)
 			{
 				const auto& tok = instruction.getOperand().str;
 				dataOffset += tokenTable.addToken(tok) * (tok.length() + 1);

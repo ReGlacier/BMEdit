@@ -21,7 +21,20 @@ namespace gamelib::scene
 		using Ptr = std::shared_ptr<SceneObject>;
 		using Ref = std::weak_ptr<SceneObject>;
 		using Instructions = std::vector<prp::PRPInstruction>;
-		using Controllers = std::map<std::string, Value>;
+
+		struct Controller
+		{
+			std::string name;
+			Value properties;
+
+			bool operator==(const std::string &controllerName) const;
+			bool operator!=(const std::string &controllerName) const;
+			bool operator==(const Controller &other) const;
+			bool operator!=(const Controller &other) const;
+		};
+
+		using Controllers = std::vector<Controller>;
+		using ControllerHandle = size_t;
 
 		SceneObject();
 		SceneObject(std::string name, uint32_t typeId, const Type *type, gms::GMSGeomEntity geomEntity, Instructions rawProperties);
@@ -51,7 +64,7 @@ namespace gamelib::scene
 		SceneObject::Ref m_parent {}; ///< Parent geom
 		std::vector<SceneObject::Ref> m_children {}; ///< Children geoms
 		Instructions m_rawProperties {}; ///< Property instructions
-		std::map<std::string, Value> m_controllers; ///< Controllers
+		Controllers m_controllers; ///< Controllers
 		Value m_properties;
 	};
 }

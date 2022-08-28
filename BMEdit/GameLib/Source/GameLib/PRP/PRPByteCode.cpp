@@ -15,17 +15,20 @@ namespace gamelib::prp
 		struct OpCodeDescription {
 			using LoadHandler = void(*)(const Span<uint8_t> &buffer, PRPByteCodeContext&, PRPOpCode, const PRPHeader *, const PRPTokenTable *, const uint8_t *, std::vector<PRPInstruction> &outInstructions);
 			using SaveHandler = void(*)(const PRPInstruction &, const PRPHeader *, const PRPTokenTable *, ZBio::ZBinaryWriter::BinaryWriter *);
+			using ShouldSkipSave = bool(*)(const PRPInstruction &);
 
 			PRPOpCode opCode { PRPOpCode::ERR_UNKNOWN };
 			int operandSize { 0 };
 			LoadHandler loadHandler { nullptr };
 			SaveHandler saveHandler { nullptr };
+			ShouldSkipSave shouldSkipSaveHandler { nullptr };
 
-			constexpr OpCodeDescription(PRPOpCode _opCode, int _operandSize, LoadHandler _loadHandler, SaveHandler _saveHandler = nullptr)
+			constexpr OpCodeDescription(PRPOpCode _opCode, int _operandSize, LoadHandler _loadHandler, SaveHandler _saveHandler = nullptr, ShouldSkipSave _shouldSkipHandler = nullptr)
 				: opCode(_opCode)
 				, operandSize(_operandSize)
 				, loadHandler(_loadHandler)
 				, saveHandler(_saveHandler)
+				, shouldSkipSaveHandler(_shouldSkipHandler)
 			{
 			}
 
@@ -108,6 +111,8 @@ namespace gamelib::prp
 		void serializeStringArray(const PRPInstruction &, const PRPHeader *, const PRPTokenTable *, ZBio::ZBinaryWriter::BinaryWriter *);
 		void serializeArrayOrContainer(const PRPInstruction &, const PRPHeader *, const PRPTokenTable *, ZBio::ZBinaryWriter::BinaryWriter *);
 
+		bool shouldSkipRawData(const PRPInstruction &);
+
 		// --- OPC handlers ---
 		static constexpr opc::OpCodeDescription g_opCodeHandlers[] = {
 			{ PRPOpCode::Array, 4, prepareBeginOfGenericContainer<PRPByteCodeContext::ContextFlags::CF_READ_ARRAY>, serializeArrayOrContainer },
@@ -136,8 +141,8 @@ namespace gamelib::prp
 			{ PRPOpCode::String, 4, prepareString, serializeString },
 			{ PRPOpCode::NamedString, 4, prepareString, serializeString },
 			{ PRPOpCode::StringArray, 4, prepareStringArray, serializeStringArray },
-			{ PRPOpCode::RawData, 4, prepareRawData, serializeRawData },
-			{ PRPOpCode::NamedRawData, 4, prepareRawData, serializeRawData },
+			{ PRPOpCode::RawData, 4, prepareRawData, serializeRawData, shouldSkipRawData },
+			{ PRPOpCode::NamedRawData, 4, prepareRawData, serializeRawData, shouldSkipRawData },
 			{ PRPOpCode::SkipMark, 0, prepareSkipMark },
 			{ PRPOpCode::StringOrArray_E, 4, prepareEnum, serializeEnum },
 			{ PRPOpCode::StringOrArray_8E, 4, prepareEnum, serializeEnum },
@@ -213,10 +218,16 @@ namespace gamelib::prp
 					continue;
 				}
 
+				// If instruction could be skipped (by reason, env or etc)
+				if (handler.shouldSkipSaveHandler && handler.shouldSkipSaveHandler(instruction))
+				{
+					continue;
+				}
+
 				// Store op-code
 				binaryWriter->write<uint8_t, ZBio::Endianness::LE>(static_cast<uint8_t>(instruction.getOpCode()));
 
-				// Store data
+				// Save data
 				handler(instruction, header, tokenTable, binaryWriter);
 
 				break;
@@ -482,7 +493,10 @@ namespace gamelib::prp::opc
 		binaryWriter->write<uint32_t, ZBio::Endianness::LE>(length);
 
 		// Write bytes array
-		binaryWriter->write<uint8_t, ZBio::Endianness::LE>(&raw[0], length);
+		if (length > 0)
+		{
+			binaryWriter->write<uint8_t, ZBio::Endianness::LE>(&raw[0], static_cast<int64_t>(length));
+		}
 	}
 
 	void serializeStringArray(const PRPInstruction &instruction, const PRPHeader *, const PRPTokenTable *tokenTable, ZBio::ZBinaryWriter::BinaryWriter *binaryWriter)
@@ -509,5 +523,11 @@ namespace gamelib::prp::opc
 	{
 		// Length
 		binaryWriter->write<uint32_t, ZBio::Endianness::LE>(instruction.getOperand().trivial.i32);
+	}
+
+	bool shouldSkipRawData(const PRPInstruction &instruction)
+	{
+		const bool res = !instruction.isSet() || instruction.getOperand().raw.empty();
+		return res;
 	}
 }
