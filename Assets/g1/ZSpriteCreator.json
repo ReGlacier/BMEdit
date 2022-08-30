@@ -1,0 +1,8 @@
+{
+  "typename": "ZSpriteCreator",
+  "parent": "ZSTDOBJ",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "property_C", "typename": "ZVector128I", "offset": 12 }
+  ]
+}

@@ -58,7 +58,7 @@ void SceneObjectControllerModel::resetController()
 
 void SceneObjectControllerModel::onValueChanged()
 {
-	if (m_geom && m_currentControllerIndex != -1 && m_currentControllerIndex >= 0 && m_currentControllerIndex < m_geom->getControllers().size())
+	if (m_geom && m_currentControllerIndex != -1 && m_currentControllerIndex >= 0 && m_currentControllerIndex < m_geom->getControllers().size() && getValue().has_value())
 	{
 		m_geom->getControllers().at(m_currentControllerIndex).properties = getValue().value();
 	}
