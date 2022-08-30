@@ -79,7 +79,7 @@ void GeomControllersWidget::setController(int controllerIndex)
 
 	{
 		QSignalBlocker blocker { m_ui->controllerSelector };
-		m_ui->controllerSelector->setCurrentIndex(0);
+		m_ui->controllerSelector->setCurrentIndex(controllerIndex);
 	}
 
 	m_controllerPropertiesModel->setControllerIndex(controllerIndex);
