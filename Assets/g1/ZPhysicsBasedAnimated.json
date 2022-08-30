@@ -1,0 +1,13 @@
+{
+  "typename": "ZPhysicsBasedAnimated",
+  "parent": "ZEventBase",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "Awake", "typename": "PRPOpCode.Bool" },
+    { "name": "ProjectileHit", "typename": "PRPOpCode.Bool" },
+    { "name": "HeroCollision", "typename": "PRPOpCode.Bool" },
+    { "name": "property_44", "typename": "ZSDOwner", "offset": 68 },
+    { "name": "property_54", "typename": "PRPOpCode.Int16", "offset": 84 },
+    { "name": "property_56", "typename": "PRPOpCode.Int16", "offset": 86 }
+  ]
+}

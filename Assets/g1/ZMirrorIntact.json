@@ -1,0 +1,8 @@
+{
+  "typename": "ZMirrorIntact",
+  "parent": "CCheckInside",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "property_48", "typename": "ZGEOMREF", "offset": 72 }
+  ]
+}

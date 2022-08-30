@@ -1,0 +1,12 @@
+{
+  "typename": "ZHM3ActorProperties",
+  "parent": "ZSTDOBJ",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "property_C", "typename": "ZREFTAB32", "offset": 12 },
+    { "name": "property_10", "typename": "PRPOpCode.Float32", "offset": 16 },
+    { "name": "property_14", "typename": "PRPOpCode.Int32", "offset": 20 },
+    { "name": "property_18", "typename": "PRPOpCode.Float32", "offset": 24 },
+    { "name": "property_1C", "typename": "PRPOpCode.Float32", "offset": 28 }
+  ]
+}

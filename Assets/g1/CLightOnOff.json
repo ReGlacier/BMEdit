@@ -1,0 +1,7 @@
+{
+  "typename": "CLightOnOff",
+  "parent": "ZEventBase",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+  ]
+}

@@ -107,6 +107,7 @@
         "0x2000CF": "ZEditorSpline",
         "0x80800004": "ZLIGHT",
         "0x20044C": "ZHM3WeaponUpgradeGeom",
-        "0x200453": "ZSpriteCreator"
+        "0x200453": "ZSpriteCreator",
+        "0x20043F": "ZHM3ActorProperties"
     }
 }

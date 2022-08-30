@@ -118,6 +118,10 @@ namespace gamelib
 			if (hasClassPrefix && std::string("ZHM3").append(requestedTypeName) == typeName)
 				return type.get();
 
+			// #4 : IOI G1 codegen for Hitman Blood Money (HM3) removing HM3 prefix w/o Z
+			if (std::string("HM3").append(requestedTypeName) == typeName)
+				return type.get();
+
 			//NOTE: Maybe we should optimize this place
 		}
 
