@@ -8,7 +8,7 @@ namespace gamelib::prm
 	{
 		header.chunkOffset = binaryReader->read<uint32_t>();
 		header.countOfPrimitives = binaryReader->read<uint32_t>();
-		header.unk8 = binaryReader->read<uint32_t>();
+		header.chunkOffset2 = binaryReader->read<uint32_t>();
 		header.zeroed = binaryReader->read<uint32_t>();
 	}
 }

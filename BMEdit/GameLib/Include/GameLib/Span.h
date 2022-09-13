@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cassert>
+#include <memory>
 #include <vector>
 #include <array>
 
@@ -93,5 +94,27 @@ namespace gamelib
 
 		template <typename TR>
 		TR as() const requires(std::is_constructible_v<TR, decltype(m_data), decltype(m_data + m_size)> && std::is_default_constructible_v<TR>) { return empty() ? TR {} : TR { m_data, m_data + m_size }; }
+
+		/**
+		 * @fn new_buffer
+		 * @return unique_ptr to byte array copied from internal buffer. Return nullptr when no internal buffer or buffer is empty
+		 * @note Internal buffer & size not guaranteed to be valid (eg if user constructed Span from invalid data this function will try to make dereferencing at invalid address)
+		 */
+		[[nodiscard]] std::unique_ptr<uint8_t[]> new_buffer() const
+		{
+			if (!m_size || !m_data)
+			{
+				return nullptr;
+			}
+
+			auto ptr = std::make_unique<uint8_t[]>(m_size);
+			if (!ptr)
+			{
+				return nullptr;
+			}
+
+			std::memcpy(ptr.get(), m_data, m_size);
+			return ptr;
+		}
 	};
 }
