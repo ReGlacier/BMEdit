@@ -17,7 +17,7 @@
         { "name": "property_34", "typename": "ZSDOwner",   "offset": 52   },
         { "name": "property_3C4", "typename": "ZREFTAB32", "offset": 964  },
         { "name": "property_51C", "typename": "ZGEOMREF",  "offset": 1308 },
-        { "name": "property_520", "typename": "ZGEOMREF",  "offset": 1312 },
+        { "name": "property_520", "typename": "ZREFTAB32",  "offset": 1312 },
         { "name": "property_5D0", "typename": "ZGEOMREF",  "offset": 1488 },
         { "name": "property_69C", "typename": "ZGEOMREF",  "offset": 1692 },
         { "name": "property_6A0", "typename": "ZGEOMREF",  "offset": 1696 },
