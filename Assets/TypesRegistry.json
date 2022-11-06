@@ -108,6 +108,8 @@
         "0x80800004": "ZLIGHT",
         "0x20044C": "ZHM3WeaponUpgradeGeom",
         "0x200453": "ZSpriteCreator",
-        "0x20043F": "ZHM3ActorProperties"
+        "0x20043F": "ZHM3ActorProperties",
+        "0x200BBF": "ZCar",
+        "0x200BBE": "ZVehicle"
     }
 }

@@ -1,0 +1,13 @@
+{
+  "typename": "ZSoundLimiterFade",
+  "parent": "ZEventBase",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "Property_2C", "typename": "ZREFTAB32", "offset": 44 },
+    { "name": "Property_30", "typename": "ZREFTAB32", "offset": 48 },
+    { "name": "Property_34", "typename": "PRPOpCode.Float32", "offset": 52 },
+    { "name": "Property_38", "typename": "PRPOpCode.Float32", "offset": 56 },
+    { "name": "Property_3C", "typename": "PRPOpCode.Bool", "offset": 60 },
+    { "name": "Property_47", "typename": "PRPOpCode.Bool", "offset": 71 }
+  ]
+}

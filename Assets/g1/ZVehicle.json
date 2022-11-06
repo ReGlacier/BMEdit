@@ -1,0 +1,8 @@
+{
+  "typename": "ZVehicle",
+  "parent": "ZLNKOBJ",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "property_10C", "typename": "ZSDOwner", "offset": 268 }
+  ]
+}

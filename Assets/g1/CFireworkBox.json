@@ -1,0 +1,14 @@
+{
+  "typename": "CFireworkBox",
+  "parent": "ZEventBase",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "property_2C",  "typename": "ZGEOMREF", "offset": 44 },
+    { "name": "property_30",  "typename": "ZGEOMREF", "offset": 48 },
+    { "name": "property_34",  "typename": "PRPOpCode.Float32", "offset": 52 },
+    { "name": "property_38",  "typename": "PRPOpCode.Int32", "offset": 56 },
+    { "name": "property_3C",  "typename": "PRPOpCode.Float32", "offset": 60 },
+    { "name": "property_40",  "typename": "PRPOpCode.Float32", "offset": 64 },
+    { "name": "property_44",  "typename": "PRPOpCode.Bool", "offset": 68 }
+  ]
+}

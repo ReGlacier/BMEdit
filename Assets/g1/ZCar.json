@@ -1,0 +1,11 @@
+{
+  "geomInfo": {
+    "id": 56756,
+    "mask": 65535,
+    "typeID": 2100159
+  },
+  "typename": "ZCar",
+  "kind": "TypeKind.COMPLEX",
+  "parent": "ZDriving",
+  "properties": []
+}

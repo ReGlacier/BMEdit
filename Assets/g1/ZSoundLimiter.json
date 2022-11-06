@@ -1,0 +1,10 @@
+{
+  "typename": "ZSoundLimiter",
+  "parent": "ZEventBase",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "Property_2C", "typename": "ZREFTAB32", "offset": 44 },
+    { "name": "Property_30", "typename": "ZREFTAB32", "offset": 48 },
+    { "name": "Property_34", "typename": "PRPOpCode.Bool", "offset": 52 }
+  ]
+}

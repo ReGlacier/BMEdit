@@ -1,0 +1,6 @@
+{
+  "typename": "ZDriving",
+  "kind": "TypeKind.COMPLEX",
+  "parent": "ZVehicle",
+  "properties": []
+}
