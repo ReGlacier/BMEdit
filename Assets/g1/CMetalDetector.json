@@ -1,0 +1,12 @@
+{
+  "typename": "CMetalDetector",
+  "parent": "ZEventBase",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "property_2C", "typename": "ZREFTAB32", "offset": 44 },
+    { "name": "property_48", "typename": "ZAUDIOREF", "offset": 72 },
+    { "name": "property_4C", "typename": "ZREFTAB32", "offset": 76 },
+    { "name": "property_68", "typename": "ZREFTAB32", "offset": 104 },
+    { "name": "property_84", "typename": "ZREFTAB32", "offset": 132 }
+  ]
+}
