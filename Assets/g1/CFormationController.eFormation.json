@@ -1,0 +1,9 @@
+{
+  "typename": "CFormationController.eFormation",
+  "kind": "TypeKind.ENUM",
+  "enum": {
+    "eInveseArrow" : 2,
+    "eColumn" : 1,
+    "eArrow" : 0
+  }
+}
