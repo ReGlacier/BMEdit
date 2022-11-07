@@ -1,0 +1,11 @@
+{
+  "geomInfo": {
+    "id": 556,
+    "mask": 2047,
+    "typeID": 2098271
+  },
+  "kind": "TypeKind.COMPLEX",
+  "typename": "ZHFlowM11",
+  "parent": "ZHFlow",
+  "properties": []
+}

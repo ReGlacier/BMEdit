@@ -113,6 +113,7 @@
         "0x200BBE": "ZVehicle",
         "0x10045B": "ZMardiGrassFloat",
         "0x200458": "ZHFlowLnkObj",
-        "0x20045C": "ZMardiGrassHFlow"
+        "0x20045C": "ZMardiGrassHFlow",
+        "0x20045F": "ZHFlowM11"
     }
 }
