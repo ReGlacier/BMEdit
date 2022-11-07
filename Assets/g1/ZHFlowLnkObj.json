@@ -1,0 +1,18 @@
+{
+  "geomInfo": {
+    "id": 1460,
+    "mask": 4095,
+    "typeID": 2098264
+  },
+  "kind": "TypeKind.COMPLEX",
+  "typename": "ZHFlowLnkObj",
+  "parent": "ZLNKOBJ",
+  "properties": [
+    { "name": "RawAnimFile", "typename": "ZFILENAME" },
+    { "name": "UnknownProperty_1", "typename": "PRPOpCode.Int32" },
+    { "name": "RawBonesOffset", "typename": "PRPOpCode.Int32" },
+    { "name": "LODGeomList", "typename": "ZREFTAB32" },
+    { "name": "AccessoriesList", "typename": "ZREFTAB32" },
+    { "name": "property_F8", "typename": "PRPOpCode.Bool", "offset": 248 }
+  ]
+}

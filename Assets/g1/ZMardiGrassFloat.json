@@ -1,0 +1,16 @@
+{
+  "geomInfo": {
+    "id": 45,
+    "mask": 255,
+    "typeID": 1049691
+  },
+  "kind": "TypeKind.COMPLEX",
+  "typename": "ZMardiGrassFloat",
+  "parent": "ZGROUP",
+  "properties": [
+    { "name": "property_48", "typename": "PRPOpCode.Float32", "offset": 72 },
+    { "name": "property_4C", "typename": "PRPOpCode.Float32", "offset": 76 },
+    { "name": "CornersList", "typename": "ZREFTAB32" },
+    { "name": "property_248", "typename": "ZGEOMREF", "offset": 584 }
+  ]
+}

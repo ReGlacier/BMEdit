@@ -1,0 +1,10 @@
+{
+  "typename": "ZAttachGeomToBone",
+  "parent": "ZEventBase",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "rGeom", "typename": "ZGEOMREF", "offset": 48 },
+    { "name": "eBoneID", "typename": "ZAttachGeomToBone.eBoneID", "offset": 52 },
+    { "name": "property_38", "typename": "PRPOpCode.Bool", "offset": 56 }
+  ]
+}

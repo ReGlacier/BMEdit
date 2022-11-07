@@ -1,0 +1,24 @@
+{
+  "geomInfo": {
+    "id": 1460,
+    "mask": 4095,
+    "typeID": 2098264
+  },
+  "kind": "TypeKind.COMPLEX",
+  "typename": "ZHFlow",
+  "parent": "ZSTDOBJ",
+  "properties": [
+    { "name": "property_138", "typename": "PRPOpCode.Float32", "offset": 312 },
+    { "name": "property_13C", "typename": "PRPOpCode.Float32", "offset": 316 },
+    { "name": "FlowPictureProperty", "typename": "PRPOpCode.String" },
+    { "name": "FlowDataOffset", "typename": "PRPOpCode.Int32" },
+    { "name": "property_140", "typename": "PRPOpCode.Bool", "offset": 320 },
+    { "name": "property_144", "typename": "PRPOpCode.Float32", "offset": 324 },
+    { "name": "InstanceObjects", "typename": "ZREFTAB32" },
+    { "name": "LightList", "typename": "ZREFTAB32" },
+    { "name": "StaticBoxList", "typename": "ZREFTAB32" },
+    { "name": "MovingBoxList", "typename": "ZREFTAB32" },
+    { "name": "ObstaclesList", "typename": "ZREFTAB32" },
+    { "name": "property_148", "typename": "PRPOpCode.Int32", "offset": 328 }
+  ]
+}

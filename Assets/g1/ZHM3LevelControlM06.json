@@ -1,0 +1,27 @@
+{
+  "typename": "ZHM3LevelControlM06",
+  "parent": "ZHM3LevelControl",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "property_318", "typename": "ZREFTAB32", "offset": 792 },
+    { "name": "property_3C4", "typename": "ZREFTAB32", "offset": 964 },
+    { "name": "property_34", "typename": "ZSDOwner", "offset": 52 },
+    { "name": "property_51C", "typename": "ZGEOMREF", "offset": 1308 },
+    { "name": "property_520", "typename": "ZREFTAB32", "offset": 1312 },
+    { "name": "property_5D0", "typename": "ZGEOMREF", "offset": 1488 },
+    { "name": "property_5D8", "typename": "ZGEOMREF", "offset": 1496 },
+    { "name": "property_5DC", "typename": "ZGEOMREF", "offset": 1500 },
+    { "name": "property_5E0", "typename": "ZGEOMREF", "offset": 1504 },
+    { "name": "property_5E4", "typename": "ZGEOMREF", "offset": 1508 },
+    { "name": "property_5E8", "typename": "ZREFTAB32", "offset": 1512 },
+    { "name": "property_604", "typename": "ZAUDIOREF", "offset": 1540 },
+    { "name": "property_608", "typename": "ZGEOMREF", "offset": 1544 },
+    { "name": "property_60C", "typename": "ZREFTAB32", "offset": 1548 },
+    { "name": "property_6B8", "typename": "ZREFTAB32", "offset": 1720 },
+    { "name": "property_764", "typename": "ZGEOMREF", "offset": 1892 },
+    { "name": "property_768", "typename": "ZGEOMREF", "offset": 1896 },
+    { "name": "property_76C", "typename": "ZGEOMREF", "offset": 1900 },
+    { "name": "property_770", "typename": "ZGEOMREF", "offset": 1904 },
+    { "name": "property_774", "typename": "ZGEOMREF", "offset": 1908 }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "geomInfo": {
+    "id": 1068,
+    "mask": 2047,
+    "typeID": 2098268
+  },
+  "kind": "TypeKind.COMPLEX",
+  "typename": "ZMardiGrassHFlow",
+  "parent": "ZHFlow",
+  "properties": [
+    { "name": "FloatList", "typename": "ZREFTAB32" }
+  ]
+}
