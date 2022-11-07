@@ -1,0 +1,33 @@
+{
+  "typename": "ZHM3LevelControlM08",
+  "parent": "ZHM3LevelControl",
+  "kind": "TypeKind.COMPLEX",
+  "properties": [
+    { "name": "property_5D8", "typename": "ZGEOMREF", "offset": 1496 },
+    { "name": "property_5DC", "typename": "ZGEOMREF", "offset": 1500 },
+    { "name": "property_5E0", "typename": "ZGEOMREF", "offset": 1504 },
+    { "name": "property_5E4", "typename": "ZGEOMREF", "offset": 1508 },
+    { "name": "property_5E8", "typename": "ZREFTAB32", "offset": 1512 },
+    { "name": "property_604", "typename": "ZGEOMREF", "offset": 1540 },
+    { "name": "property_608", "typename": "ZGEOMREF", "offset": 1544 },
+    { "name": "property_60C", "typename": "ZGEOMREF", "offset": 1548 },
+    { "name": "property_610", "typename": "ZGEOMREF", "offset": 1552 },
+    { "name": "property_614", "typename": "ZGEOMREF", "offset": 1556 },
+    { "name": "property_618", "typename": "ZREFTAB32", "offset": 1560 },
+    { "name": "property_634", "typename": "ZGEOMREF", "offset": 1588 },
+    { "name": "property_638", "typename": "ZGEOMREF", "offset": 1592 },
+    { "name": "property_63C", "typename": "ZGEOMREF", "offset": 1596 },
+    { "name": "property_640", "typename": "ZGEOMREF", "offset": 1600 },
+    { "name": "property_644", "typename": "ZGEOMREF", "offset": 1604 },
+    { "name": "property_648", "typename": "ZGEOMREF", "offset": 1608 },
+    { "name": "property_64C", "typename": "ZGEOMREF", "offset": 1612 },
+    { "name": "property_650", "typename": "ZGEOMREF", "offset": 1616 },
+    { "name": "property_654", "typename": "ZGEOMREF", "offset": 1620 },
+    { "name": "property_318", "typename": "ZREFTAB32", "offset": 792 },
+    { "name": "property_3C4", "typename": "ZREFTAB32", "offset": 964 },
+    { "name": "property_34", "typename": "ZSDOwner", "offset": 52 },
+    { "name": "property_51C", "typename": "ZGEOMREF", "offset": 1308 },
+    { "name": "property_520", "typename": "ZREFTAB32", "offset": 1312 },
+    { "name": "property_5D0", "typename": "ZGEOMREF", "offset": 1488 }
+  ]
+}
