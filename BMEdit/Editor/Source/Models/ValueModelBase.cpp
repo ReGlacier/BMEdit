@@ -70,6 +70,7 @@ bool ValueModelBase::setData(const QModelIndex &index, const QVariant &value, in
 
 		// Here we need to check that we have same (by size) containers
 		const auto& [off, sz] = m_value.value().getEntries()[index.row()].instructions;
+		const bool isDynamicDataType = !val.instructions.empty() && val.instructions.at(0).isContainer();
 
 		if (sz == val.instructions.size())
 		{
@@ -80,6 +81,11 @@ bool ValueModelBase::setData(const QModelIndex &index, const QVariant &value, in
 
 			emit valueChanged();
 
+			return true;
+		}
+		else if (isDynamicDataType && val.instructions.at(0).isContainer())
+		{
+			m_value.value().updateContainer(static_cast<int>(off), val.instructions);
 			return true;
 		}
 

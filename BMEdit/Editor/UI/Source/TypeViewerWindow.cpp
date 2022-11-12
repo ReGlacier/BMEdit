@@ -38,6 +38,7 @@ TypeViewerWindow::TypeViewerWindow(QWidget *parent) :
 	//ui->typePropertiesView->setItemDelegate(new delegates::TypePropertyItemDelegate(this));
 	ui->typePropertiesView->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
 	ui->typePropertiesView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->typePropertiesView->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
 	///--------------------------------------
 	/// SIGNALS

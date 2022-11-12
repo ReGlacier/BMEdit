@@ -64,6 +64,8 @@ namespace editor {
 
 	int EditorInstance::run(int argc, char **argv)
 	{
+		Q_INIT_RESOURCE(BMEdit);
+
 		//TODO: Support no-gui mode here
 		QScopedPointer<QApplication> app(new QApplication(argc, argv));
 		QScopedPointer<QMainWindow> mainWindow(new BMEditMainWindow());

@@ -80,6 +80,9 @@ namespace gamelib
 		[[nodiscard]] const std::vector<prp::PRPInstruction>& getInstructions() const;
 		[[nodiscard]] std::vector<prp::PRPInstruction>& getInstructions();
 		[[nodiscard]] Span<ValueEntry> getEntries() const;
+
+		void updateContainer(int entryIndex, const std::vector<prp::PRPInstruction>& newDecl);
+
 	private:
 		const Type *m_type {nullptr}; // type
 		std::vector<prp::PRPInstruction> m_data; // instructions

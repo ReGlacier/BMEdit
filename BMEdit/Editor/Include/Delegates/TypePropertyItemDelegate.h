@@ -27,5 +27,6 @@ namespace delegates
 
 	private slots:
 		void commitDataChunk();
+		void commitDataChunkAndCloseEditor();
 	};
 }

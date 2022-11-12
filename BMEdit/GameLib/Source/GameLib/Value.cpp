@@ -99,4 +99,26 @@ namespace gamelib
 	{
 		return Span<ValueEntry>(m_entries);
 	}
+
+	void Value::updateContainer(int entryIndex, const std::vector<prp::PRPInstruction> &newDecl)
+	{
+		// So, let's update data chunk and then rebuild views
+		const auto& [off, sz] = m_entries.at(entryIndex).instructions;
+		m_data.erase(m_data.begin() + off, m_data.begin() + off + sz);
+		std::copy(newDecl.begin(), newDecl.end(), std::inserter(m_data, m_data.begin() + off));
+
+		// And then rebuild everything
+		auto [mappedData, _newSlice] = m_type->map(Span(m_data));
+
+		if (!mappedData.has_value())
+		{
+			throw std::runtime_error("Unable to map new data bunch. Looks like an internal error");
+			return;
+		}
+
+		const auto& data = mappedData.value();
+		m_data = data.m_data;
+		m_entries = data.m_entries;
+		m_views = data.m_views;
+	}
 }

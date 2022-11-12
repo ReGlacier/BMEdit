@@ -163,7 +163,7 @@ namespace gamelib
 		{
 			const auto [value, newSlice] = parent->map(ourSlice);
 
-			if (!newSlice || !value.has_value())
+			if (!value.has_value())
 			{
 				// Mapping failed
 				return {};
@@ -208,7 +208,7 @@ namespace gamelib
 			}
 
 			const auto [value, newSlice] = viewType->map(ourSlice);
-			if (!newSlice || !value.has_value())
+			if (!value.has_value())
 			{
 				// Property mapping failed
 				return {};

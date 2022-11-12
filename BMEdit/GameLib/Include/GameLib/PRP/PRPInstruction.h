@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <variant>
+#include <string>
 #include <vector>
 
 #include <GameLib/PRP/PRPOpCode.h>
@@ -88,6 +89,7 @@ namespace gamelib::prp
 		[[nodiscard]] bool isString() const;
 		[[nodiscard]] bool isNumber() const;
 		[[nodiscard]] bool isEnum() const;
+		[[nodiscard]] bool isContainer() const;
 		[[nodiscard]] bool hasValue() const;
 		[[nodiscard]] PRPOpCode getOpCode() const;
 		[[nodiscard]] const PRPOperandVal &getOperand() const;

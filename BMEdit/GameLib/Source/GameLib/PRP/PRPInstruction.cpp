@@ -118,6 +118,11 @@ namespace gamelib::prp
 		return (m_opCode == PRPOpCode::StringOrArray_E) || (m_opCode == PRPOpCode::StringOrArray_8E);
 	}
 
+	bool PRPInstruction::isContainer() const
+	{
+		return m_opCode == PRPOpCode::Container || m_opCode == PRPOpCode::NamedContainer;
+	}
+
 	bool PRPInstruction::hasValue() const
 	{
 		return m_isSet && !m_isDeclarator;

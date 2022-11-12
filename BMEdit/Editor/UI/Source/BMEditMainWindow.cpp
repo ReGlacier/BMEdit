@@ -495,7 +495,7 @@ void BMEditMainWindow::initProperties()
 	ui->propertiesView->setModel(m_sceneObjectPropertiesModel);
 	ui->propertiesView->setItemDelegateForColumn(1, m_typePropertyItemDelegate);
 	ui->propertiesView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	ui->propertiesView->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->propertiesView->verticalHeader()->setSectionResizeMode(QHeaderView::Interactive);
 }
 
 void BMEditMainWindow::initSceneProperties()
@@ -506,8 +506,8 @@ void BMEditMainWindow::initSceneProperties()
 	ui->sceneProperties->setModel(m_scenePropertiesModel);
 	ui->sceneProperties->setItemDelegateForColumn(1, m_scenePropertyItemDelegate);
 
-	ui->sceneProperties->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	ui->sceneProperties->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	ui->sceneProperties->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
+	ui->sceneProperties->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
 }
 
 void BMEditMainWindow::initControllers()

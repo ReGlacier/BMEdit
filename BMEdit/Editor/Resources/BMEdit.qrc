@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/bmedit">
+    <file alias="remove_icon.png">Icons/Remove.png</file>
+    <file alias="add_icon.png">Icons/Add.png</file>
+    <file alias="object_icon.png">Icons/Object.png</file>
+</qresource>
+</RCC>

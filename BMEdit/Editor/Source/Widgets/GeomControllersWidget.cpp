@@ -113,7 +113,7 @@ void GeomControllersWidget::setup()
 	m_ui->controllerProperties->setModel(m_controllerPropertiesModel);
 	m_ui->controllerProperties->setItemDelegateForColumn(1, m_controllerEditorDelegate);
 	m_ui->controllerProperties->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-	m_ui->controllerProperties->verticalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+	m_ui->controllerProperties->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Interactive);
 
 	connect(m_ui->controllerSelector, &QComboBox::currentIndexChanged, [=](int newIndex) {
 		if (newIndex < 0)

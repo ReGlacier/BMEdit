@@ -2,8 +2,11 @@
 #include <Widgets/TypeVector3PropertyWidget.h>
 #include <Widgets/TypeMatrixPropertyWidget.h>
 #include <Widgets/TypeSimplePropertyWidget.h>
+#include <Widgets/TypeRefTabPropertyWidget.h>
 #include <Widgets/TypePropertyWidget.h>
+#include <GameLib/PRP/PRPInstruction.h>
 #include <Types/QGlacierValue.h>
+#include <GameLib/Type.h>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -47,6 +50,20 @@ namespace delegates
 		return false;
 	}
 
+	static bool isRefTab(const types::QGlacierValue &data)
+	{
+		if (data.views.empty())
+			return false;
+
+		const gamelib::ValueView& view = data.views.at(0);
+		if (auto type = view.getType())
+		{
+			return (type->getKind() == gamelib::TypeKind::CONTAINER) && (type->getName().find("ZREFTAB") != std::string::npos);
+		}
+
+		return false;
+	}
+
 	TypePropertyItemDelegate::TypePropertyItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
 	{
 	}
@@ -78,6 +95,10 @@ namespace delegates
 				// It's matrix 3x3
 				editor = new widgets::TypeMatrixPropertyWidget(Matrix3x3::Rows, Matrix3x3::Columns, parent);
 			}
+			else if (isRefTab(data))
+			{
+				editor = new widgets::TypeRefTabPropertyWidget(parent);
+			}
 
 			if (!editor)
 			{
@@ -85,12 +106,14 @@ namespace delegates
 				 * Create widget for ...
 				 * TODO: Fixme
 				 */
+				__debugbreak();
 			}
 
 			if (editor)
 			{
 				editor->setValue(data);
 				connect(editor, &widgets::TypePropertyWidget::valueChanged, this, &TypePropertyItemDelegate::commitDataChunk);
+				connect(editor, &widgets::TypePropertyWidget::editFinished, this, &TypePropertyItemDelegate::commitDataChunkAndCloseEditor);
 				return editor;
 			}
 		}
@@ -150,6 +173,13 @@ namespace delegates
 				painter->restore();
 				return;
 			}
+			else if (isRefTab(data))
+			{
+				painter->save();
+				widgets::TypeRefTabPropertyWidget::paintPreview(painter, option, data);
+				painter->restore();
+				return;
+			}
 		}
 
 		BaseClass::paint(painter, option, index);
@@ -167,5 +197,12 @@ namespace delegates
 	{
 		auto editor = qobject_cast<widgets::TypePropertyWidget*>(sender());
 		emit commitData(editor);
+	}
+
+	void TypePropertyItemDelegate::commitDataChunkAndCloseEditor()
+	{
+		auto editor = qobject_cast<widgets::TypePropertyWidget*>(sender());
+		emit commitData(editor);
+		emit closeEditor(editor, QAbstractItemDelegate::EndEditHint::SubmitModelCache);
 	}
 }
