@@ -6,6 +6,7 @@ BMEdit
 ------
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build](https://github.com/ReGlacier/BMEdit/actions/workflows/build.yml/badge.svg)](https://github.com/ReGlacier/BMEdit/actions/workflows/build.yml)
 
 The Blood Money Editor (aka BMEdit) is a tool to create & edit levels in Hitman Blood Money game.
 
