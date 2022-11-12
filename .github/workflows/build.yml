@@ -1,0 +1,140 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "*"
+    tags:
+      - "*"
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  build_windows:
+    name: Build (Windows)
+    runs-on: windows-2019
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: "recursive"
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Get latest CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Install Qt6
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.2.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          install-deps: 'true'
+
+      - name: Install Conan
+        id: conan
+        uses: turtlebrowser/get-conan@main
+
+      - name: Make build folder and install Conan dependencies
+        run: |
+          mkdir build
+          conan install . -s build_type=Release --install-folder=build
+
+      - name: Generate projects
+        run: |
+          cd build
+          cmake --version
+          cmake -G Ninja ..
+
+      - name: Build project
+        run: |
+          cd build
+          cmake --build . --config Release
+
+      - name: Upload build artifacts - BMEdit
+        uses: actions/upload-artifact@v2
+        with:
+          name: "ReHitman"
+          path: |
+            build/bin/BMEdit.exe
+            build/bin/d3dcompiler_47.dll
+            build/bin/Qt6Core.dll
+            build/bin/Qt6Gui.dll
+            build/bin/Qt6OpenGL.dll
+            build/bin/Qt6OpenGLWidgets.dll
+            build/bin/Qt6Svg.dll
+            build/bin/Qt6Widgets.dll
+            build/bin/vc_redist.x64.exe
+            build/bin/zip.dll
+            build/bin/translations/
+            build/bin/styles/
+            build/bin/platforms/
+            build/bin/imageformats/
+            build/bin/iconengines/
+            Assets/g1/
+            Assets/TypeRegistry.json
+            README.md
+
+  create_release:
+    name: Create release
+    needs: [build_windows]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+
+      - name: Create release
+        id: release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          release_name: ${{ steps.get_version.outputs.VERSION }}
+          draft: true
+          prerelease: ${{ contains(github.ref, '-pre') }}
+
+    outputs:
+      upload_url: ${{ steps.release.outputs.upload_url }}
+
+  upload_release_asset:
+    name: Upload release asset
+    needs: [create_release]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        artifact: [ "BMEdit" ]
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+      - name: Package artifact for release
+        run: |
+          cd ${{ matrix.artifact }}
+          zip -r ${{ matrix.artifact }}.zip *
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ${{ matrix.artifact }}/${{ matrix.artifact }}.zip
+          asset_name: ${{ matrix.artifact }}.zip
+          asset_content_type: application/zip
