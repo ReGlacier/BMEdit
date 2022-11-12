@@ -26,9 +26,6 @@ jobs:
       - name: Get latest CMake
         uses: lukka/get-cmake@latest
 
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
-
       - name: Install Qt6
         uses: jurplel/install-qt-action@v3
         with:
@@ -51,7 +48,7 @@ jobs:
         run: |
           cd build
           cmake --version
-          cmake -G Ninja ..
+          cmake -G "Visual Studio 16 2019" ..
 
       - name: Build project
         run: |
