@@ -58,7 +58,7 @@ jobs:
       - name: Upload build artifacts - BMEdit
         uses: actions/upload-artifact@v2
         with:
-          name: "ReHitman"
+          name: "BMEdit"
           path: |
             build/bin/BMEdit.exe
             build/bin/d3dcompiler_47.dll
