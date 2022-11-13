@@ -73,6 +73,7 @@ public slots:
 	void onAssetExportFailed(const QString &reason);
 	void onCloseLevel();
 	void onExportPRP();
+	void onContextMenuRequestedForSceneTreeNode(const QPoint& point);
 
 private:
     // UI

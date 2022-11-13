@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStringListModel>
+#include <QClipboard>
 
 #include <GameLib/TypeRegistry.h>
 #include <GameLib/TypeNotFoundException.h>
@@ -357,6 +358,54 @@ void BMEditMainWindow::onExportPRP()
 	QMessageBox::information(this, "Export PRP", QString("PRP file exported successfully to %1").arg(saveAsPath));
 }
 
+void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& point)
+{
+	if (!m_sceneTreeModel)
+	{
+		return;
+	}
+
+	QModelIndex index = ui->sceneTreeView->indexAt(point);
+	if (!index.isValid())
+	{
+		return;
+	}
+
+	const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(index.data(models::SceneObjectsTreeModel::SceneObjectRole).value<std::intptr_t>());
+
+	if (selectedGeom)
+	{
+		QMenu contextMenu;
+
+		auto implCopyPathToGeom = [](const gamelib::scene::SceneObject* sceneObject, bool ignoreRoot)
+		{
+			QStringList pathEntries;
+
+			const gamelib::scene::SceneObject* currentObject = sceneObject;
+			while (currentObject)
+			{
+				pathEntries.push_front(QString::fromStdString(currentObject->getName()));
+				const auto& sp = currentObject->getParent().lock();
+				currentObject = sp ? sp.get() : nullptr;
+
+				if (currentObject && currentObject->getParent().expired() && ignoreRoot)
+					break;
+			}
+
+			auto finalPath = pathEntries.join('\\');
+			QGuiApplication::clipboard()->setText(finalPath);
+		};
+
+		contextMenu.addAction(QString("Object: '%1'").arg(QString::fromStdString(selectedGeom->getName())))->setDisabled(true);
+		contextMenu.addAction(QString("Type: '%1'").arg(QString::fromStdString(selectedGeom->getType()->getName())))->setDisabled(true);
+		contextMenu.addSeparator();
+		contextMenu.addAction("Copy path", [implCopyPathToGeom, selectedGeom] { implCopyPathToGeom(selectedGeom, false); });
+		contextMenu.addAction("Copy path (ignore ROOT)", [implCopyPathToGeom, selectedGeom] { implCopyPathToGeom(selectedGeom, true); });
+
+		contextMenu.exec(ui->sceneTreeView->viewport()->mapToGlobal(point));
+	}
+}
+
 void BMEditMainWindow::loadTypesDataBase()
 {
 	m_operationProgress->setValue(OperationToProgress::DISCOVER_TYPES_DATABASE);
@@ -469,6 +518,7 @@ void BMEditMainWindow::initSceneTree()
 	m_sceneTreeModel = new models::SceneObjectsTreeModel(this);
 	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->sceneTreeView->setModel(m_sceneTreeModel);
+	ui->sceneTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	connect(ui->sceneTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
 		const bool somethingSelected = !selected.indexes().isEmpty();
@@ -485,6 +535,8 @@ void BMEditMainWindow::initSceneTree()
 			onDeselectedSceneObject();
 		}
 	});
+
+	connect(ui->sceneTreeView, &QTreeView::customContextMenuRequested, this, &BMEditMainWindow::onContextMenuRequestedForSceneTreeNode);
 }
 
 void BMEditMainWindow::initProperties()

@@ -1,4 +1,5 @@
 #include <Models/SceneObjectsTreeModel.h>
+#include <QStringList>
 
 
 namespace models
@@ -34,6 +35,21 @@ namespace models
 
 		if (role == SceneObjectRole) {
 			return reinterpret_cast<std::intptr_t>(so);
+		}
+
+		if (role == Qt::ItemDataRole::ToolTipRole)
+		{
+			QStringList locationPath {};
+
+			const SceneObject* currentObject = so;
+			while (currentObject)
+			{
+				locationPath.push_front(QString::fromStdString(currentObject->getName()));
+				const auto& sp = currentObject->getParent().lock();
+				currentObject = sp ? sp.get() : nullptr;
+			}
+
+			return QString("%1 (of type '%2')").arg(locationPath.join('\\'), QString::fromStdString(so->getType()->getName()));
 		}
 
 		return {};
