@@ -18,7 +18,16 @@ add_subdirectory(ThirdParty/fmt)
 add_subdirectory(BMEdit/Editor)
 add_subdirectory(BMEdit/GameLib)
 
-add_executable(BMEdit ${CMAKE_CURRENT_SOURCE_DIR}/BMEdit/BMEdit.cpp)
+# --- OS Specific things
+set(BMEDIT_RC_FILE)
+set(BMEDIT_OS_TYPE)
+if (WIN32)
+    set(BMEDIT_RC_FILE ${CMAKE_CURRENT_SOURCE_DIR}/Resources/BMEdit.rc)
+    set(BMEDIT_OS_TYPE WIN32)
+endif()
+
+# --- Executable
+add_executable(BMEdit ${BMEDIT_OS_TYPE} ${CMAKE_CURRENT_SOURCE_DIR}/BMEdit/BMEdit.cpp ${BMEDIT_RC_FILE})
 target_link_libraries(BMEdit PUBLIC Editor GameLib)
 
 # --- Qt Deployment
