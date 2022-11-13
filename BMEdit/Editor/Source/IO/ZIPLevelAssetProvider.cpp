@@ -59,6 +59,31 @@ namespace editor
 		"GMS", "PRP", "TEX", "PRM", "MAT", "OCT", "RMI", "RMC", "LOC", "ANM", "SND", "BUF", "ZGF"
 	};
 
+	bool filePathEndsWith(std::string_view fileName, std::string_view extension)
+	{
+		if (!fileName.ends_with(extension))
+		{
+			// Try to convert out extension to lowercase and check filename again
+			char tmpBuffer[8] { 0 };
+			if (extension.length() < sizeof(tmpBuffer))
+			{
+				int i = 0;
+				for (const auto& ch: extension)
+				{
+					tmpBuffer[i] = static_cast<char>(std::tolower(ch));
+					++i;
+				}
+
+				return fileName.ends_with(&tmpBuffer[0]);
+			}
+
+			assert(false && "Too long file extension!");
+			return false;
+		}
+
+		return true;
+	}
+
 	ZIPLevelAssetProvider::ZIPLevelAssetProvider(std::string containerPath)
 	{
 		m_ctx = std::make_unique<Context>();
@@ -105,7 +130,7 @@ namespace editor
 
 			std::string_view entryName { entryNameRaw };
 
-			if (entryName.ends_with(kAssetExtensions[kind]))
+			if (filePathEndsWith(entryName, kAssetExtensions[kind]))
 			{
 				if (m_ctx->m_levelName.empty()) // Cache level name
 				{
@@ -196,7 +221,7 @@ namespace editor
 			}
 
 			std::string_view entryName { entryNameRaw };
-			if (entryName.ends_with(kAssetExtensions[kind]))
+			if (filePathEndsWith(entryName, kAssetExtensions[kind]))
 			{
 				auto fileSource = zip_source_buffer(m_ctx->m_archive, assetBody.data(), static_cast<zip_int64_t>(assetBody.size()), 0);
 				if (!fileSource)
@@ -255,7 +280,7 @@ namespace editor
 			}
 
 			std::string_view entryName { entryNameRaw };
-			if (entryName.ends_with(kAssetExtensions[kind]))
+			if (filePathEndsWith(entryName, kAssetExtensions[kind]))
 			{
 				auto& fNameRes = m_ctx->m_assetNamesCache[kind];
 				fNameRes.reserve(entryName.size());

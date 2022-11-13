@@ -55,29 +55,33 @@ jobs:
           cd build
           cmake --build . --config Release
 
+      - name: Move assets to distribution folder
+        run: |
+          mkdir dist
+          mv build/bin/BMEdit.exe dist
+          mv build/bin/d3dcompiler_47.dll dist
+          mv build/bin/Qt6Core.dll dist
+          mv build/bin/Qt6Gui.dll dist
+          mv build/bin/Qt6OpenGL.dll dist
+          mv build/bin/Qt6OpenGLWidgets.dll dist
+          mv build/bin/Qt6Svg.dll dist
+          mv build/bin/Qt6Widgets.dll dist
+          mv build/bin/vc_redist.x64.exe dist
+          mv build/bin/zip.dll dist
+          mv build/bin/translations dist/translations
+          mv build/bin/styles dist/styles
+          mv build/bin/platforms dist/platforms
+          mv build/bin/imageformats dist/imageformats
+          mv build/bin/iconengines dist/iconengines
+          mv Assets/g1 dist/g1
+          mv Assets/TypesRegistry.json dist
+          mv README.md dist
+
       - name: Upload build artifacts - BMEdit
         uses: actions/upload-artifact@v2
         with:
           name: "BMEdit"
-          path: |
-            build/bin/BMEdit.exe
-            build/bin/d3dcompiler_47.dll
-            build/bin/Qt6Core.dll
-            build/bin/Qt6Gui.dll
-            build/bin/Qt6OpenGL.dll
-            build/bin/Qt6OpenGLWidgets.dll
-            build/bin/Qt6Svg.dll
-            build/bin/Qt6Widgets.dll
-            build/bin/vc_redist.x64.exe
-            build/bin/zip.dll
-            build/bin/translations/
-            build/bin/styles/
-            build/bin/platforms/
-            build/bin/imageformats/
-            build/bin/iconengines/
-            Assets/g1/
-            Assets/TypeRegistry.json
-            README.md
+          path: dist
 
   create_release:
     name: Create release
