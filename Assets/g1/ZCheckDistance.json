@@ -3,8 +3,8 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZREFTAB32", "offset": 44 },
-        { "name": "property_48", "typename": "PRPOpCode.Float32", "offset": 72 },
-        { "name": "property_4C", "typename": "PRPOpCode.Float32", "offset": 76 }
+        { "name": "rEntitiesToCheck", "typename": "ZREFTAB32", "offset": 44 },
+        { "name": "iMaxSeeDistance", "typename": "PRPOpCode.Float32", "offset": 72 },
+        { "name": "iMinSeeDistance", "typename": "PRPOpCode.Float32", "offset": 76 }
     ]
 }

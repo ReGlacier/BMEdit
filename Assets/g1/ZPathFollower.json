@@ -3,8 +3,8 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZREFTAB32", "offset": 44 },
-        { "name": "PathType", "typename": "ZPathFollower.ePathType", "offset": 84 },
+        { "name": "rMovementPointsListRefs", "typename": "ZREFTAB32", "offset": 44 },
+        { "name": "ePathType", "typename": "ZPathFollower.ePathType", "offset": 84 },
         { "name": "property_58", "typename": "PRPOpCode.Bool", "offset": 88 },
         { "name": "property_59", "typename": "PRPOpCode.Bool", "offset": 89 },
         { "name": "property_5A", "typename": "PRPOpCode.Bool", "offset": 90 }
