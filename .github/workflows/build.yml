@@ -66,7 +66,6 @@ jobs:
           mv build/bin/Qt6OpenGLWidgets.dll dist
           mv build/bin/Qt6Svg.dll dist
           mv build/bin/Qt6Widgets.dll dist
-          mv build/bin/vc_redist.x64.exe dist
           mv build/bin/zip.dll dist
           mv build/bin/translations dist/translations
           mv build/bin/styles dist/styles
