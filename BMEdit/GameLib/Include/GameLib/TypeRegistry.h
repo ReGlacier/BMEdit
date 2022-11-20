@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include <GameLib/Type.h>
+#include <GameLib/StringLiteral.h>
 
 #include <nlohmann/json.hpp>
 
@@ -57,6 +58,29 @@ namespace gamelib
 
 			return ptr;
 		}
+
+		template <StringLiteral CastToName>
+		static bool canCast(const Type* tsrc)
+		{
+			if (!tsrc || tsrc->getKind() != TypeKind::COMPLEX)
+			{
+				return false;
+			}
+
+			auto str = std::string(CastToName.Value);
+			const auto& instance = TypeRegistry::getInstance();
+
+			auto finalType = instance.findTypeByName(str);
+			if (!finalType)
+			{
+				return false;
+			}
+
+			return instance.canCastImpl(tsrc, finalType);
+		}
+
+	private:
+		bool canCastImpl(const Type* pSrc, const Type* pDst) const;
 
 	private:
 		std::vector<std::unique_ptr<Type>> m_types;

@@ -181,6 +181,25 @@ namespace gamelib
 			 * 		The main problem is I DON'T UNDERSTAND HOW HIERARCHY ARE STORED INSIDE GMS FILE.
 			 * 		So, I will fix this place when I will understand that.
 			 */
+
+#if 0       //TODO: Remove this code later
+			std::int32_t lowestPrimId = 0xFFFF;
+
+			for (const auto& sceneObj: m_sceneObjects)
+			{
+				if (TypeRegistry::canCast<"ZGEOM">(sceneObj->getType()))
+				{
+					auto primId = sceneObj->getProperties()["PrimId"][0].getOperand().get<std::int32_t>();
+
+					if (primId == 0)
+						continue;
+
+					if (primId < lowestPrimId)
+						lowestPrimId = primId;
+				}
+			}
+			printf("Found minimal primId: %d\n", lowestPrimId);
+#endif
 		}
 
 		return true;

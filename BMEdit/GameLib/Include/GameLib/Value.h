@@ -73,6 +73,14 @@ namespace gamelib
 		 */
 		Value& operator+=(const std::pair<std::string, Value>& another);
 
+		/**
+		 * Extract span of instructions which represents requested property
+		 * @param propertyName - name of the property
+		 * @return span of instructions
+		 * @note This function may throw an exception if requested propertyName not found. You should check your property via hasProperty before ask operator[]
+		 */
+		Span<prp::PRPInstruction> operator[](const char* propertyName);
+
 		[[nodiscard]] bool operator==(const Value &other) const;
 		[[nodiscard]] bool operator!=(const Value &other) const;
 
@@ -82,6 +90,8 @@ namespace gamelib
 		[[nodiscard]] Span<ValueEntry> getEntries() const;
 
 		void updateContainer(int entryIndex, const std::vector<prp::PRPInstruction>& newDecl);
+
+		bool hasProperty(const char* propertyName) const;
 
 	private:
 		const Type *m_type {nullptr}; // type

@@ -55,6 +55,26 @@ namespace gamelib
 		return *this;
 	}
 
+	Span<prp::PRPInstruction> Value::operator[](const char* token)
+	{
+		if (m_entries.empty())
+		{
+			throw std::out_of_range("Value::operator[] empty container access!");
+		}
+
+		const auto strt = std::string { token };
+
+		for (auto &ent : m_entries)
+		{
+			if (ent.name == strt)
+			{
+				return Span(m_data).slice(ent.instructions);
+			}
+		}
+
+		throw std::out_of_range("Value::operator[] invalid token passed!");
+	}
+
 	bool Value::operator==(const gamelib::Value &other) const
 	{
 		return !operator!=(other);
@@ -120,5 +140,19 @@ namespace gamelib
 		m_data = data.m_data;
 		m_entries = data.m_entries;
 		m_views = data.m_views;
+	}
+
+	bool Value::hasProperty(const char *propertyName) const
+	{
+		const auto& propName = std::string { propertyName };
+		for (const auto& ent: m_entries)
+		{
+			if (ent.name == propName)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

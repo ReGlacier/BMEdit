@@ -100,15 +100,6 @@ namespace delegates
 				editor = new widgets::TypeRefTabPropertyWidget(parent);
 			}
 
-			if (!editor)
-			{
-				/**
-				 * Create widget for ...
-				 * TODO: Fixme
-				 */
-				__debugbreak();
-			}
-
 			if (editor)
 			{
 				editor->setValue(data);
@@ -116,6 +107,15 @@ namespace delegates
 				connect(editor, &widgets::TypePropertyWidget::editFinished, this, &TypePropertyItemDelegate::commitDataChunkAndCloseEditor);
 				return editor;
 			}
+			else
+			{
+				auto res = new QLabel(QString("UNSUPPORTED"), parent);
+				res->setAutoFillBackground(true);
+				res->setStyleSheet("QLabel { background-color : red; color : blue; }");
+				return res;
+			}
+
+			return nullptr;
 		}
 
 		return QStyledItemDelegate::createEditor(parent, option, index);

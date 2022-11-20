@@ -224,4 +224,19 @@ namespace gamelib
 			m_typesByHash[str] = const_cast<Type*>(typePtr);
 		}
 	}
+
+	bool TypeRegistry::canCastImpl(const gamelib::Type *pSrc, const gamelib::Type *pDst) const // NOLINT(misc-no-recursion)
+	{
+		if (!pSrc || !pDst || pSrc->getKind() != TypeKind::COMPLEX || pDst->getKind() != TypeKind::COMPLEX)
+		{
+			return false;
+		}
+
+		if (pSrc->getName() == pDst->getName())
+		{
+			return true;
+		}
+
+		return canCastImpl(reinterpret_cast<const TypeComplex*>(pSrc)->getParent(), pDst);
+	}
 }

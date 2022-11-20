@@ -8,8 +8,8 @@ namespace types
 {
 	struct QGlacierController
 	{
-		int uniqueId; // Assigned when created
-		QString name; // Name of the controller
+		int uniqueId { 0 };  // Assigned when created
+		QString name;        // Name of the controller
 		gamelib::Value data; // Data of the controller
 	};
 }
