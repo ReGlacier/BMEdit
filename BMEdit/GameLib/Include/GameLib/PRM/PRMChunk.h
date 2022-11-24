@@ -5,6 +5,9 @@
 
 namespace gamelib::prm
 {
-	using PRMRawChunk = uint8_t*;
-	using PRMChunk = std::unique_ptr<uint8_t[]>;
+	struct PRMChunk
+	{
+		std::unique_ptr<uint8_t[]> buffer { nullptr };
+		std::size_t bufferSize { 0 };
+	};
 }

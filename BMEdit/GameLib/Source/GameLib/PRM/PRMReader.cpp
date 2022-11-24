@@ -1,6 +1,10 @@
 #include <GameLib/PRM/PRMChunkDescriptor.h>
-#include <GameLib/PRM/PRMChunk.h>
+#include <GameLib/BinaryReaderSeekScope.h>
+#include <GameLib/PRM/PRMBadChunkException.h>
+#include <GameLib/PRM/PRMBadFile.h>
 #include <GameLib/PRM/PRMReader.h>
+#include <GameLib/PRM/PRMChunk.h>
+
 #include <ZBinaryReader.hpp>
 
 
@@ -19,13 +23,13 @@ namespace gamelib::prm
 		PRMHeader::deserialize(m_header, &binaryReader);
 		if (m_header.zeroed != 0x0)
 		{
-			assert(false && "Zeroed field must be zeroed!");
+			throw PRMBadFile("Zeroed field must be zeroed!");
 			return false;
 		}
 
 		if (m_header.countOfPrimitives >= 40960) // There are 40960 geoms max. Need to check it later
 		{
-			assert(false && "Possibly invalid PRM file. Game supports max 40959 unique primitives per level");
+			throw PRMBadFile("Possibly invalid PRM file. Game supports max 40959 unique primitives per level");
 			return false;
 		}
 
@@ -36,7 +40,7 @@ namespace gamelib::prm
 		{
 			if (m_header.chunkOffset + (chunkIndex * PRMChunkDescriptor::kDescriptorSize) >= buffer.size())
 			{
-				assert(false && "Invalid chunk offset! Bad PRM file");
+				throw PRMBadChunkException(chunkIndex);
 				return false;
 			}
 
@@ -46,7 +50,16 @@ namespace gamelib::prm
 			PRMChunkDescriptor::deserialize(descriptor, &binaryReader);
 
 			// Read chunk
-			m_chunks.emplace_back(buffer.slice(descriptor.declarationOffset, descriptor.declarationSize).new_buffer());
+			auto& chunk = m_chunks.emplace_back();
+			chunk.bufferSize = descriptor.declarationSize;
+			chunk.buffer = std::make_unique<std::uint8_t[]>(chunk.bufferSize);
+
+			{
+				BinaryReaderSeekScope scope { &binaryReader };
+
+				binaryReader.seek(descriptor.declarationOffset);
+				binaryReader.read<std::uint8_t>(&chunk.buffer[0], static_cast<std::int64_t>(chunk.bufferSize));
+			}
 		}
 
 		return true;
@@ -62,13 +75,13 @@ namespace gamelib::prm
 		return m_chunkDescriptors;
 	}
 
-	PRMRawChunk PRMReader::getChunkAt(size_t chunkIndex)
+	PRMChunk* PRMReader::getChunkAt(size_t chunkIndex)
 	{
-		return chunkIndex >= m_chunks.size() ? nullptr : m_chunks.at(chunkIndex).get();
+		return chunkIndex >= m_chunks.size() ? nullptr : &m_chunks[chunkIndex];
 	}
 
-	const PRMRawChunk PRMReader::getChunkAt(size_t chunkIndex) const
+	const PRMChunk* PRMReader::getChunkAt(size_t chunkIndex) const
 	{
-		return chunkIndex >= m_chunks.size() ? nullptr : m_chunks.at(chunkIndex).get();
+		return chunkIndex >= m_chunks.size() ? nullptr : &m_chunks[chunkIndex];
 	}
 }

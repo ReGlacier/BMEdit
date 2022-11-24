@@ -19,8 +19,8 @@ namespace gamelib::prm
 
 		[[nodiscard]] const PRMHeader &getHeader() const;
 		[[nodiscard]] const std::vector<PRMChunkDescriptor> &getChunkDescriptors() const;
-		[[nodiscard]] PRMRawChunk getChunkAt(size_t chunkIndex);
-		[[nodiscard]] const PRMRawChunk getChunkAt(size_t chunkIndex) const;
+		[[nodiscard]] PRMChunk* getChunkAt(size_t chunkIndex);
+		[[nodiscard]] const PRMChunk* getChunkAt(size_t chunkIndex) const;
 
 	private:
 		PRMHeader m_header;
