@@ -4,7 +4,7 @@
 
 namespace gamelib::prm
 {
-	PRMBadChunkException::PRMBadChunkException(int chunkIndex) : PRMException()
+	PRMBadChunkException::PRMBadChunkException(std::uint32_t chunkIndex) : PRMException()
 	{
 		m_errorMessage = "Bad chunk #" + std::to_string(chunkIndex);
 	}
