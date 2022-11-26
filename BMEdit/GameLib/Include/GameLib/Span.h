@@ -95,6 +95,12 @@ namespace gamelib
 		template <typename TR>
 		TR as() const requires(std::is_constructible_v<TR, decltype(m_data), decltype(m_data + m_size)> && std::is_default_constructible_v<TR>) { return empty() ? TR {} : TR { m_data, m_data + m_size }; }
 
+		template <typename TR>
+		typename std::decay_t<TR>* as() requires(std::is_pointer_v<TR>) { return empty() ? nullptr : reinterpret_cast<TR*>(m_data); }
+
+		template <typename TR>
+		const typename std::decay_t<TR>* as() const requires(std::is_pointer_v<TR>) { return empty() ? nullptr : reinterpret_cast<const TR*>(m_data); }
+
 		/**
 		 * @fn new_buffer
 		 * @return unique_ptr to byte array copied from internal buffer. Return nullptr when no internal buffer or buffer is empty

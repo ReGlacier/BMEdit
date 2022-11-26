@@ -13,7 +13,8 @@ namespace gamelib::prm
 	class PRMReader
 	{
 	public:
-		PRMReader() = default;
+		PRMReader() = delete;
+		PRMReader(PRMHeader &header, std::vector<PRMChunkDescriptor> &chunkDescriptors, std::vector<PRMChunk> &chunks);
 
 		bool read(Span<uint8_t> buffer);
 
@@ -23,8 +24,8 @@ namespace gamelib::prm
 		[[nodiscard]] const PRMChunk* getChunkAt(size_t chunkIndex) const;
 
 	private:
-		PRMHeader m_header;
-		std::vector<PRMChunk> m_chunks;
-		std::vector<PRMChunkDescriptor> m_chunkDescriptors;
+		PRMHeader& m_header;
+		std::vector<PRMChunk>& m_chunks;
+		std::vector<PRMChunkDescriptor>& m_chunkDescriptors;
 	};
 }

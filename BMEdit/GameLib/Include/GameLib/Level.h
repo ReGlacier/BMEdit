@@ -24,6 +24,8 @@ namespace gamelib
 	struct LevelGeometry
 	{
 		prm::PRMHeader header;
+		std::vector<prm::PRMChunkDescriptor> chunkDescriptors;
+		std::vector<prm::PRMChunk> chunks;
 	};
 
 	struct SceneProperties

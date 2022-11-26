@@ -11,8 +11,6 @@ namespace models
 	{
 		Q_OBJECT
 	public:
-		static constexpr int SceneObjectRole = Qt::UserRole + 1;
-
 		explicit SceneObjectsTreeModel(QObject *parent = nullptr);
 		explicit SceneObjectsTreeModel(const gamelib::Level *level, QObject *parent = nullptr);
 

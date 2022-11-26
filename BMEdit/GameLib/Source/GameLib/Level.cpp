@@ -216,7 +216,7 @@ namespace gamelib
 			return false;
 		}
 
-		prm::PRMReader reader;
+		prm::PRMReader reader { m_levelGeometry.header, m_levelGeometry.chunkDescriptors, m_levelGeometry.chunks };
 		if (!reader.read(Span(prmFileBuffer.get(), prmFileSize)))
 		{
 			return false;

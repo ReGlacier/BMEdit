@@ -9,8 +9,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC OFF)
+
 find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)
 find_package(OpenGL REQUIRED)
+
+message(STATUS "Found Qt component versions: ")
+message(STATUS "\tWidgets: ${Qt6Widgets_VERSION}")
+message(STATUS "\tOpenGL: ${Qt6OpenGL_VERSION}")
+message(STATUS "\tOpenGLWidgets: ${Qt6OpenGLWidgets_VERSION}")
 
 # --- Sources
 set(EDITOR_SOURCES)

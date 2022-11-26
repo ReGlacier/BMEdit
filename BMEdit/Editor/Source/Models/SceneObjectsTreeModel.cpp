@@ -1,4 +1,5 @@
 #include <Models/SceneObjectsTreeModel.h>
+#include <Types/QCustomRoles.h>
 #include <QStringList>
 
 
@@ -33,7 +34,7 @@ namespace models
 			return QString::fromStdString(so->getName());
 		}
 
-		if (role == SceneObjectRole) {
+		if (role == types::kSceneObjectRole) {
 			return reinterpret_cast<std::intptr_t>(so);
 		}
 

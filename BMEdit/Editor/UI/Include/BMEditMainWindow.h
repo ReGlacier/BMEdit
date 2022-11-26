@@ -21,6 +21,8 @@ namespace models
 	class SceneObjectPropertiesModel;
 	class SceneObjectsTreeModel;
 	class ScenePropertiesModel;
+	class ScenePrimitivesModel;
+	class ScenePrimitivesFilterModel;
 }
 
 namespace delegates
@@ -54,8 +56,9 @@ private:
 	void initProperties();
 	void initSceneProperties();
 	void initControllers();
+	void initScenePrimitives();
 	void initSceneLoadingDialog();
-
+	void resetPrimitivesFilter();
 
 public slots:
 	void onExit();
@@ -74,6 +77,7 @@ public slots:
 	void onCloseLevel();
 	void onExportPRP();
 	void onContextMenuRequestedForSceneTreeNode(const QPoint& point);
+	void onContextMenuRequestedForPrimitivesTableHeader(const QPoint& point);
 
 private:
     // UI
@@ -89,6 +93,8 @@ private:
 	models::SceneObjectsTreeModel *m_sceneTreeModel { nullptr };
 	models::SceneObjectPropertiesModel *m_sceneObjectPropertiesModel { nullptr };
 	models::ScenePropertiesModel *m_scenePropertiesModel { nullptr };
+	models::ScenePrimitivesModel *m_scenePrimitivesModel { nullptr };
+	models::ScenePrimitivesFilterModel *m_scenePrimitivesFilterModel { nullptr };
 
 	// Delegates
 	delegates::TypePropertyItemDelegate *m_typePropertyItemDelegate { nullptr };
@@ -96,6 +102,9 @@ private:
 
 	// Dialogs
 	LoadSceneProgressDialog m_loadSceneDialog;
+
+	// Selection
+	std::optional<std::uint32_t> m_selectedPrimitiveToPreview;
 };
 
 #endif // BMEDITMAINWINDOW_H

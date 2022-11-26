@@ -18,11 +18,14 @@
 #include <Models/SceneObjectsTreeModel.h>
 #include <Models/SceneObjectPropertiesModel.h>
 #include <Models/ScenePropertiesModel.h>
+#include <Models/ScenePrimitivesModel.h>
+#include <Models/ScenePrimitivesFilterModel.h>
 
 #include <Delegates/TypePropertyItemDelegate.h>
 #include <Delegates/ScenePropertyTypeDelegate.h>
 
 #include <Widgets/GeomControllersWidget.h>
+#include <Types/QCustomRoles.h>
 
 #include <LoadSceneProgressDialog.h>
 
@@ -50,6 +53,7 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 	initProperties();
 	initControllers();
 	initSceneProperties();
+	initScenePrimitives();
 	initSceneLoadingDialog();
 	initStatusBar();
 	initSearchInput();
@@ -65,6 +69,7 @@ BMEditMainWindow::~BMEditMainWindow()
 	delete m_typePropertyItemDelegate;
 	delete m_sceneTreeModel;
 	delete m_sceneObjectPropertiesModel;
+	delete m_scenePrimitivesModel;
 
 	delete m_operationProgress;
 	delete m_operationLabel;
@@ -225,6 +230,18 @@ void BMEditMainWindow::onLevelLoadSuccess()
 		m_scenePropertiesModel->setLevel(const_cast<gamelib::Level*>(currentLevel));
 	}
 
+	if (m_scenePrimitivesModel)
+	{
+		m_scenePrimitivesModel->setLevel(const_cast<gamelib::Level*>(currentLevel));
+		ui->primitivesCountLabel->setText(QString("%1").arg(currentLevel->getLevelGeometry()->header.countOfPrimitives));
+	}
+
+	// Reset primitive filters
+	resetPrimitivesFilter();
+
+	// Setup preview
+	ui->scenePrimitivePreview->setLevel(const_cast<gamelib::Level*>(currentLevel));
+
 	// Load controllers index
 	ui->geomControllers->switchToDefaults();
 
@@ -326,6 +343,13 @@ void BMEditMainWindow::onCloseLevel()
 	if (m_sceneTreeModel) m_sceneTreeModel->resetLevel();
 	if (m_sceneObjectPropertiesModel) m_sceneObjectPropertiesModel->resetLevel();
 	if (m_scenePropertiesModel) m_scenePropertiesModel->resetLevel();
+	if (m_scenePrimitivesModel) m_scenePrimitivesModel->resetLevel();
+
+	// Reset filters
+	resetPrimitivesFilter();
+
+	// Reset
+	ui->scenePrimitivePreview->resetLevel();
 
 	// Reset widget states
 	ui->geomControllers->resetGeom();
@@ -333,6 +357,9 @@ void BMEditMainWindow::onCloseLevel()
 	// Reset export menu
 	ui->menuExport->setEnabled(false);
 	ui->actionExport_PRP_properties->setEnabled(false);
+
+	// Reset primitives counter
+	ui->primitivesCountLabel->setText("0");
 }
 
 void BMEditMainWindow::onExportPRP()
@@ -371,7 +398,7 @@ void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& poin
 		return;
 	}
 
-	const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(index.data(models::SceneObjectsTreeModel::SceneObjectRole).value<std::intptr_t>());
+	const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(index.data(types::kSceneObjectRole).value<std::intptr_t>());
 
 	if (selectedGeom)
 	{
@@ -404,6 +431,26 @@ void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& poin
 
 		contextMenu.exec(ui->sceneTreeView->viewport()->mapToGlobal(point));
 	}
+}
+
+void BMEditMainWindow::onContextMenuRequestedForPrimitivesTableHeader(const QPoint &point)
+{
+	QMenu contextMenu;
+
+#define BE_CONFIGURE_ACTION(actName, actFmt) \
+	{ \
+		auto action = contextMenu.addAction(actName);  \
+		action->setCheckable(true);  \
+		action->setChecked(m_scenePrimitivesFilterModel->isVertexFormatAllowed(actFmt)); \
+        connect(action, &QAction::toggled, [this](bool val) { m_scenePrimitivesFilterModel->setVertexFormatAllowed(actFmt, val); }); \
+	}
+
+	BE_CONFIGURE_ACTION("Vertex Format 10", gamelib::prm::PRMVertexBufferFormat::VBF_VERTEX_10);
+	BE_CONFIGURE_ACTION("Vertex Format 24", gamelib::prm::PRMVertexBufferFormat::VBF_VERTEX_24);
+	BE_CONFIGURE_ACTION("Vertex Format 28", gamelib::prm::PRMVertexBufferFormat::VBF_VERTEX_28);
+	BE_CONFIGURE_ACTION("Vertex Format 34", gamelib::prm::PRMVertexBufferFormat::VBF_VERTEX_34);
+
+	contextMenu.exec(ui->scenePrimitivesTable->horizontalHeader()->viewport()->mapToGlobal(point));
 }
 
 void BMEditMainWindow::loadTypesDataBase()
@@ -524,7 +571,7 @@ void BMEditMainWindow::initSceneTree()
 		const bool somethingSelected = !selected.indexes().isEmpty();
 
 		if (somethingSelected) {
-			const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(selected.indexes().first().data(models::SceneObjectsTreeModel::SceneObjectRole).value<std::intptr_t>());
+			const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(selected.indexes().first().data(types::kSceneObjectRole).value<std::intptr_t>());
 
 			if (selectedGeom)
 			{
@@ -567,9 +614,85 @@ void BMEditMainWindow::initControllers()
 	//TODO: Init this
 }
 
+void BMEditMainWindow::initScenePrimitives()
+{
+	m_scenePrimitivesModel = new models::ScenePrimitivesModel(this);
+	m_scenePrimitivesFilterModel = new models::ScenePrimitivesFilterModel(this);
+
+	m_scenePrimitivesFilterModel->setSourceModel(m_scenePrimitivesModel);
+	ui->scenePrimitivesTable->setModel(m_scenePrimitivesFilterModel);
+	ui->scenePrimitivesTable->setSelectionBehavior(QAbstractItemView::SelectItems);
+	ui->scenePrimitivesTable->setSelectionMode(QAbstractItemView::SingleSelection);
+	ui->scenePrimitivesTable->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+	ui->scenePrimitivesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
+
+	connect(ui->scenePrimitivesTable->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
+		if ((selected.indexes().size() == 1 && selected.indexes().at(0).row() != 0) || (!selected.indexes().empty()))
+		{
+			m_selectedPrimitiveToPreview.emplace(static_cast<std::uint32_t>(selected.indexes().first().data(types::kChunkIndexRole).value<int>()));
+			ui->scenePrimitivePreview->setPrimitiveIndex(*m_selectedPrimitiveToPreview);
+		}
+		else if (!deselected.indexes().isEmpty())
+		{
+			m_selectedPrimitiveToPreview = std::nullopt;
+		}
+
+		ui->exportChunk->setEnabled(m_selectedPrimitiveToPreview.has_value());
+	});
+
+	connect(ui->exportChunk, &QPushButton::clicked, [=]() {
+		if (m_selectedPrimitiveToPreview.has_value())
+		{
+			//TODO: Impl me
+		}
+	});
+
+	connect(ui->scenePrimitivesTable->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &BMEditMainWindow::onContextMenuRequestedForPrimitivesTableHeader);
+
+	auto sendChangesToFilterModel = [=](models::ScenePrimitivesFilterEntry entry, int newState)
+	{
+		if (newState)
+		{
+			m_scenePrimitivesFilterModel->addFilterEntry(entry);
+		}
+		else
+		{
+			m_scenePrimitivesFilterModel->removeFilterEntry(entry);
+		}
+	};
+
+	connect(ui->primitivesFilter_UnknownPrimType,      &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Unknown,     newState); });
+	connect(ui->primitivesFilter_ZeroBufferPrimType,   &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Zero,        newState); });
+	connect(ui->primitivesFilter_DescriptionPrimType,  &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Description, newState); });
+	connect(ui->primitivesFilter_IndexBufferPrimType,  &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Index,       newState); });
+	connect(ui->primitivesFilter_VertexBufferPrimType, &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Vertex,      newState); });
+}
+
 void BMEditMainWindow::initSceneLoadingDialog()
 {
 	m_loadSceneDialog.setFixedSize(m_loadSceneDialog.size());
 	m_loadSceneDialog.setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 	m_loadSceneDialog.setModal(true);
+}
+
+void BMEditMainWindow::resetPrimitivesFilter()
+{
+	if (m_scenePrimitivesFilterModel)
+	{
+		m_scenePrimitivesFilterModel->resetToDefaults();
+	}
+
+#define BE_RESET_CHECK_BOX(x)  \
+	{                          \
+		QSignalBlocker blk{x}; \
+		x->setChecked(true);   \
+	}
+
+	BE_RESET_CHECK_BOX(ui->primitivesFilter_UnknownPrimType);
+	BE_RESET_CHECK_BOX(ui->primitivesFilter_ZeroBufferPrimType);
+	BE_RESET_CHECK_BOX(ui->primitivesFilter_DescriptionPrimType);
+	BE_RESET_CHECK_BOX(ui->primitivesFilter_IndexBufferPrimType);
+	BE_RESET_CHECK_BOX(ui->primitivesFilter_VertexBufferPrimType);
+
+#undef BE_RESET_CHECK_BOX
 }
