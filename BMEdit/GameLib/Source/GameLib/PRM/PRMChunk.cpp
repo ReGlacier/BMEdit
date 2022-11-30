@@ -72,17 +72,21 @@ namespace gamelib::prm
 		// Description buffer
 		if (chunk.size() >= sizeof(PRMDescriptionChunkBaseHeader))
 		{
-			auto chunkHdr = reinterpret_cast<const PRMDescriptionChunkBaseHeader*>(&chunk[0]);
+			auto binaryReader = ZBio::ZBinaryReader::BinaryReader(reinterpret_cast<const char*>(&chunk[0]), chunk.size());
+
+			PRMDescriptionChunkBaseHeader chunkHdr;
+			PRMDescriptionChunkBaseHeader::deserialize(chunkHdr, &binaryReader);
+
 			// Helpers
 			// PRM_IS_VALID_KIND - check for all known values
 			// PRM_IS_VALID_PACK_TYPE - check for all known pack types
 #define PRM_IS_VALID_KIND(k) (k) == 0 || (k) == 1 || (k) == 4 || (k) == 6 || (k) == 7 || (k) == 8 || (k) == 10 || (k) == 11 || (k) == 12
 #define PRM_IS_VALID_PACK_TYPE(p) (p) == 0
 
-			if (chunkHdr->ptrObjects <= totalChunksNr && PRM_IS_VALID_KIND(chunkHdr->kind) && PRM_IS_VALID_PACK_TYPE(chunkHdr->primPackType) && chunkHdr->ptrParts < totalChunksNr && chunkHdr->ptrObjects < totalChunksNr)
+			if (chunkHdr.ptrObjects <= totalChunksNr && PRM_IS_VALID_KIND(chunkHdr.kind) && PRM_IS_VALID_PACK_TYPE(chunkHdr.primPackType) && chunkHdr.ptrParts < totalChunksNr && chunkHdr.ptrObjects < totalChunksNr)
 			{
 				m_recognizedKind = PRMChunkRecognizedKind::CRK_DESCRIPTION_BUFFER;
-				m_data.emplace<PRMDescriptionChunkBaseHeader>(*chunkHdr); // Copy data
+				m_data.emplace<PRMDescriptionChunkBaseHeader>(chunkHdr); // Copy data
 				return;
 			}
 		}
@@ -122,6 +126,7 @@ namespace gamelib::prm
 				else
 				{
 					vertexBufferHeader.vertexFormat = PRMVertexBufferFormat::VBF_VERTEX_28;
+					m_recognizedKind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
 				}
 			}
 
@@ -143,6 +148,15 @@ namespace gamelib::prm
 
 			m_recognizedKind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
 			m_data.emplace<PRMVertexBufferHeader>(vertexBufferHeader);
+			return;
+		}
+
+		// Bone description
+		if (auto chunkSize = chunk.size(); (chunkSize % 0x40) == 0)
+		{
+			assert(false && "Unsupported thing");
+			m_recognizedKind = PRMChunkRecognizedKind::CRK_UNKNOWN_BUFFER;
+			m_data.emplace<NullData>();
 			return;
 		}
 #undef PRM_IS_VALID_KIND

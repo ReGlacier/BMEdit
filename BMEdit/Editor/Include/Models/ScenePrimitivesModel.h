@@ -17,6 +17,10 @@ namespace models
 			CID_SIZE,           // Size of chunk
 			CID_INDICES,        // Only for index buffer
 			CID_VERTICES,       // Only for vertex buffer
+			CID_PTR_OBJECTS,    // Only for description
+			CID_PTR_PARTS,      // Only for description
+
+			//NOTE: Don't forgot to add string view at g_ColNames array (see .cpp for details)
 
 			// --- END ---
 			CID_MAX_COLUMNS

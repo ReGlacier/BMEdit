@@ -74,10 +74,7 @@ QVariant ScenePrimitivesModel::data(const QModelIndex &index, int role) const
 			    {
 				    return getVertexFormatAsQString(chk.getVertexBufferHeader()->vertexFormat);
 			    }
-			    else
-			    {
-				    return "N/A";
-			    }
+			    break;
 		    }
 		    case ColumnID::CID_INDICES:
 		    {
@@ -85,10 +82,23 @@ QVariant ScenePrimitivesModel::data(const QModelIndex &index, int role) const
 			    {
 				    return chk.getIndexBufferHeader()->indicesCount;
 			    }
-			    else
+			    break;
+		    }
+		    case ColumnID::CID_PTR_OBJECTS:
+		    {
+			    if (chk.getKind() == gamelib::prm::PRMChunkRecognizedKind::CRK_DESCRIPTION_BUFFER)
 			    {
-				    return "N/A";
+				    return QString("%1 (0x%2)").arg(chk.getDescriptionBufferHeader()->ptrObjects).arg(chk.getDescriptionBufferHeader()->ptrObjects, 8, 16, QChar('0'));
 			    }
+			    break;
+		    }
+		    case ColumnID::CID_PTR_PARTS:
+		    {
+			    if (chk.getKind() == gamelib::prm::PRMChunkRecognizedKind::CRK_DESCRIPTION_BUFFER)
+			    {
+				    return QString("%1 (0x%2)").arg(chk.getDescriptionBufferHeader()->ptrParts).arg(chk.getDescriptionBufferHeader()->ptrParts, 8, 16, QChar('0'));
+			    }
+			    break;
 		    }
 		    default: return {};
 		}
@@ -117,6 +127,7 @@ bool ScenePrimitivesModel::setData(const QModelIndex &index, const QVariant &val
 	Q_UNUSED(index);
 	Q_UNUSED(value);
 	Q_UNUSED(role);
+	// This model is read only
 	return false;
 }
 
@@ -124,11 +135,11 @@ QVariant ScenePrimitivesModel::headerData(int section, Qt::Orientation orientati
 {
 	if (role == Qt::DisplayRole && orientation == Qt::Orientation::Horizontal)
 	{
-		if (section == ColumnID::CID_INDEX)    return "Index";
-		if (section == ColumnID::CID_KIND)     return "Kind (chunk)";
-		if (section == ColumnID::CID_SIZE)     return "Size (chunk)";
-		if (section == ColumnID::CID_INDICES)  return "Indices";
-		if (section == ColumnID::CID_VERTICES) return "Vertices";
+		constexpr std::array<std::string_view, ColumnID::CID_MAX_COLUMNS> g_ColNames = {
+		    "Index", "Kind (chunk)", "Size (chunk)", "Indices", "Vertices", "Objects REF", "Parts REF"
+		};
+
+		return QString::fromStdString(g_ColNames.at(section).data());
 	}
 
 	return {};

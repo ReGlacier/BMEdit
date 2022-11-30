@@ -5,25 +5,33 @@
 #include <cstdint>
 
 
+namespace ZBio::ZBinaryReader
+{
+	class BinaryReader;
+}
+
 namespace gamelib::prm
 {
 	struct PRMDescriptionChunkBaseHeader
 	{
-		std::uint8_t    boneDeclOffset;
-		std::uint8_t    primPackType;
-		std::uint16_t   kind;
-		std::uint16_t   textureId;
-		std::uint16_t   unk6;
-		std::uint32_t   nextVariation;
-		std::uint8_t    unkC;
-		std::uint8_t    unkD;
-		std::uint8_t    unkE;
-		std::uint8_t    currentVariation;
-		std::uint16_t   ptrParts;
-		std::uint16_t   materialIdx;
-		std::uint32_t   totalVariations;
-		std::uint32_t   ptrObjects;
-		std::uint32_t   unk3;
-		BoundingBox     bounding_box;
+		std::uint8_t    boneDeclOffset { 0 };
+		std::uint8_t    primPackType { 0 };
+		std::uint16_t   kind { 0 };
+		std::uint16_t   textureId { 0 };
+		std::uint16_t   unk6 { 0 };
+		std::uint32_t   nextVariation { 0 };
+		std::uint8_t    unkC { 0 };
+		std::uint8_t    unkD { 0 };
+		std::uint8_t    unkE { 0 };
+		std::uint8_t    currentVariation { 0 };
+		std::uint16_t   ptrParts { 0 };
+		std::uint16_t   materialIdx { 0 };
+		std::uint32_t   totalVariations { 0 };
+		std::uint16_t   ptrObjects { 0 };
+		std::uint16_t   ptrObjects_HI { 0 };
+		std::uint32_t   unk3 { 0 };
+		BoundingBox     boundingBox {};
+
+		static void deserialize(PRMDescriptionChunkBaseHeader& header, ZBio::ZBinaryReader::BinaryReader *binaryReader);
 	};
 }
