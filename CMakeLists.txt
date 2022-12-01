@@ -41,7 +41,7 @@ if (WIN32)
     add_custom_command(TARGET BMEdit POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E
             env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
-            "$<TARGET_FILE:BMEdit>"
+            "$<TARGET_FILE:BMEdit>" -3dcore -3drenderer -3dinput -3danimation -3dextras -network
             COMMENT "Running windeployqt...")
 
     # Copy binary dependencies

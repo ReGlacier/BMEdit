@@ -61,16 +61,30 @@ jobs:
           mkdir dist
           mv build/bin/BMEdit.exe dist
           mv build/bin/d3dcompiler_47.dll dist
+          mv build/bin/opengl32sw.dll dist
           mv build/bin/Qt6Core.dll dist
           mv build/bin/Qt6Gui.dll dist
           mv build/bin/Qt6OpenGL.dll dist
           mv build/bin/Qt6OpenGLWidgets.dll dist
           mv build/bin/Qt6Svg.dll dist
           mv build/bin/Qt6Widgets.dll dist
+          mv build/bin/Qt63DCore.dll dist
+          mv build/bin/Qt63DRender.dll dist
+          mv build/bin/Qt63DInput.dll dist
+          mv build/bin/Qt63DAnimation.dll dist
+          mv build/bin/Qt63DExtras.dll dist
+          mv build/bin/Qt6ShaderTools.dll dist
+          mv build/bin/Qt6Network.dll dist
+          mv build/bin/Qt6Concurrent.dll dist
           mv build/bin/zip.dll dist
           mv build/bin/translations dist/translations
           mv build/bin/styles dist/styles
           mv build/bin/platforms dist/platforms
+          mv build/bin/renderers dist/renderers
+          mv build/bin/sceneparsers dist/sceneparsers
+          mv build/bin/networkinformation dist/networkinformation
+          mv build/bin/tls dist/tls
+          mv build/bin/geometryloaders dist/geometryloaders
           mv build/bin/imageformats dist/imageformats
           mv build/bin/iconengines dist/iconengines
           mv Assets/g1 dist/g1
