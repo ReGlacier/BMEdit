@@ -34,6 +34,7 @@ jobs:
           target: 'desktop'
           arch: 'win64_msvc2019_64'
           install-deps: 'true'
+          modules: 'qt3d'
 
       - name: Install Conan
         id: conan
