@@ -73,7 +73,6 @@ jobs:
           mv build/bin/Qt63DInput.dll dist
           mv build/bin/Qt63DAnimation.dll dist
           mv build/bin/Qt63DExtras.dll dist
-          mv build/bin/Qt6ShaderTools.dll dist
           mv build/bin/Qt6Network.dll dist
           mv build/bin/Qt6Concurrent.dll dist
           mv build/bin/zip.dll dist
