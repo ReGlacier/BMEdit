@@ -32,6 +32,11 @@ namespace gamelib::prm
 		return { m_buffer.get(), static_cast<int64_t>(m_bufferSize) };
 	}
 
+	std::size_t PRMChunk::getBufferSize() const
+	{
+		return m_bufferSize;
+	}
+
 	PRMChunkRecognizedKind PRMChunk::getKind() const
 	{
 		return m_recognizedKind;
@@ -39,32 +44,154 @@ namespace gamelib::prm
 
 	const PRMDescriptionChunkBaseHeader* PRMChunk::getDescriptionBufferHeader() const
 	{
-		return std::get_if<PRMDescriptionChunkBaseHeader>(&m_data);
+		if (auto metaData = std::get_if<MetaData>(&m_data))
+		{
+			return &metaData->header;
+		}
+
+		return nullptr;
 	}
 
 	PRMDescriptionChunkBaseHeader* PRMChunk::getDescriptionBufferHeader()
 	{
-		return std::get_if<PRMDescriptionChunkBaseHeader>(&m_data);
+		if (auto metaData = std::get_if<MetaData>(&m_data))
+		{
+			return &metaData->header;
+		}
+
+		return nullptr;
 	}
 
 	const PRMIndexChunkHeader* PRMChunk::getIndexBufferHeader() const
 	{
-		return std::get_if<PRMIndexChunkHeader>(&m_data);
+		if (auto indexData = std::get_if<IndexData>(&m_data))
+		{
+			return &indexData->header;
+		}
+
+		return nullptr;
 	}
 
 	PRMIndexChunkHeader* PRMChunk::getIndexBufferHeader()
 	{
-		return std::get_if<PRMIndexChunkHeader>(&m_data);
+		if (auto indexData = std::get_if<IndexData>(&m_data))
+		{
+			return &indexData->header;
+		}
+
+		return nullptr;
 	}
 
 	const PRMVertexBufferHeader* PRMChunk::getVertexBufferHeader() const
 	{
-		return std::get_if<PRMVertexBufferHeader>(&m_data);
+		if (auto vertexData = std::get_if<VertexData>(&m_data))
+		{
+			return &vertexData->header;
+		}
+
+		return nullptr;
 	}
 
 	PRMVertexBufferHeader* PRMChunk::getVertexBufferHeader()
 	{
-		return std::get_if<PRMVertexBufferHeader>(&m_data);
+		if (auto vertexData = std::get_if<VertexData>(&m_data))
+		{
+			return &vertexData->header;
+		}
+
+		return nullptr;
+	}
+
+	const PRMVertexFormatDetails* PRMChunk::getVertexFormatDetails() const
+	{
+		if (auto vertexData = std::get_if<VertexData>(&m_data))
+		{
+			return &vertexData->details;
+		}
+
+		return nullptr;
+	}
+
+	PRMVertexFormatDetails* PRMChunk::getVertexFormatDetails()
+	{
+		if (auto vertexData = std::get_if<VertexData>(&m_data))
+		{
+			return &vertexData->details;
+		}
+
+		return nullptr;
+	}
+
+	bool detectVertexFormat(Span<uint8_t> chunk, PRMChunkRecognizedKind& kind, PRMVertexBufferFormat& format)
+	{
+		auto chunkSize = chunk.size();
+		if ((chunkSize % 0x10) != 0 && (chunkSize % 0x24) != 0 && (chunkSize % 0x28) != 0 && (chunkSize % 0x34) != 0)
+			return false; // Bad size
+
+		static constexpr uint8_t s28b[4] = { 0xCD, 0xCD, 0xCD, 0xCD };
+
+		if ((chunkSize % 0x10) == 0)
+		{
+			int64_t lastSegnificantBytePos = chunk.size() - 1;
+
+			while (lastSegnificantBytePos > 1)
+			{
+				if (chunk[lastSegnificantBytePos] != 0x0)
+					break;
+
+				--lastSegnificantBytePos;
+			}
+
+			++lastSegnificantBytePos;
+
+			if (lastSegnificantBytePos == chunk.size())
+			{
+				kind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
+				format = PRMVertexBufferFormat::VBF_VERTEX_10;
+				return true;
+			}
+
+			if ((lastSegnificantBytePos % 0x28) == 0 && std::memcmp(&chunk[0x24], &s28b[0], sizeof(s28b)) == 0)
+			{
+				kind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
+				format = PRMVertexBufferFormat::VBF_VERTEX_28;
+				return true;
+			}
+
+			if ((lastSegnificantBytePos % 0x24) == 0)
+			{
+				kind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
+				format = PRMVertexBufferFormat::VBF_VERTEX_24;
+				return true;
+			}
+
+			if ((lastSegnificantBytePos % 0x34) == 0)
+			{
+				kind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
+				format = PRMVertexBufferFormat::VBF_VERTEX_34;
+				return true;
+			}
+		}
+		else if ((chunkSize % 0x28) == 0 && std::memcmp(&chunk[0x24], &s28b[0], sizeof(s28b)) == 0)
+		{
+			kind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
+			format = PRMVertexBufferFormat::VBF_VERTEX_28;
+			return true;
+		}
+		else if ((chunkSize % 0x24) == 0)
+		{
+			kind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
+			format = PRMVertexBufferFormat::VBF_VERTEX_24;
+			return true;
+		}
+		else if ((chunkSize % 0x34) == 0)
+		{
+			kind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
+			format = PRMVertexBufferFormat::VBF_VERTEX_34;
+			return true;
+		}
+
+		return false;
 	}
 
 	void PRMChunk::recognizeChunkKindAndSaveData(Span<uint8_t> chunk, int totalChunksNr)
@@ -86,7 +213,9 @@ namespace gamelib::prm
 			if (chunkHdr.ptrObjects <= totalChunksNr && PRM_IS_VALID_KIND(chunkHdr.kind) && PRM_IS_VALID_PACK_TYPE(chunkHdr.primPackType) && chunkHdr.ptrParts < totalChunksNr && chunkHdr.ptrObjects < totalChunksNr)
 			{
 				m_recognizedKind = PRMChunkRecognizedKind::CRK_DESCRIPTION_BUFFER;
-				m_data.emplace<PRMDescriptionChunkBaseHeader>(chunkHdr); // Copy data
+
+				auto& data = m_data.emplace<MetaData>();
+				data.header = chunkHdr;
 				return;
 			}
 		}
@@ -103,58 +232,31 @@ namespace gamelib::prm
 			if (chunkHdr.indicesCount <= ((chunk.size() - 4) / 2))
 			{
 				m_recognizedKind = PRMChunkRecognizedKind::CRK_INDEX_BUFFER;
-				m_data.emplace<PRMIndexChunkHeader>(chunkHdr);
+
+				auto& data = m_data.emplace<IndexData>();
+				data.header = chunkHdr;
 				return;
 			}
 		}
 
 		// Vertex buffer
-		if (auto chunkSize = chunk.size(); (chunkSize % 0x10) == 0 || (chunkSize % 0x24) == 0 || (chunkSize % 0x28) == 0 || (chunkSize % 0x34) == 0)
 		{
 			PRMVertexBufferHeader vertexBufferHeader;
 			vertexBufferHeader.vertexFormat = PRMVertexBufferFormat::VBF_UNKNOWN_VERTEX;
 
-			if ((chunkSize % 0x28) == 0)
+			if (detectVertexFormat(chunk, m_recognizedKind, vertexBufferHeader.vertexFormat))
 			{
-				auto binaryReader = ZBio::ZBinaryReader::BinaryReader(reinterpret_cast<const char*>(&chunk[0x24]), chunk.size());
-				const auto b28 = binaryReader.read<std::uint32_t, ZBio::Endianness::LE>();
-				const bool is28k = (b28 == 0xCDCDCDCDu);
-				if (!is28k)
-				{
-					m_recognizedKind = PRMChunkRecognizedKind::CRK_UNKNOWN_BUFFER;
-				}
-				else
-				{
-					vertexBufferHeader.vertexFormat = PRMVertexBufferFormat::VBF_VERTEX_28;
-					m_recognizedKind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
-				}
+				auto& data = m_data.emplace<VertexData>();
+				data.header = vertexBufferHeader;
+				data.details = PRMVertexFormatDetails(this);
+				return;
 			}
-
-			if (m_recognizedKind == PRMChunkRecognizedKind::CRK_UNKNOWN_BUFFER)
-			{
-				if ((chunkSize % 0x24) == 0)
-				{
-					vertexBufferHeader.vertexFormat = PRMVertexBufferFormat::VBF_VERTEX_24;
-				}
-				else if ((chunkSize % 0x34) == 0)
-				{
-					vertexBufferHeader.vertexFormat = PRMVertexBufferFormat::VBF_VERTEX_34;
-				}
-				else if ((chunkSize % 0x10) == 0)
-				{
-					vertexBufferHeader.vertexFormat = PRMVertexBufferFormat::VBF_SIMPLE_VERTEX;
-				}
-			}
-
-			m_recognizedKind = PRMChunkRecognizedKind::CRK_VERTEX_BUFFER;
-			m_data.emplace<PRMVertexBufferHeader>(vertexBufferHeader);
-			return;
 		}
 
 		// Bone description
 		if (auto chunkSize = chunk.size(); (chunkSize % 0x40) == 0)
 		{
-			assert(false && "Unsupported thing");
+			//assert(false && "Unsupported thing");
 			m_recognizedKind = PRMChunkRecognizedKind::CRK_UNKNOWN_BUFFER;
 			m_data.emplace<NullData>();
 			return;

@@ -33,12 +33,22 @@ namespace gamelib
 		gms::GMSHeader header;
 	};
 
+	using LoadLevelOptions = std::uint16_t;
+
+	enum LoadLevelOption : LoadLevelOptions
+	{
+		LLO_NONE = 0,
+		LLO_SKIP_SCENE_TREE = 1 << 0,
+		LLO_SKIP_PROPERTIES = 1 << 1,
+		LLO_SKIP_GEOMETRY = 1 << 2,
+	};
+
 	class Level
 	{
 	public:
 		explicit Level(std::unique_ptr<io::IOLevelAssetsProvider> &&levelAssetsProvider);
 
-		[[nodiscard]] bool loadSceneData();
+		[[nodiscard]] bool loadSceneData(LoadLevelOptions options = LoadLevelOption::LLO_NONE);
 
 		[[nodiscard]] const std::string &getLevelName() const;
 		[[nodiscard]] const LevelProperties *getLevelProperties() const;

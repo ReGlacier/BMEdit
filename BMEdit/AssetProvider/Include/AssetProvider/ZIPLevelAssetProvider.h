@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <memory>
 
-namespace editor
+namespace ap
 {
 	class ZIPLevelAssetProvider : public gamelib::io::IOLevelAssetsProvider
 	{

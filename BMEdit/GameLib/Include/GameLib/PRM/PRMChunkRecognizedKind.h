@@ -9,6 +9,7 @@ namespace gamelib::prm
 		CRK_INDEX_BUFFER,           ///< For chunk with indices data
 		CRK_VERTEX_BUFFER,          ///< For chunk with vertices data
 		CRK_DESCRIPTION_BUFFER,     ///< For chunk with description
-		CRK_UNKNOWN_BUFFER          ///< For unrecognized chunk, it may contains any kind of data
+		CRK_BONE_BUFFER,            ///< Rigid body bones description
+		CRK_UNKNOWN_BUFFER,         ///< For unrecognized chunk, it may contains any kind of data
 	};
 }

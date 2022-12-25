@@ -18,30 +18,34 @@ namespace gamelib
 	{
 	}
 
-	bool Level::loadSceneData()
+	bool Level::loadSceneData(LoadLevelOptions options)
 	{
 		if (!m_assetProvider || !m_assetProvider->isValid())
 		{
 			return false;
 		}
 
-		if (!loadLevelProperties())
+#define GLB_HAS_OPTION(opt) (static_cast<bool>((options & (opt))))
+
+		if (!GLB_HAS_OPTION(LoadLevelOption::LLO_SKIP_PROPERTIES) && !loadLevelProperties())
 		{
 			return false;
 		}
 
-		if (!loadLevelScene())
+		if (!GLB_HAS_OPTION(LoadLevelOption::LLO_SKIP_SCENE_TREE) && !loadLevelScene())
 		{
 			return false;
 		}
 
-		if (!loadLevelPrimitives())
+		if (!GLB_HAS_OPTION(LoadLevelOption::LLO_SKIP_GEOMETRY) && !loadLevelPrimitives())
 		{
 			return false;
 		}
 
 		// TODO: Load things (it's time to combine GMS, PRP & BUF files)
 		m_isLevelLoaded = true;
+
+#undef GLB_HAS_OPTION
 		return true;
 	}
 

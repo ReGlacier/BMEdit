@@ -1,4 +1,4 @@
-#include <Include/IO/ZIPLevelAssetProvider.h>
+#include <AssetProvider/ZIPLevelAssetProvider.h>
 #include <string_view>
 #include <filesystem>
 #include <cassert>
@@ -9,9 +9,9 @@ extern "C"
 }
 
 #ifndef BMEDIT_DEBUG
-#define BMEDIT_ZIP_REPORT_ERROR(ze)
+	#define BMEDIT_ZIP_REPORT_ERROR(ze)
 #else
-#define BMEDIT_ZIP_REPORT_ERROR(ze)                           \
+	#define BMEDIT_ZIP_REPORT_ERROR(ze)                           \
 	{                                                         \
 		printf("ZIP error: %s\n", zip_error_strerror(&(ze))); \
 		assert(false);                                        \
@@ -19,7 +19,7 @@ extern "C"
 #endif
 
 
-namespace editor
+namespace ap
 {
 	struct ZIPLevelAssetProvider::Context
 	{
@@ -56,7 +56,7 @@ namespace editor
 
 	static constexpr int IOI_FILE_NAME_LIMIT = 512;
 	static constexpr std::string_view kAssetExtensions[gamelib::io::AssetKind::LAST_ASSET_KIND] = {
-		"GMS", "PRP", "TEX", "PRM", "MAT", "OCT", "RMI", "RMC", "LOC", "ANM", "SND", "BUF", "ZGF"
+	    "GMS", "PRP", "TEX", "PRM", "MAT", "OCT", "RMI", "RMC", "LOC", "ANM", "SND", "BUF", "ZGF"
 	};
 
 	bool filePathEndsWith(std::string_view fileName, std::string_view extension)

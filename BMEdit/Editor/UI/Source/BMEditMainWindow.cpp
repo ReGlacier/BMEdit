@@ -13,6 +13,8 @@
 #include <GameLib/TypeRegistry.h>
 #include <GameLib/TypeNotFoundException.h>
 
+#include <GTIL/GlacierTypeInfoLoader.h>
+
 #include <Editor/EditorInstance.h>
 
 #include <Models/SceneObjectsTreeModel.h>
@@ -457,98 +459,27 @@ void BMEditMainWindow::loadTypesDataBase()
 {
 	m_operationProgress->setValue(OperationToProgress::DISCOVER_TYPES_DATABASE);
 
-	gamelib::TypeRegistry::getInstance().reset();
+	const auto& [errorCode, errorMessage] = gtil::GlacierTypeInfoLoader::loadTypes(std::filesystem::current_path() / "TypesRegistry.json");
 
-	QFile typeRegistryFile("TypesRegistry.json");
-	if (!typeRegistryFile.open(QIODevice::ReadOnly))
+	if (errorCode == gtil::ErrorCode::EC_NO_ERROR)
 	{
-		m_operationCommentLabel->setText("Load 'TypesRegistry.json' failed. File not found");
-		return;
-	}
-
-	m_operationProgress->setValue(OperationToProgress::PARSE_DATABASE);
-	auto contents = typeRegistryFile.readAll().toStdString();
-	typeRegistryFile.close();
-
-	auto registryFile = nlohmann::json::parse(contents, nullptr, false, true);
-	if (registryFile.is_discarded()) {
-		m_operationCommentLabel->setText("Failed to load types database: invalid JSON format");
-		return;
-	}
-
-	m_operationProgress->setValue(OperationToProgress::DATABASE_PARSED);
-
-	if (!registryFile.contains("inc") || !registryFile.contains("db"))
-	{
-		m_operationCommentLabel->setText("Invalid types database format");
-		return;
-	}
-
-	m_operationProgress->setValue(OperationToProgress::TYPE_DESCRIPTIONS_FOUND);
-	auto &registry = gamelib::TypeRegistry::getInstance();
-
-	std::unordered_map<std::string, std::string> typesToHashes;
-	for (const auto &[hash, typeNameObj]: registryFile["db"].items())
-	{
-		typesToHashes[typeNameObj.get<std::string>()] = hash;
-	}
-
-	const auto incPath = registryFile["inc"].get<std::string>();
-
-	m_operationProgress->setValue(OperationToProgress::LOADING_TYPE_DESCRIPTORS);
-	m_operationCommentLabel->setText(QString("Hash indices loaded (%1), loading types from '%2' folder").arg(typesToHashes.size()).arg(QString::fromStdString(incPath)));
-
-	// Here we need to scan for all .json files in 'inc' folder and parse 'em all
-	std::vector<nlohmann::json> typeInfos;
-	QDirIterator typesFolderIterator(QString::fromStdString(incPath), { "*.json" }, QDir::Files);
-	while (typesFolderIterator.hasNext())
-	{
-		auto path = typesFolderIterator.next();
-
-		// TODO: It's better to do in multiple threads but who cares?)
-		QFile typeDescriptionFile(path);
-		if (!typeDescriptionFile.open(QIODevice::ReadOnly))
-		{
-			m_operationCommentLabel->setText(QString("ERROR: Failed to open file '%1'").arg(path));
-			return;
-		}
-
-		auto typeInfoContents = typeDescriptionFile.readAll().toStdString();
-		typeDescriptionFile.close();
-
-
-		auto &jsonContents = typeInfos.emplace_back();
-		jsonContents = nlohmann::json::parse(typeInfoContents, nullptr, false, true);
-		if (jsonContents.is_discarded())
-		{
-			m_operationCommentLabel->setText(QString("ERROR: Failed to parse file '%1'").arg(path));
-			return;
-		}
-	}
-
-	try
-	{
-		registry.registerTypes(std::move(typeInfos), std::move(typesToHashes));
-
 		QStringList allAvailableTypes;
 		gamelib::TypeRegistry::getInstance().forEachType([&allAvailableTypes](const gamelib::Type *type) { allAvailableTypes.push_back(QString::fromStdString(type->getName())); });
 
 		delete m_geomTypesModel;
 		m_geomTypesModel = new QStringListModel(allAvailableTypes, this);
+
 		ui->sceneObjectTypeCombo->setModel(m_geomTypesModel);
 
 		m_operationProgress->setValue(0);
 		m_operationCommentLabel->setText("Ready to open level");
 	}
-	catch (const gamelib::TypeNotFoundException &typeNotFoundException)
+	else
 	{
-		m_operationCommentLabel->setText(QString("ERROR: Unable to load types database: %1").arg(QString::fromStdString(typeNotFoundException.what())));
-		QMessageBox::critical(this, QString("Unable to load types database"), QString("An error occurred while loading types database:\n%1").arg(typeNotFoundException.what()));
-	}
-	catch (const std::exception &somethingGoesWrong)
-	{
-		m_operationCommentLabel->setText(QString("ERROR: Unknown exception in type loader: %1").arg(QString::fromStdString(somethingGoesWrong.what())));
-		QMessageBox::critical(this, QString("Unable to load types database"), QString("An error occurred while loading types database:\n%1").arg(somethingGoesWrong.what()));
+		m_operationProgress->setValue(20);
+		m_operationCommentLabel->setText(QString("Failed to load type database: %1").arg(QString::fromStdString(errorMessage)));
+
+		QMessageBox::critical(this, QString("Unable to load types database"), QString("An error occurred while loading types database:\n%1").arg(QString::fromStdString(errorMessage)));
 	}
 }
 

@@ -70,7 +70,8 @@ namespace gamelib::prm
 			m_chunks.emplace_back(chunkIndex, m_header.countOfPrimitives, std::move(chunkBuffer), chunkBufferSize);
 		}
 
-		int unrecognizedChunks = 0;
+#if 0 // This part of code commented because we allow to have unrecognized segments. Just ignore 'em all.
+ 		int unrecognizedChunks = 0;
 		for (const auto& chk: m_chunks)
 		{
 			if (chk.getKind() == PRMChunkRecognizedKind::CRK_UNKNOWN_BUFFER)
@@ -83,7 +84,7 @@ namespace gamelib::prm
 		{
 			throw PRMBadFile("Found at least 1 unrecognized chunk. Need to check level by devs");
 		}
-
+#endif
 		return true;
 	}
 

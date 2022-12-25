@@ -3,6 +3,8 @@ project(BMEdit)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include(CMake/QtDeployUtils.cmake)
+
 # --- Conan deps
 if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
     include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
@@ -13,8 +15,13 @@ endif()
 
 # --- Global dependencies
 add_subdirectory(ThirdParty/fmt)
+add_subdirectory(ThirdParty/glm)
 
 # --- Project modules
+add_subdirectory(BMRender)
+add_subdirectory(BMRenderSandbox)
+add_subdirectory(BMEdit/GlacierTypeInfoLoader)
+add_subdirectory(BMEdit/AssetProvider)
 add_subdirectory(BMEdit/Editor)
 add_subdirectory(BMEdit/GameLib)
 
@@ -38,11 +45,28 @@ set(WINDEPLOYQT_EXECUTABLE "${_qt_bin_dir}/windeployqt.exe")
 if (WIN32)
     message(STATUS "Qt6 Deploy tool is: ${WINDEPLOYQT_EXECUTABLE}")
 
-    add_custom_command(TARGET BMEdit POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E
-            env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
-            "$<TARGET_FILE:BMEdit>" -3dcore -3drenderer -3dinput -3danimation -3dextras -network
-            COMMENT "Running windeployqt...")
+    macro(add_deploy)
+        cmake_parse_arguments(
+                BM_ARG
+                "" # boolean
+                "TARGET" # single
+                "" # lists
+                ${ARGN}
+        )
+
+        if (NOT BM_ARG_TARGET)
+            message(FATAL_ERROR "TARGET is required")
+            return()
+        endif()
+
+        add_custom_command(TARGET ${BM_ARG_TARGET} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E
+                env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
+                "$<TARGET_FILE:${BM_ARG_TARGET}>" -network
+                COMMENT "Running windeployqt for ${BM_ARG_TARGET}...")
+    endmacro()
+
+    qt6_register_deploy(TARGET BMEdit)
 
     # Copy binary dependencies
     add_custom_command(TARGET BMEdit POST_BUILD

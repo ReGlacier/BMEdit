@@ -74,6 +74,11 @@ namespace gamelib
 			return m_data[idx];
 		}
 
+		[[nodiscard]] const T& operator[](int64_t idx) const
+		{
+			return m_data[idx];
+		}
+
 		void reset()
 		{
 			m_data = nullptr;

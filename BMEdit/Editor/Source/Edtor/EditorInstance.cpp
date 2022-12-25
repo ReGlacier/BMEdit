@@ -1,5 +1,5 @@
 #include <Editor/EditorInstance.h>
-#include <Include/IO/ZIPLevelAssetProvider.h>
+#include <AssetProvider/ZIPLevelAssetProvider.h>
 #include <GameLib/GMS/GMSStructureError.h>
 #include <GameLib/PRP/PRPStructureError.h>
 #include <GameLib/Scene/SceneObjectVisitorException.h>
@@ -78,7 +78,7 @@ namespace editor {
 	{
 		LevelBackup levelBackup { &m_currentLevel, &m_currentLevelPath };
 
-		auto provider = std::make_unique<ZIPLevelAssetProvider>(path);
+		auto provider = std::make_unique<ap::ZIPLevelAssetProvider>(path);
 		if (!provider)
 		{
 			levelLoadFailed(QString("Unable to load file %1").arg(QString::fromStdString(path)));
@@ -158,7 +158,7 @@ namespace editor {
 
 	void EditorInstance::exportAsset(gamelib::io::AssetKind assetKind)
 	{
-//		auto provider = std::make_unique<ZIPLevelAssetProvider>(m_currentLevelPath);
+//		auto provider = std::make_unique<ap::ZIPLevelAssetProvider>(m_currentLevelPath);
 //		if (!provider)
 //		{
 //			emit exportAssetFailed(QString("Failed to open '%1' ZIP file").arg(QString::fromStdString(m_currentLevelPath)));
