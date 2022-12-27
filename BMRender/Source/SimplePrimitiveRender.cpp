@@ -285,51 +285,18 @@ void main() {
 				std::uint32_t unk { 0u };
 
 				V10() = default;
-				V10(const glm::vec3 &pos) : xyz(pos), unk(0u) {} // NOLINT(google-explicit-constructor)
+				V10(float x, float y, float z) : xyz(x, y, z), unk(0u) {}
 			};
 
-			//TODO: Move this code to gamelib::BoundingBox class
-			const auto& bMin = selfChunk.getDescriptionBufferHeader()->boundingBox.min;
-			const auto& bMax = selfChunk.getDescriptionBufferHeader()->boundingBox.max;
+			std::array<V10, 8> aVertices {};
+			std::array<std::uint16_t, 24> aIndices { 0 };
+			selfChunk.getDescriptionBufferHeader()->boundingBox.getCubeAsLines(aVertices, aIndices);
 
-			const glm::vec3 pMin { bMin.x, bMin.y, bMin.z };
-			const glm::vec3 pMax { bMax.x, bMax.y, bMax.z };
+			BufferView vertexBuffer { &aVertices[0], sizeof(V10) * aVertices.size() };
+			BufferView indexBuffer { &aIndices[0], sizeof(std::uint16_t) * aIndices.size() };
 
-			const V10 vertices[] = {
-			    /*0*/ pMin,
-			    /*1*/ pMax,
-			    /*2*/ glm::vec3 { pMin.x, pMin.y, pMax.z },
-			    /*3*/ glm::vec3 { pMin.x, pMax.y, pMin.z },
-			    /*4*/ glm::vec3 { pMin.x, pMax.y, pMax.z },
-			    /*5*/ glm::vec3 { pMax.x, pMax.y, pMin.z },
-			    /*6*/ glm::vec3 { pMax.x, pMin.y, pMin.z },
-			    /*7*/ glm::vec3 { pMax.x, pMin.y, pMax.z },
-			};
-
-			constexpr std::uint16_t indices[] = {
-			    0, 3,
-			    3, 5,
-			    5, 6,
-			    6, 0,
-			    0, 2,
-			    2, 7,
-			    7, 6,
-			    2, 4,
-			    4, 1,
-			    1, 7,
-			    1, 5,
-			    4, 3
-			};
-
-			BufferView vertexBuffer { &vertices[0], sizeof(vertices) };
-			BufferView indexBuffer { &indices[0], sizeof(indices) };
-
-#define BM_ARRAY_LEN(x) (sizeof((x)) / sizeof((x)[0]))
-
-			m_boundingBox->setMeshData(MeshFormat::MF_FORMAT_10, vertexBuffer, indexBuffer, BM_ARRAY_LEN(indices), BM_ARRAY_LEN(vertices));
+			m_boundingBox->setMeshData(MeshFormat::MF_FORMAT_10, vertexBuffer, indexBuffer, aIndices.size(), aVertices.size());
 			m_boundingBox->setTopology(MeshTopology::MT_LINES);
-
-#undef BM_ARRAY_LEN
 		}
 	}
 }
