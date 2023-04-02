@@ -39,12 +39,13 @@ jobs:
       - name: Install Conan
         id: conan
         uses: turtlebrowser/get-conan@main
+        with:
+          version: 1.53.0
 
       - name: Make build folder and install Conan dependencies
         run: |
-          conan profile detect
           mkdir build
-          conan install . -s build_type=Release -of build
+          conan install . -s build_type=Release --install-folder=build
 
       - name: Generate projects
         run: |
