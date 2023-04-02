@@ -20,6 +20,7 @@
 #include <Models/ScenePropertiesModel.h>
 #include <Models/ScenePrimitivesModel.h>
 #include <Models/ScenePrimitivesFilterModel.h>
+#include <Models/SceneFilterModel.h>
 
 #include <Delegates/TypePropertyItemDelegate.h>
 #include <Delegates/ScenePropertyTypeDelegate.h>
@@ -67,6 +68,7 @@ BMEditMainWindow::~BMEditMainWindow()
 {
 	delete m_geomTypesModel;
 	delete m_typePropertyItemDelegate;
+	delete m_sceneTreeFilterModel;
 	delete m_sceneTreeModel;
 	delete m_sceneObjectPropertiesModel;
 	delete m_scenePrimitivesModel;
@@ -249,9 +251,8 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	ui->menuExport->setEnabled(true);
 	ui->actionExport_PRP_properties->setEnabled(true);
 
-	ui->searchInputField->clear();
 	//ui->actionSave_properties->setEnabled(true); //TODO: Uncomment when exporter to ZIP will be done
-	//ui->searchInputField->setEnabled(true); //TODO: Uncomment when search will be done
+	ui->searchInputField->setEnabled(true);
 
 	// Finished
 	QApplication::beep();
@@ -285,6 +286,12 @@ void BMEditMainWindow::onLevelLoadProgressChanged(int totalPercentsProgress, con
 
 void BMEditMainWindow::onSearchObjectQueryChanged(const QString &query)
 {
+	if (m_sceneTreeFilterModel && m_sceneTreeFilterModel->getQuery() != query)
+	{
+		ui->sceneTreeView->collapseAll();
+		m_sceneTreeFilterModel->setFilterKeyColumn(0);
+		m_sceneTreeFilterModel->setQuery(query);
+	}
 }
 
 void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* selectedSceneObject)
@@ -360,6 +367,10 @@ void BMEditMainWindow::onCloseLevel()
 
 	// Reset primitives counter
 	ui->primitivesCountLabel->setText("0");
+
+	// Disable filtering
+	ui->searchInputField->clear();
+	ui->searchInputField->setEnabled(false);
 }
 
 void BMEditMainWindow::onExportPRP()
@@ -398,7 +409,8 @@ void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& poin
 		return;
 	}
 
-	const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(index.data(types::kSceneObjectRole).value<std::intptr_t>());
+	QModelIndex mappedIndex = m_sceneTreeFilterModel->mapToSource(index);
+	const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(mappedIndex.data(types::kSceneObjectRole).value<std::intptr_t>());
 
 	if (selectedGeom)
 	{
@@ -563,15 +575,20 @@ void BMEditMainWindow::initSceneTree()
 {
 	// Main model
 	m_sceneTreeModel = new models::SceneObjectsTreeModel(this);
+	m_sceneTreeFilterModel = new models::SceneFilterModel(this);
+	m_sceneTreeFilterModel->setSourceModel(m_sceneTreeModel);
+
 	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);
-	ui->sceneTreeView->setModel(m_sceneTreeModel);
+	ui->sceneTreeView->setModel(m_sceneTreeFilterModel);
 	ui->sceneTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	connect(ui->sceneTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
 		const bool somethingSelected = !selected.indexes().isEmpty();
 
 		if (somethingSelected) {
-			const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(selected.indexes().first().data(types::kSceneObjectRole).value<std::intptr_t>());
+			QModelIndex mappedSelection = m_sceneTreeFilterModel->mapToSource(selected.indexes().first());
+
+			const auto* selectedGeom = reinterpret_cast<const gamelib::scene::SceneObject*>(mappedSelection.data(types::kSceneObjectRole).value<std::intptr_t>());
 
 			if (selectedGeom)
 			{

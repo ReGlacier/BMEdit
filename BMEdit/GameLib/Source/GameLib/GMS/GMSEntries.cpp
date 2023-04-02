@@ -30,7 +30,7 @@ namespace gamelib::gms
 			auto &root = entries.m_entities.emplace_back();
 			root.m_name = "ROOT";
 			root.m_typeId = 0x100021; //NOTE: Maybe we should use some sort of constant here? Or take this value from types database?
-			root.m_geomFlags |= (1 << 24u); //Add flag 'IsRoot'
+			root.m_geomFlags |= (1 << 25u); //Add flag 'IsRoot'
 			//NOTE: Maybe something else should be declared here?
 		}
 
@@ -53,23 +53,11 @@ namespace gamelib::gms
 			{
 				BinaryReaderSeekScope geomScope { gmsFileReader };
 
-				/**
-				 * Declaration offset actually contains 2 values (NOTE: Maybe three)
-				 *
-				 *   (1)       (2)           (3)
-				 * [ FF ] [ FF FF FF ] [ 00 00 00 00 ]
-				 *
-				 *  (1) - Geom flags
-				 *  (2) - Offset information
-				 *  (3) - UNKNOWN DATA
-				 *
-				 *  Bit #24 - is root of group
-				 */
 				const auto realOffset = 4 * (desc.declarationOffset & 0xFFFFFFu);
 				gmsFileReader->seek(realOffset);
 
 				GMSGeomEntity::deserialize(currentGeomEntry, gmsFileReader, bufFileReader);
-				currentGeomEntry.m_geomFlags = desc.declarationOffset & 0xFF000000u;
+				currentGeomEntry.m_geomFlags = desc.declarationOffset;
 			}
 		}
 	}

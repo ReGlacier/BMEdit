@@ -14,6 +14,11 @@ namespace gamelib::gms
 {
 	GMSHeader::GMSHeader() = default;
 
+	GMSEntries &GMSHeader::getEntries()
+	{
+		return m_geomEntities;
+	}
+
 	const GMSEntries &GMSHeader::getEntries() const
 	{
 		return m_geomEntities;
@@ -63,6 +68,7 @@ namespace gamelib::gms
 				throw GMSStructureError("Invalid GMS format: unsupported pointer to physics data (expected 0xFFFFFFFF)");
 			}
 		}
+
 		{
 			// Read clusters
 			BinaryReaderSeekScope depthLevelsScope { gmsFileReader };
@@ -180,136 +186,34 @@ namespace gamelib::gms
 
 	void GMSHeader::buildSceneHierarchy(GMSHeader &header)
 	{
-		return;
+		std::vector<GMSGeomEntity*> currentPath {};
+		currentPath.resize(1);
+		currentPath.reserve(128);
 
-#if 0
-		// Pre-cache clusters
-		using FilledCluster = std::array<GMSGeomEntity*, 24>;
-		using IndexCluster = std::array<uint32_t, 24>;
+		auto& entities = header.getEntries().m_entities;
+		currentPath[0] = &entities[0];
 
-		const std::size_t clustersCount = header.m_geomClusters.m_clusters.size();
-		std::unique_ptr<FilledCluster[]> filledClusters = std::make_unique<FilledCluster[]>(clustersCount); // Geoms
-		std::unique_ptr<IndexCluster[]> indexClusters = std::make_unique<IndexCluster[]>(clustersCount); // Sizes
-		std::unique_ptr<uint32_t[]> accumulatedClusters = std::make_unique<uint32_t[]>(clustersCount); // Cluster sizes
-
-		for (auto i = 0; i < clustersCount; i++) {
-			// Save accumulated sizes
-			accumulatedClusters[i] = header.m_geomClusters.m_clusters[i].getClusterSize();
-
-		    // Copy indices
-			for (int clusterIdx = 0; clusterIdx < 24; clusterIdx++) {
-				indexClusters[i].at(clusterIdx) = header.m_geomClusters.m_clusters[i].m_data[clusterIdx];
-			}
-		}
-
-		// Pre-cache RTTI
-		CachedRuntimeTypes cachedRuntimeTypes;
-		if (!cachedRuntimeTypes)
+		for (int i = 1; i < entities.size(); ++i)
 		{
-			throw std::runtime_error("One or move required runtime types are incorrect!");
-		}
+			auto& geom = entities[i];
 
-		// Iterate over elements
-		bool isRootOfGroup = true;
-		IndexCluster *currentClusterIndices = indexClusters.get();
-		FilledCluster *currentClusterGeoms = filledClusters.get();
-		uint32_t *currentClusterSizes = accumulatedClusters.get();
-		uint32_t parentGeomIndex = 0; // ROOT is always our parent entity
+			size_t rd = geom.getRelativeDepthLevel();
+			size_t newLength = currentPath.size() - rd;
 
-		for (uint32_t sceneEntryIndex = 1; sceneEntryIndex < header.m_geomEntities.m_entities.size(); ++sceneEntryIndex)
-		{
-			// Stage 1
-			if (isRootOfGroup)
+			// build new path
+			std::vector<GMSGeomEntity*> newPath { currentPath.begin(), currentPath.begin() + static_cast<std::ptrdiff_t>(newLength) };
+
+			// save parent
+			geom.m_parentGeomIndex = newPath.back() - &entities[0];
+
+			// save new path
+			currentPath = std::move(newPath);
+
+			if (geom.isRootOfGroup())
 			{
-				if (*currentClusterSizes)
-				{
-					uint32_t geomClusterSlotIndex = 0;
-					uint32_t *clusterCurrentIndex = currentClusterIndices->data();
-
-					GMSGeomEntity *currentGeomEntity = &header.m_geomEntities.m_entities[sceneEntryIndex];
-
-					do
-					{
-						if (*clusterCurrentIndex)
-						{
-							currentClusterGeoms->operator[](geomClusterSlotIndex) = currentGeomEntity;
-							currentGeomEntity += *clusterCurrentIndex;
-						}
-						else
-						{
-							currentClusterGeoms->operator[](geomClusterSlotIndex) = nullptr;
-						}
-
-						++geomClusterSlotIndex;
-						++clusterCurrentIndex;
-					}
-					while (geomClusterSlotIndex != 24);
-				}
-				else
-				{
-					// Cleanup
-					for (int i = 0; i < 24; i++) {
-						currentClusterGeoms->operator[](i) = nullptr;
-					}
-				}
-
-				isRootOfGroup = false;
-			}
-
-			// Stage 2
-			GMSGeomEntity *currentGeom = &header.m_geomEntities.m_entities[sceneEntryIndex];
-
-			auto listIndex = GetBaseGeomListType(&cachedRuntimeTypes, currentGeom) + (8 * currentGeom->m_unk34.data.priority);
-			GMSGeomEntity *currentEnt = currentClusterGeoms->operator[](listIndex);
-			currentClusterGeoms->operator[](listIndex) = currentEnt + 1;
-
-			if (!currentEnt)
-			{
-				throw std::runtime_error("Unexpected null geom! Possible bug in loader algorithm! (geom index is " + std::to_string(sceneEntryIndex) + ")");
-			}
-
-			// Add to geom list
-			currentEnt->m_parentGeomIndex = parentGeomIndex;
-
-			if (currentEnt->isInheritedOfGeom())
-			{
-				++currentClusterIndices;
-				++currentClusterSizes;
-			}
-
-			if (currentEnt->isRootOfGroup())
-			{
-				isRootOfGroup = true;
-				++currentClusterGeoms;
-				parentGeomIndex = sceneEntryIndex;
+				currentPath.push_back(&entities[i]);
 			}
 		}
-#endif
-
-		// FIXME: Fix this
-#if 0
-		int roots = 1;
-#endif
-		for (int i = 1; i < header.getEntries().getGeomEntities().size(); ++i)
-		{
-			auto &geom = header.m_geomEntities.m_entities[i];
-			geom.m_parentGeomIndex = 0;
-#if 0
-			if (geom.isRootOfGroup() || geom.isInheritedOfGeom())
-			{
-				printf("Geom(%d) '%s' (0x%X) is group root\n", i, geom.getName().data(), geom.getTypeId());
-				fflush(stdout);
-				++roots;
-			}
-#endif
-		}
-
-#if 0
-		printf("Total roots is %d (%d)\n", roots, header.getGeomClusters().getClusters().size());
-		printf("Obema\n");
-
-		fflush(stdout);
-#endif
 	}
 
 	CachedRuntimeTypes::CachedRuntimeTypes()

@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QString>
 #include <QStringListModel>
+#include <QSortFilterProxyModel>
 
 #include <GameLib/IO/AssetKind.h>
 
@@ -23,6 +24,7 @@ namespace models
 	class ScenePropertiesModel;
 	class ScenePrimitivesModel;
 	class ScenePrimitivesFilterModel;
+	class SceneFilterModel;
 }
 
 namespace delegates
@@ -91,6 +93,7 @@ private:
 	// Models
 	QStringListModel *m_geomTypesModel { nullptr };
 	models::SceneObjectsTreeModel *m_sceneTreeModel { nullptr };
+	models::SceneFilterModel* m_sceneTreeFilterModel { nullptr };
 	models::SceneObjectPropertiesModel *m_sceneObjectPropertiesModel { nullptr };
 	models::ScenePropertiesModel *m_scenePropertiesModel { nullptr };
 	models::ScenePrimitivesModel *m_scenePrimitivesModel { nullptr };

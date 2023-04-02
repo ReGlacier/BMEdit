@@ -38,7 +38,12 @@ namespace gamelib::gms
 
 	bool GMSGeomEntity::isRootOfGroup() const
 	{
-		return (m_geomFlags >> 24) & 1;
+		return (m_geomFlags & 0x1000000) != 0u;
+	}
+
+	uint32_t GMSGeomEntity::getRelativeDepthLevel() const
+	{
+		return (m_geomFlags >> 25u);
 	}
 
 	void GMSGeomEntity::deserialize(GMSGeomEntity &entity, ZBio::ZBinaryReader::BinaryReader *gmsBinaryReader, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader)

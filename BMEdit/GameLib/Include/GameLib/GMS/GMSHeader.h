@@ -20,6 +20,7 @@ namespace gamelib::gms
 	public:
 		GMSHeader();
 
+		[[nodiscard]] GMSEntries &getEntries();
 		[[nodiscard]] const GMSEntries &getEntries() const;
 		[[nodiscard]] const GMSGeomStats &getGeomStats() const;
 		[[nodiscard]] const GMSGroupsCluster &getGeomClusters() const;

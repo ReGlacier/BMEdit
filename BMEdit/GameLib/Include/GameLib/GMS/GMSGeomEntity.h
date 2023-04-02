@@ -31,6 +31,7 @@ namespace gamelib::gms
 		[[nodiscard]] uint32_t getParentGeomIndex() const;
 		[[nodiscard]] bool isInheritedOfGeom() const;
 		[[nodiscard]] bool isRootOfGroup() const;
+		[[nodiscard]] uint32_t getRelativeDepthLevel() const;
 
 		static void deserialize(GMSGeomEntity &entity, ZBio::ZBinaryReader::BinaryReader *gmsBinaryReader, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader);
 

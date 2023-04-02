@@ -1,6 +1,9 @@
 #include <Models/SceneObjectsTreeModel.h>
+#include <GameLib/TypeComplex.h>
+#include <GameLib/TypeAlias.h>
 #include <Types/QCustomRoles.h>
 #include <QStringList>
+#include <QIcon>
 
 
 namespace models
@@ -19,6 +22,87 @@ namespace models
 		setLevel(level);
 	}
 
+	static bool isBasedOn(const gamelib::TypeComplex *type, const std::string &typeName) // NOLINT(misc-no-recursion)
+	{
+		if (!type || typeName.empty())
+			return false;
+
+		if (type->getName() == typeName)
+			return true;
+
+		if (!type->getParent() || type->getParent()->getKind() != gamelib::TypeKind::COMPLEX)
+			return false;
+
+		return isBasedOn(
+		    reinterpret_cast<const gamelib::TypeComplex *>(type->getParent()),
+		    typeName
+	    );
+	}
+
+	static QIcon getIconForObject(const SceneObject* sceneObject)
+	{
+		static QIcon kGeomIcon(":/bmedit/geom_icon.png");
+		static QIcon kGroupIcon(":/bmedit/group_icon.png");
+		static QIcon kAudioIcon(":/bmedit/audio_icon.png");
+		static QIcon kActorIcon(":/bmedit/actor_icon.png");
+		static QIcon kCameraIcon(":/bmedit/camera_icon.png");
+		static QIcon kPlayerIcon(":/bmedit/player_icon.png");
+		static QIcon kWeaponIcon(":/bmedit/weapon_icon.png");
+		static QIcon kClothIcon(":/bmedit/cloth_icon.png");
+		static QIcon kUnknownIcon(":/bmedit/unknown_icon.png");
+
+		const gamelib::Type *objectType = sceneObject->getType();
+
+		if (objectType->getKind() != gamelib::TypeKind::COMPLEX)
+		{
+			return {};
+		}
+
+		auto complexType = reinterpret_cast<const gamelib::TypeComplex *>(sceneObject->getType());
+
+		if (isBasedOn(complexType, "ZHM3Actor") || isBasedOn(complexType, "ZActor"))
+		{
+			return kActorIcon;
+		}
+
+		if (isBasedOn(complexType, "ZHitman3") || isBasedOn(complexType, "ZPlayer"))
+		{
+			return kPlayerIcon;
+		}
+
+		if (isBasedOn(complexType, "ZItemWeapon"))
+		{
+			return kWeaponIcon;
+		}
+
+		if (isBasedOn(complexType, "ZHM3ClothBundle"))
+		{
+			return kClothIcon;
+		}
+
+		if (isBasedOn(complexType, "ZSNDOBJ"))
+		{
+			return kAudioIcon;
+		}
+
+		if (isBasedOn(complexType, "ZCAMERA"))
+		{
+			return kCameraIcon;
+		}
+
+		if (isBasedOn(complexType, "ZGROUP"))
+		{
+			return kGroupIcon;
+		}
+
+		if (isBasedOn(complexType, "ZGEOM"))
+		{
+			return kGeomIcon;
+		}
+
+		return kUnknownIcon;
+	}
+
 	QVariant SceneObjectsTreeModel::data(const QModelIndex &index, int role) const
 	{
 		if (!isValidLevel())
@@ -32,6 +116,11 @@ namespace models
 		if (role == Qt::DisplayRole)
 		{
 			return QString::fromStdString(so->getName());
+		}
+
+		if (role == Qt::DecorationRole)
+		{
+			return getIconForObject(so);
 		}
 
 		if (role == types::kSceneObjectRole) {
@@ -136,7 +225,7 @@ namespace models
 	{
 		if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
 		{
-			return QVariant {"(SUPER ROOT)" };
+			return QVariant {"(ROOT)" };
 		}
 
 		return {};

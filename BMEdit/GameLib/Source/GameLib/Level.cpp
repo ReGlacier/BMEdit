@@ -175,12 +175,18 @@ namespace gamelib
 			using scene::SceneObject;
 
 			scene::SceneObjectPropertiesLoader::load(Span(m_sceneObjects), Span(m_levelProperties.rawProperties));
-			/**
-			 * THE HIERARCHY ISSUE:
-			 * 		SceneObjectPropertiesLoader::load builds hierarchy from PRP file and it's ok for testing purposes, but in production we need to work with hierarchy from GMS
-			 * 		The main problem is I DON'T UNDERSTAND HOW HIERARCHY ARE STORED INSIDE GMS FILE.
-			 * 		So, I will fix this place when I will understand that.
-			 */
+
+			// Scene hierarchy setup
+			for (const auto& sceneObject : m_sceneObjects)
+			{
+				auto parentIndex= sceneObject->getGeomInfo().getParentGeomIndex();
+				if (parentIndex == gms::GMSGeomEntity::kInvalidParent)
+				{
+					continue; // No parent, probably ROOT
+				}
+
+				sceneObject->setParent(m_sceneObjects[parentIndex]);
+			}
 
 #if 0       //TODO: Remove this code later
 			std::int32_t lowestPrimId = 0xFFFF;

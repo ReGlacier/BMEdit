@@ -228,10 +228,12 @@ namespace gamelib::scene
 			}
 		}
 
+#if 0 // DronCode: This code commented because I know inheritance info here. Do not remove whole block because in future we've may use this to debug
 		if (parent)
 		{
 			currentObject->setParent(parent);
 		}
+#endif
 
 		NEXT_OBJECT
 
