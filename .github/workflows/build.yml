@@ -43,7 +43,7 @@ jobs:
       - name: Make build folder and install Conan dependencies
         run: |
           mkdir build
-          conan install . -s build_type=Release -if build
+          conan install . -s build_type=Release -of build
 
       - name: Generate projects
         run: |
