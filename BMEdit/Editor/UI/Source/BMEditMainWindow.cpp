@@ -212,10 +212,7 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	resetStatusToDefault();
 
 	// Level loaded, show objects tree
-	{
-		QSignalBlocker blocker { ui->searchInputField };
-		ui->searchInputField->clear();
-	}
+	ui->searchInputField->clear();
 
 	if (m_sceneTreeModel)
 	{
@@ -369,8 +366,9 @@ void BMEditMainWindow::onCloseLevel()
 	ui->primitivesCountLabel->setText("0");
 
 	// Disable filtering
-	ui->searchInputField->clear();
+	QSignalBlocker blocker { ui->searchInputField };
 	ui->searchInputField->setEnabled(false);
+	ui->searchInputField->clear();
 }
 
 void BMEditMainWindow::onExportPRP()
