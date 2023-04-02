@@ -40,7 +40,7 @@ jobs:
         id: conan
         uses: turtlebrowser/get-conan@main
         with:
-          version: 1.53.0
+          version: 1.54.0
 
       - name: Make build folder and install Conan dependencies
         run: |
