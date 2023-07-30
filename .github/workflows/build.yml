@@ -63,17 +63,7 @@ jobs:
         run: |
           mkdir dist
           mv build/Release/BMEdit.exe dist
-          mv build/Release/d3dcompiler_47.dll dist
-          mv build/Release/opengl32sw.dll dist
-          mv build/Release/Qt6Core.dll dist
-          mv build/Release/Qt6Gui.dll dist
-          mv build/Release/Qt6OpenGL.dll dist
-          mv build/Release/Qt6OpenGLWidgets.dll dist
-          mv build/Release/Qt6Svg.dll dist
-          mv build/Release/Qt6Widgets.dll dist
-          mv build/Release/Qt6Network.dll dist
-          mv build/Release/Qt6Concurrent.dll dist
-          mv build/Release/translations dist/translations
+          mv build/Release/*.dll dist
           mv build/Release/styles dist/styles
           mv build/Release/platforms dist/platforms
           mv build/Release/networkinformation dist/networkinformation
