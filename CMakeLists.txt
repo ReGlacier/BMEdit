@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 20)
 
 # --- Deps
 find_package(ZLIB REQUIRED HINTS ${CMAKE_BINARY_DIR})
+find_package(BZip2 REQUIRED HINTS ${CMAKE_BINARY_DIR})
+find_package(LibLZMA REQUIRED HINTS ${CMAKE_BINARY_DIR})
+find_package(zstd REQUIRED HINTS ${CMAKE_BINARY_DIR})
 find_package(libzip REQUIRED HINTS ${CMAKE_BINARY_DIR})
 find_package(libsquish REQUIRED HINTS ${CMAKE_BINARY_DIR})
 
