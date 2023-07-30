@@ -45,7 +45,8 @@ jobs:
       - name: Make build folder and install Conan dependencies
         run: |
           mkdir build
-          conan install . -s build_type=Release --install-folder=build
+          conan profile detect --force
+          conan install . --output-folder=build --build=missing -s build_type=Release
 
       - name: Generate projects
         run: |
