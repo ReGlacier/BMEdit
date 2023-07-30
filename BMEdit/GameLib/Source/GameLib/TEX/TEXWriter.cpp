@@ -9,15 +9,12 @@ namespace gamelib::tex
 		auto writerSink = std::make_unique<ZBio::ZBinaryWriter::BufferSink>();
 		auto binaryWriter = ZBio::ZBinaryWriter::BinaryWriter(std::move(writerSink));
 
-		// Offsets & pools
-		uint32_t texturesPoolOffset = 0u;
-		uint32_t cubeMapsPoolOffset = 0u;
-
+		TEXHeader localHeader = header;
 		OffsetsPool textureOffsetsPool { 0u };
 		OffsetsPool cubeMapsOffsetsPool { 0u };
 
-		// Write header (will modify it later)
-		TEXHeader::serialize(header, &binaryWriter);
+		// Allocate space for header (will be serialized later)
+		binaryWriter.seek(sizeof(TEXHeader));
 
 		// Write entry by entry
 		for (size_t entryIndex = 0; entryIndex < entries.size(); ++entryIndex) // NOLINT(modernize-loop-convert)
@@ -27,20 +24,19 @@ namespace gamelib::tex
 		}
 
 		// Next is going offsets table
-		texturesPoolOffset = binaryWriter.tell();
+		localHeader.m_texturesPoolOffset = binaryWriter.tell();
 		binaryWriter.write<uint32_t, ZBio::Endianness::LE>(textureOffsetsPool.data(), static_cast<int64_t>(textureOffsetsPool.size()));
 
 		// And write cube map indices pool
-		cubeMapsPoolOffset = binaryWriter.tell();
+		localHeader.m_cubeMapsPoolOffset = binaryWriter.tell();
 		binaryWriter.write<uint32_t, ZBio::Endianness::LE>(cubeMapsOffsetsPool.data(), static_cast<int64_t>(cubeMapsOffsetsPool.size()));
+
+		// Serialize header
+		binaryWriter.seek(0);
+		TEXHeader::serialize(localHeader, &binaryWriter);
 
 		// Finally, copy data to final buffer
 		auto raw = binaryWriter.release().value();
 		std::copy(raw.begin(), raw.end(), std::back_inserter(outBuffer));
-
-		// And replace offsets (classic)
-		auto* finalHeader = reinterpret_cast<TEXHeader*>(outBuffer.data());
-		finalHeader->m_texturesPoolOffset = texturesPoolOffset;
-		finalHeader->m_cubeMapsPoolOffset = cubeMapsPoolOffset;
 	}
 }

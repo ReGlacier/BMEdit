@@ -13,11 +13,6 @@ namespace gamelib::tex
 	{
 	}
 
-	TEXHeader::operator bool() const noexcept
-	{
-		return true; //idk how to validate it now
-	}
-
 	void TEXHeader::deserialize(TEXHeader &header, ZBio::ZBinaryReader::BinaryReader *binaryReader)
 	{
 		header.m_texturesPoolOffset = binaryReader->read<uint32_t, ZBio::Endianness::LE>();

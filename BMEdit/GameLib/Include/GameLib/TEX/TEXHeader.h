@@ -20,8 +20,6 @@ namespace gamelib::tex
 		TEXHeader() = default;
 		TEXHeader(uint32_t table1Offset, uint32_t table2Offset, uint32_t unk1, uint32_t unk2);
 
-		[[nodiscard]] explicit operator bool() const noexcept;
-
 		static void deserialize(TEXHeader &header, ZBio::ZBinaryReader::BinaryReader *binaryReader);
 		static void serialize(const TEXHeader &header, ZBio::ZBinaryWriter::BinaryWriter *writerStream);
 
