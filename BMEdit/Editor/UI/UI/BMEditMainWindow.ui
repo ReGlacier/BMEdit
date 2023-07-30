@@ -30,7 +30,7 @@
      <x>0</x>
      <y>0</y>
      <width>1548</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -52,6 +52,8 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionTextures"/>
+    <addaction name="actionLocalization"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -81,7 +83,7 @@
    <property name="minimumSize">
     <size>
      <width>120</width>
-     <height>35</height>
+     <height>40</height>
     </size>
    </property>
    <property name="features">
@@ -102,7 +104,7 @@
    <property name="minimumSize">
     <size>
      <width>260</width>
-     <height>189</height>
+     <height>191</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -288,147 +290,6 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="primitivesDock">
-   <property name="features">
-    <set>QDockWidget::DockWidgetFeatureMask</set>
-   </property>
-   <property name="windowTitle">
-    <string>Primitives</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="primitivesDockContents">
-    <layout class="QHBoxLayout" name="horizontalLayout_10">
-     <item>
-      <widget class="QSplitter" name="splitter">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <widget class="QWidget" name="layoutWidget">
-        <layout class="QHBoxLayout" name="horizontalLayout_9">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_7">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <item>
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>Primitives count: </string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="primitivesCountLabel">
-               <property name="text">
-                <string>0</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QPushButton" name="exportChunk">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Export chunk</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_7">
-             <item>
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Filter by:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_UnknownPrimType">
-               <property name="text">
-                <string>Unknown</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_ZeroBufferPrimType">
-               <property name="text">
-                <string>Zero buffer</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_DescriptionPrimType">
-               <property name="text">
-                <string>Description Buffer</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_IndexBufferPrimType">
-               <property name="text">
-                <string>Index Buffer</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_VertexBufferPrimType">
-               <property name="text">
-                <string>Vertex Buffer</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QTableView" name="scenePrimitivesTable"/>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QGroupBox" name="previewGroupBox">
-        <property name="title">
-         <string>Primitive Preview:</string>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <widget class="widgets::PrimitivePreviewWidget" name="scenePrimitivePreview">
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>100</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
   <action name="actionOpen_level">
    <property name="text">
     <string>Open level</string>
@@ -494,6 +355,22 @@
     <string>Export PRP (properties)</string>
    </property>
   </action>
+  <action name="actionTextures">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Textures</string>
+   </property>
+  </action>
+  <action name="actionLocalization">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Localization</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -506,11 +383,6 @@
    <class>widgets::SceneTreeView</class>
    <extends>QTreeView</extends>
    <header>Widgets/SceneTreeView.h</header>
-  </customwidget>
-  <customwidget>
-   <class>widgets::PrimitivePreviewWidget</class>
-   <extends>QOpenGLWidget</extends>
-   <header>Widgets/PrimitivePreviewWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

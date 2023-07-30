@@ -40,6 +40,11 @@ namespace gamelib
 			return false;
 		}
 
+		if (!loadLevelTextures())
+		{
+			return false;
+		}
+
 		// TODO: Load things (it's time to combine GMS, PRP & BUF files)
 		m_isLevelLoaded = true;
 		return true;
@@ -84,6 +89,16 @@ namespace gamelib
 	LevelGeometry *Level::getLevelGeometry()
 	{
 		return &m_levelGeometry;
+	}
+
+	const LevelTextures* Level::getSceneTextures() const
+	{
+		return &m_levelTextures;
+	}
+
+	LevelTextures* Level::getSceneTextures()
+	{
+		return &m_levelTextures;
 	}
 
 	const std::vector<scene::SceneObject::Ptr> &Level::getSceneObjects() const
@@ -227,6 +242,33 @@ namespace gamelib
 		{
 			return false;
 		}
+
+		return true;
+	}
+
+	bool Level::loadLevelTextures()
+	{
+		// Read TEX file
+		int64_t texFileSize = 0;
+		auto texFileBuffer = m_assetProvider->getAsset(gamelib::io::AssetKind::TEXTURES, texFileSize);
+
+		if (!texFileSize || !texFileBuffer)
+		{
+			return false;
+		}
+
+		tex::TEXReader reader;
+		const bool parseResult = reader.parse(texFileBuffer.get(), texFileSize);
+		if (!parseResult)
+		{
+			return false;
+		}
+
+		m_levelTextures.header = reader.m_header;
+		m_levelTextures.entries = std::move(reader.m_entries);
+		m_levelTextures.table1Offsets = reader.m_texturesPool;
+		m_levelTextures.table2Offsets = reader.m_cubeMapsPool;
+		m_levelTextures.countOfEmptyOffsets = reader.m_countOfEmptyOffsets;
 
 		return true;
 	}

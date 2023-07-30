@@ -10,7 +10,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC OFF)
 
-find_package(Qt6 6.4.1 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets 3DCore 3DRender 3DInput 3DLogic)
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)
 find_package(OpenGL REQUIRED)
 
 message(STATUS "Found Qt component versions: ")
@@ -62,6 +62,8 @@ target_compile_definitions(Editor
 )
 
 # --- Required GameLib & Qt6
-target_link_libraries(Editor PUBLIC Qt6::Widgets OpenGL::GL Qt6::OpenGL Qt6::OpenGLWidgets Qt6::3DCore Qt6::3DRender Qt6::3DLogic)
+target_link_libraries(Editor PUBLIC Qt6::Widgets OpenGL::GL Qt6::OpenGL Qt6::OpenGLWidgets)
 target_link_libraries(Editor PRIVATE GameLib)
-target_link_libraries(Editor PRIVATE zip zlib bz2 lzma zstd_static)
+target_link_libraries(Editor PRIVATE ${libzip_LIBRARIES} ${ZLIB_LIBRARIES} ${libsquish_LIBRARIES})
+target_include_directories(Editor PRIVATE ${ZLIB_INCLUDE_DIRS} ${libzip_INCLUDE_DIRS} ${libsquish_INCLUDE_DIRS})
+target_compile_definitions(Editor PRIVATE ${libzip_DEFINITIONS} ${libsquish_DEFINITIONS})
