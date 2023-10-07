@@ -162,8 +162,9 @@ namespace widgets
 					GLint length { 0 };
 
 					gapi->glGetProgramInfoLog(programId, kCompileLogSize, &length, &linkLog[0]);
+
 					error = std::string(&linkLog[0], length);
-					qDebug() << "Failed to link shader program: " << std::string(&linkLog[0], length);
+					qDebug() << "Failed to link shader program: " << QString::fromStdString(error);
 
 					assert(false);
 					return false;
@@ -270,9 +271,10 @@ namespace widgets
 					GLint length { 0 };
 
 					gapi->glGetShaderInfoLog(unitId, kCompileLogSize, &length, &compileLog[0]);
-					qDebug() << "Failed to compile shader program: " << std::string(&compileLog[0], length);
 
 					error = std::string(&compileLog[0], length);
+					qDebug() << "Failed to compile shader program: " << QString::fromStdString(error);
+
 					assert(false && "Failed to compile unit!");
 					return false;
 				}
