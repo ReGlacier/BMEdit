@@ -18,7 +18,11 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QOpenGLWidget" name="sceneGLView"/>
+       <widget class="widgets::SceneRenderWidget" name="sceneGLView">
+        <property name="focusPolicy">
+         <enum>Qt::ClickFocus</enum>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -383,6 +387,11 @@
    <class>widgets::SceneTreeView</class>
    <extends>QTreeView</extends>
    <header>Widgets/SceneTreeView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>widgets::SceneRenderWidget</class>
+   <extends>QOpenGLWidget</extends>
+   <header>Widgets/SceneRenderWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

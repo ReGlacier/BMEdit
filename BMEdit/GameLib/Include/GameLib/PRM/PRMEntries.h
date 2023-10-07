@@ -31,8 +31,17 @@ namespace gamelib::prm
 		static void deserialize(Index& index, ZBio::ZBinaryReader::BinaryReader* binaryReader);
 	};
 
+	struct BoundingBox
+	{
+		glm::vec3 vMin;
+		glm::vec3 vMax;
+
+		static void deserialize(BoundingBox& boundingBox, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+	};
+
 	struct Mesh
 	{
+		uint16_t textureId = 0;
 		uint8_t lod = 0;
 		uint16_t material_id = 0;
 		int32_t diffuse_id = 0;
@@ -41,6 +50,7 @@ namespace gamelib::prm
 		std::vector<glm::vec3> vertices {};
 		std::vector<Index> indices {};
 		std::vector<glm::vec2> uvs {};
+		//BoundingBox boundingBox {};
 
 		static void deserialize(Mesh& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader, const PrmFile& prmFile);
 	};

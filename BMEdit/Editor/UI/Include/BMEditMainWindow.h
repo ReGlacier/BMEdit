@@ -80,6 +80,8 @@ public slots:
 	void onExportPRP();
 	void onShowTexturesDialog();
 	void onContextMenuRequestedForSceneTreeNode(const QPoint& point);
+	void onLevelAssetsLoaded();
+	void onLevelAssetsLoadFailed(const QString& reason);
 
 private:
     // UI

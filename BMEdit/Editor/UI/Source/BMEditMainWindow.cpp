@@ -207,7 +207,7 @@ void BMEditMainWindow::onShowTypesViewer()
 void BMEditMainWindow::onLevelLoadSuccess()
 {
 	auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
-	setWindowTitle(QString("BMEdit - %1").arg(QString::fromStdString(currentLevel->getLevelName())));
+	setWindowTitle(QString("BMEdit - %1 [loading view...]").arg(QString::fromStdString(currentLevel->getLevelName())));
 
 	resetStatusToDefault();
 
@@ -233,6 +233,9 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	{
 		m_scenePropertiesModel->setLevel(const_cast<gamelib::Level*>(currentLevel));
 	}
+
+	// Show game scene (start loading process)
+	ui->sceneGLView->setLevel(const_cast<gamelib::Level*>(currentLevel));
 
 	// Load controllers index
 	ui->geomControllers->switchToDefaults();
@@ -343,6 +346,9 @@ void BMEditMainWindow::onCloseLevel()
 	if (m_scenePropertiesModel) m_scenePropertiesModel->resetLevel();
 	if (m_sceneTexturesModel) m_sceneTexturesModel->resetLevel();
 
+	// Unload resources
+	ui->sceneGLView->resetLevel();
+
 	// Reset widget states
 	ui->geomControllers->resetGeom();
 
@@ -424,14 +430,40 @@ void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& poin
 			QGuiApplication::clipboard()->setText(finalPath);
 		};
 
+		auto implMoveCameraToGeom = [this](gamelib::scene::SceneObject* sceneObject)
+		{
+			const glm::vec3 vPosition {
+			    sceneObject->getProperties()["Position"][1].getOperand().get<float>(),
+			    sceneObject->getProperties()["Position"][2].getOperand().get<float>(),
+			    sceneObject->getProperties()["Position"][3].getOperand().get<float>()
+			};
+
+			ui->sceneGLView->moveCameraTo(vPosition);
+		};
+
 		contextMenu.addAction(QString("Object: '%1'").arg(QString::fromStdString(selectedGeom->getName())))->setDisabled(true);
 		contextMenu.addAction(QString("Type: '%1'").arg(QString::fromStdString(selectedGeom->getType()->getName())))->setDisabled(true);
 		contextMenu.addSeparator();
 		contextMenu.addAction("Copy path", [implCopyPathToGeom, selectedGeom] { implCopyPathToGeom(selectedGeom, false); });
 		contextMenu.addAction("Copy path (ignore ROOT)", [implCopyPathToGeom, selectedGeom] { implCopyPathToGeom(selectedGeom, true); });
+		contextMenu.addAction("Move camera to this object", [implMoveCameraToGeom, selectedGeom] { implMoveCameraToGeom(const_cast<gamelib::scene::SceneObject*>(selectedGeom)); });
 
 		contextMenu.exec(ui->sceneTreeView->viewport()->mapToGlobal(point));
 	}
+}
+
+void BMEditMainWindow::onLevelAssetsLoaded()
+{
+	auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
+	setWindowTitle(QString("BMEdit - %1 [DONE]").arg(QString::fromStdString(currentLevel->getLevelName())));
+}
+
+void BMEditMainWindow::onLevelAssetsLoadFailed(const QString& reason)
+{
+	auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
+	setWindowTitle(QString("BMEdit - %1 [!!!ERROR!!!]").arg(QString::fromStdString(currentLevel->getLevelName())));
+
+	QMessageBox::critical(this, QString("Scene render failed :("), QString("An error occurred while loading scene assets:\n%1").arg(reason));
 }
 
 void BMEditMainWindow::loadTypesDataBase()
@@ -570,6 +602,9 @@ void BMEditMainWindow::initSceneTree()
 	});
 
 	connect(ui->sceneTreeView, &QTreeView::customContextMenuRequested, this, &BMEditMainWindow::onContextMenuRequestedForSceneTreeNode);
+
+	connect(ui->sceneGLView, &widgets::SceneRenderWidget::resourcesReady, this, &BMEditMainWindow::onLevelAssetsLoaded);
+	connect(ui->sceneGLView, &widgets::SceneRenderWidget::resourceLoadFailed, this, &BMEditMainWindow::onLevelAssetsLoadFailed);
 }
 
 void BMEditMainWindow::initProperties()

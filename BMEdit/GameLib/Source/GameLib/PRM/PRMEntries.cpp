@@ -12,12 +12,31 @@ namespace gamelib::prm
 		index.c = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 	}
 
+	void BoundingBox::deserialize(BoundingBox& boundingBox, ZBio::ZBinaryReader::BinaryReader* binaryReader)
+	{
+		boundingBox.vMin.x = binaryReader->read<float, ZBio::Endianness::LE>();
+		boundingBox.vMin.y = binaryReader->read<float, ZBio::Endianness::LE>();
+		boundingBox.vMin.z = binaryReader->read<float, ZBio::Endianness::LE>();
+		boundingBox.vMax.x = binaryReader->read<float, ZBio::Endianness::LE>();
+		boundingBox.vMax.y = binaryReader->read<float, ZBio::Endianness::LE>();
+		boundingBox.vMax.z = binaryReader->read<float, ZBio::Endianness::LE>();
+	}
+
 	void Mesh::deserialize(Mesh& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader, const PrmFile& prmFile)
 	{
+#ifdef TRY_HARD
 		// Skip header?
+		binaryReader->seek(0x4);
+		mesh.textureId = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
+
+		binaryReader->seek(0xB);
+		//binaryReader->seek(0xE);
+        mesh.lod = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+#else
 		binaryReader->seek(0xE);
 
 		mesh.lod = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+#endif
 
 		if ((mesh.lod & static_cast<uint8_t>(1)) == static_cast<uint8_t>(1))
 		{
@@ -27,7 +46,7 @@ namespace gamelib::prm
 			// Read material id
 			mesh.material_id = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 
-			// Another seek
+			// Jump next
 			ZBioHelpers::seekBy(binaryReader, 0x14);
 
 			uint32_t meshDescriptionChunk = 0;
