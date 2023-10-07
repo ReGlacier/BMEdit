@@ -13,6 +13,7 @@ find_package(libsquish REQUIRED HINTS ${CMAKE_BINARY_DIR})
 
 # --- Global dependencies
 add_subdirectory(ThirdParty/fmt)
+add_subdirectory(ThirdParty/glm)
 
 # --- Project modules
 add_subdirectory(BMEdit/Editor)

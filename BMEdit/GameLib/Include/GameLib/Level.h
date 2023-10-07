@@ -2,10 +2,10 @@
 
 #include <GameLib/IO/IOLevelAssetsProvider.h>
 #include <GameLib/Scene/SceneObject.h>
-#include <GameLib/PRM/PRM.h>
 #include <GameLib/PRP/PRP.h>
 #include <GameLib/GMS/GMS.h>
 #include <GameLib/TEX/TEX.h>
+#include <GameLib/PRM/PRM.h>
 
 #include <memory>
 #include <vector>
@@ -22,13 +22,6 @@ namespace gamelib
 		uint32_t objectsCount;
 	};
 
-	struct LevelGeometry
-	{
-		prm::PRMHeader header;
-		std::vector<prm::PRMChunkDescriptor> chunkDescriptors;
-		std::vector<prm::PRMChunk> chunks;
-	};
-
 	struct LevelTextures
 	{
 		tex::TEXHeader header;
@@ -43,6 +36,11 @@ namespace gamelib
 		gms::GMSHeader header;
 	};
 
+	struct LevelGeometry
+	{
+		prm::PrmFile primitives;
+	};
+
 	class Level
 	{
 	public:
@@ -54,10 +52,10 @@ namespace gamelib
 		[[nodiscard]] const LevelProperties *getLevelProperties() const;
 		[[nodiscard]] LevelProperties *getLevelProperties();
 		[[nodiscard]] const SceneProperties *getSceneProperties() const;
-		[[nodiscard]] const LevelGeometry* getLevelGeometry() const;
-		[[nodiscard]] LevelGeometry* getLevelGeometry();
 		[[nodiscard]] const LevelTextures* getSceneTextures() const;
 		[[nodiscard]] LevelTextures* getSceneTextures();
+		[[nodiscard]] const LevelGeometry* getLevelGeometry() const;
+		[[nodiscard]] LevelGeometry* getLevelGeometry();
 
 		[[nodiscard]] const std::vector<scene::SceneObject::Ptr> &getSceneObjects() const;
 
@@ -77,8 +75,8 @@ namespace gamelib
 		// Raw data
 		LevelProperties m_levelProperties;
 		SceneProperties m_sceneProperties;
-		LevelGeometry m_levelGeometry;
 		LevelTextures m_levelTextures;
+		LevelGeometry m_levelGeometry;
 
 		// Managed objects
 		std::vector<scene::SceneObject::Ptr> m_sceneObjects {};

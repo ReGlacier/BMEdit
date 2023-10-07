@@ -8,7 +8,6 @@
 
 #include <GameLib/Type.h>
 #include <GameLib/TypeRegistry.h>
-#include <GameLib/PRM/PRMReader.h>
 
 
 namespace gamelib
@@ -81,16 +80,6 @@ namespace gamelib
 		return nullptr;
 	}
 
-	const LevelGeometry *Level::getLevelGeometry() const
-	{
-		return &m_levelGeometry;
-	}
-
-	LevelGeometry *Level::getLevelGeometry()
-	{
-		return &m_levelGeometry;
-	}
-
 	const LevelTextures* Level::getSceneTextures() const
 	{
 		return &m_levelTextures;
@@ -99,6 +88,17 @@ namespace gamelib
 	LevelTextures* Level::getSceneTextures()
 	{
 		return &m_levelTextures;
+	}
+
+
+	const LevelGeometry* Level::getLevelGeometry() const
+	{
+		return &m_levelGeometry;
+	}
+
+	LevelGeometry* Level::getLevelGeometry()
+	{
+		return &m_levelGeometry;
 	}
 
 	const std::vector<scene::SceneObject::Ptr> &Level::getSceneObjects() const
@@ -237,11 +237,13 @@ namespace gamelib
 			return false;
 		}
 
-		prm::PRMReader reader { m_levelGeometry.header, m_levelGeometry.chunkDescriptors, m_levelGeometry.chunks };
-		if (!reader.read(Span(prmFileBuffer.get(), prmFileSize)))
+		PRMReader reader;
+		if (!reader.parse(prmFileBuffer.get(), prmFileSize))
 		{
 			return false;
 		}
+
+		m_levelGeometry.primitives = std::move(reader.takePrimitives());
 
 		return true;
 	}

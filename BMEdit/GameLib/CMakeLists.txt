@@ -18,7 +18,7 @@ target_include_directories(GameLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Include)
 
 # --- Dependencies
 target_link_libraries(GameLib PRIVATE ZBinaryReader) # Private libs
-target_link_libraries(GameLib PUBLIC nlohmann_json::nlohmann_json fmt::fmt-header-only) # Public library to work with json
+target_link_libraries(GameLib PUBLIC nlohmann_json::nlohmann_json fmt::fmt-header-only glm::glm)
 target_link_libraries(GameLib PUBLIC ${ZLIB_LIBRARIES}) # Public library to work with compressed streams
 target_include_directories(GameLib PRIVATE ${ZLIB_INCLUDE_DIRS})
 
