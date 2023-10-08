@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GameLib/PRP/PRPObjectExtractor.h>
 #include <GameLib/PRP/PRPInstruction.h>
 #include <GameLib/ValueView.h>
 #include <GameLib/Span.h>
@@ -92,6 +93,21 @@ namespace gamelib
 		void updateContainer(int entryIndex, const std::vector<prp::PRPInstruction>& newDecl);
 
 		bool hasProperty(const char* propertyName) const;
+
+		// Extractor
+		template <typename T>
+		T getObject(const std::string& objectName, T def = T()) const requires (HasSpecializationTObjectExtractor<T>)
+		{
+			for (const auto& ent : m_entries)
+			{
+				if (ent.name == objectName)
+				{
+					return TObjectExtractor<T>::extract(Span(m_data).slice(ent.instructions));
+				}
+			}
+
+			return def;
+		}
 
 	private:
 		const Type *m_type {nullptr}; // type

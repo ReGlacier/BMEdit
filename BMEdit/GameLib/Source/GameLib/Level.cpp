@@ -44,6 +44,11 @@ namespace gamelib
 			return false;
 		}
 
+		if (!loadLevelMaterials())
+		{
+			return false;
+		}
+
 		// TODO: Load things (it's time to combine GMS, PRP & BUF files)
 		m_isLevelLoaded = true;
 		return true;
@@ -99,6 +104,16 @@ namespace gamelib
 	LevelGeometry* Level::getLevelGeometry()
 	{
 		return &m_levelGeometry;
+	}
+
+	const LevelMaterials* Level::getLevelMaterials() const
+	{
+		return &m_levelMaterials;
+	}
+
+	LevelMaterials* Level::getLevelMaterials()
+	{
+		return &m_levelMaterials;
 	}
 
 	const std::vector<scene::SceneObject::Ptr> &Level::getSceneObjects() const
@@ -271,6 +286,31 @@ namespace gamelib
 		m_levelTextures.table1Offsets = reader.m_texturesPool;
 		m_levelTextures.table2Offsets = reader.m_cubeMapsPool;
 		m_levelTextures.countOfEmptyOffsets = reader.m_countOfEmptyOffsets;
+
+		return true;
+	}
+
+	bool Level::loadLevelMaterials()
+	{
+		// Read MAT file
+		int64_t matFileSize = 0;
+		auto matFileBuffer = m_assetProvider->getAsset(gamelib::io::AssetKind::MATERIALS, matFileSize);
+
+		if (!matFileSize || !matFileBuffer)
+		{
+			return false;
+		}
+
+		mat::MATReader reader;
+		const bool parseResult = reader.parse(matFileBuffer.get(), matFileSize);
+		if (!parseResult)
+		{
+			return false;
+		}
+
+		m_levelMaterials.header = reader.getHeader();
+		m_levelMaterials.materialClasses = std::move(reader.takeClasses());
+		m_levelMaterials.materialInstances = std::move(reader.takeInstances());
 
 		return true;
 	}

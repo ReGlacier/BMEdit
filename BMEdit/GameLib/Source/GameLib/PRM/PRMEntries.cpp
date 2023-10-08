@@ -24,19 +24,15 @@ namespace gamelib::prm
 
 	void Mesh::deserialize(Mesh& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader, const PrmFile& prmFile)
 	{
-#ifdef TRY_HARD
-		// Skip header?
-		binaryReader->seek(0x4);
+		mesh.boneDecl = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+		mesh.packType = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+		mesh.kind = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 		mesh.textureId = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
-
-		binaryReader->seek(0xB);
-		//binaryReader->seek(0xE);
-        mesh.lod = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
-#else
-		binaryReader->seek(0xE);
-
+		mesh.unk6 = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
+		mesh.nextVariation = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		mesh.unkC = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+		mesh.unkD = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
 		mesh.lod = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
-#endif
 
 		if ((mesh.lod & static_cast<uint8_t>(1)) == static_cast<uint8_t>(1))
 		{

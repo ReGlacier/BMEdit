@@ -31,4 +31,36 @@ namespace gamelib
 			reader->seek(finalPos);
 		}
 	};
+
+	struct ZBioSeekGuard
+	{
+		ZBioSeekGuard() = delete;
+		ZBioSeekGuard(const ZBioSeekGuard&) = delete;
+		ZBioSeekGuard(ZBioSeekGuard&&) = delete;
+		ZBioSeekGuard& operator=(const ZBioSeekGuard&) = delete;
+		ZBioSeekGuard& operator=(ZBioSeekGuard&&) = delete;
+
+		explicit ZBioSeekGuard(ZBio::ZBinaryReader::BinaryReader* reader)
+		{
+			m_reader = reader;
+
+			if (reader)
+			{
+				m_seekTo = reader->tell();
+			}
+		}
+
+		~ZBioSeekGuard()
+		{
+			if (m_reader)
+			{
+				m_reader->seek(m_seekTo);
+				m_reader = nullptr;
+			}
+		}
+
+	private:
+		ZBio::ZBinaryReader::BinaryReader* m_reader { nullptr };
+		int64_t m_seekTo { 0 };
+	};
 }

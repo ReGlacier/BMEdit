@@ -6,6 +6,7 @@
 #include <GameLib/GMS/GMS.h>
 #include <GameLib/TEX/TEX.h>
 #include <GameLib/PRM/PRM.h>
+#include <GameLib/MAT/MAT.h>
 
 #include <memory>
 #include <vector>
@@ -41,6 +42,13 @@ namespace gamelib
 		prm::PrmFile primitives;
 	};
 
+	struct LevelMaterials
+	{
+		mat::MATHeader header;
+		std::vector<mat::MATClass> materialClasses;
+		std::vector<mat::MATInstance> materialInstances;
+	};
+
 	class Level
 	{
 	public:
@@ -56,6 +64,8 @@ namespace gamelib
 		[[nodiscard]] LevelTextures* getSceneTextures();
 		[[nodiscard]] const LevelGeometry* getLevelGeometry() const;
 		[[nodiscard]] LevelGeometry* getLevelGeometry();
+		[[nodiscard]] const LevelMaterials* getLevelMaterials() const;
+		[[nodiscard]] LevelMaterials* getLevelMaterials();
 
 		[[nodiscard]] const std::vector<scene::SceneObject::Ptr> &getSceneObjects() const;
 
@@ -66,6 +76,7 @@ namespace gamelib
 		bool loadLevelScene();
 		bool loadLevelPrimitives();
 		bool loadLevelTextures();
+		bool loadLevelMaterials();
 
 	private:
 		// Core
@@ -77,6 +88,7 @@ namespace gamelib
 		SceneProperties m_sceneProperties;
 		LevelTextures m_levelTextures;
 		LevelGeometry m_levelGeometry;
+		LevelMaterials m_levelMaterials;
 
 		// Managed objects
 		std::vector<scene::SceneObject::Ptr> m_sceneObjects {};

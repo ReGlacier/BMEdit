@@ -7,6 +7,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <GameLib/TEX/TEXEntry.h>
+#include <GameLib/PRP/PRPMathTypes.h>
+#include <optional>
 
 
 namespace widgets
@@ -66,6 +68,7 @@ namespace widgets
 			uint16_t width { 0 };
 			uint16_t height { 0 };
 			GLuint texture { kInvalidResource };
+			std::optional<std::uint32_t> index {}; /// Index of texture from TEX container
 
 			void discard(QOpenGLFunctions_3_3_Core* gapi)
 			{
@@ -201,6 +204,15 @@ namespace widgets
 				gapi->glUniform2fv(location, 1, glm::value_ptr(v));
 			}
 
+			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, const glm::ivec2& v)
+			{
+				GLint location = resolveLocation(gapi, id);
+				if (location == -1)
+					return;
+
+				gapi->glUniform2iv(location, 1, glm::value_ptr(v));
+			}
+
 			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, const glm::vec3& v)
 			{
 				GLint location = resolveLocation(gapi, id);
@@ -289,6 +301,7 @@ namespace widgets
 		std::vector<Texture> m_textures {};
 		std::vector<Shader> m_shaders {};
 		std::vector<Model> m_models {};
+		std::uint32_t m_iDebugTextureIndex { 0 };
 
 		GLResources() {}
 		~GLResources() {}
@@ -321,9 +334,11 @@ namespace widgets
 
 				m_models.clear();
 			}
+
+			m_iDebugTextureIndex = 0u;
 		}
 
-		bool hasResources() const
+		[[nodiscard]] bool hasResources() const
 		{
 			return !m_textures.empty() || !m_shaders.empty() || !m_models.empty();
 		}
@@ -362,16 +377,11 @@ namespace widgets
 			return;
 		}
 
-		funcs->glClear(GL_COLOR_BUFFER_BIT);
+		// Begin frame
+		funcs->glEnable(GL_DEPTH_TEST);
+		funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		funcs->glClearColor(0.15f, 0.2f, 0.45f, 1.0f);
-		funcs->glEnable(GL_CULL_FACE);
-		funcs->glCullFace(GL_BACK);
-
-		// Update projection
-		if (m_bDirtyProj)
-		{
-			updateProjectionMatrix(QWidget::width(), QWidget::height());
-		}
+		funcs->glDepthFunc(GL_ALWAYS);
 
 		switch (m_eState)
 		{
@@ -573,6 +583,10 @@ namespace widgets
 				continue;
 			}
 
+			// Store texture index from TEX container
+			newTexture.index = std::make_optional(texture.m_index);
+
+			// Create GL resource
 			glFunctions->glGenTextures(1, &newTexture.texture);
 			glFunctions->glBindTexture(GL_TEXTURE_2D, newTexture.texture);
 			glFunctions->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newTexture.width, newTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, decompressedMemBlk.get());
@@ -586,6 +600,15 @@ namespace widgets
 			glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
 
 			m_resources->m_textures.emplace_back(newTexture);
+
+			// Precache debug texture if it's not precached yet
+			static constexpr const char* kGlacierMissingTex = "_Glacier/Missing_01";
+			static constexpr const char* kWorldColiTex = "_TEST/Worldcoli";
+
+			if (m_resources->m_iDebugTextureIndex == 0 && texture.m_fileName.has_value() && (texture.m_fileName.value() == kGlacierMissingTex || texture.m_fileName.value() == kWorldColiTex))
+			{
+				m_resources->m_iDebugTextureIndex = static_cast<std::uint32_t>(m_resources->m_textures.size() - 1);
+			}
 		}
 
 		qDebug() << "All textures (" << m_pLevel->getSceneTextures()->entries.size() << ") are loaded and ready to be used";
@@ -595,23 +618,6 @@ namespace widgets
 	void SceneRenderWidget::doLoadGeometry(QOpenGLFunctions_3_3_Core* glFunctions)
 	{
 		LEVEL_SAFE_CHECK()
-
-		int kDebugTextureTextureIndex = 0;
-
-		// Select debug texture
-		static constexpr const char* kGlacierMissingTex = "_Glacier/Missing_01";
-		static constexpr const char* kWorldColiTex = "_TEST/Worldcoli";
-
-		for (int i = 0; i < m_pLevel->getSceneTextures()->entries.size(); i++)
-		{
-			const gamelib::tex::TEXEntry& texture = m_pLevel->getSceneTextures()->entries[i];
-
-			if (texture.m_fileName.has_value() && (texture.m_fileName.value() == kGlacierMissingTex || texture.m_fileName.value() == kWorldColiTex))
-			{
-				kDebugTextureTextureIndex = i;
-				break;
-			}
-		}
 
 		// TODO: Optimize and load "chunk by chunk"
 		for (const auto& model : m_pLevel->getLevelGeometry()->primitives.models)
@@ -700,8 +706,8 @@ namespace widgets
 				glFunctions->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 				glFunctions->glEnableVertexAttribArray(1);
 
-				// TODO: Precache texture id (color channel)
-				glMesh.textureId = kDebugTextureTextureIndex; // mesh.textureId != 0 ? mesh.textureId : 133;
+				// Precache color texture
+				glMesh.textureId = mesh.textureId != 0 ? mesh.textureId : m_resources->m_iDebugTextureIndex;  //TODO: here we need to ask material first!
 
 				// Next mesh
 				++meshIdx;
@@ -727,7 +733,9 @@ layout (location = 1) in vec2 aUV;
 // Common
 struct Camera
 {
-    mat4 projView;
+    mat4  proj;
+    mat4  view;
+	ivec2 resolution;
 };
 
 struct Transform
@@ -744,7 +752,7 @@ out vec2 g_TexCoord;
 
 void main()
 {
-    gl_Position = i_uCamera.projView * i_uTransform.model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    gl_Position = i_uCamera.proj * i_uCamera.view * i_uTransform.model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
     g_TexCoord = aUV;
 }
 )";
@@ -752,7 +760,18 @@ void main()
 		static constexpr const char* kFragmentShader = R"(
 #version 330 core
 
-uniform sampler2D iActiveTexture;
+vec4 decodeDebugId(int objectId)
+{
+	float r = float((objectId >> 24) & 0xFF) / 255.0;
+	float g = float((objectId >> 16) & 0xFF) / 255.0;
+	float b = float((objectId >> 8) & 0xFF) / 255.0;
+	float a = float(objectId & 0xFF) / 255.0;
+
+	return vec4(r, g, b, a);
+}
+
+uniform sampler2D i_ActiveTexture;
+uniform int i_DebugObjectID;
 in vec2 g_TexCoord;
 
 // Out
@@ -760,7 +779,8 @@ out vec4 o_FragColor;
 
 void main()
 {
-    o_FragColor = texture(iActiveTexture, g_TexCoord);
+	//o_FragColor = decodeDebugId(i_DebugObjectID);
+    o_FragColor = texture(i_ActiveTexture, g_TexCoord);
 }
 )";
 
@@ -791,12 +811,12 @@ void main()
 
 		for (const auto& sceneObject : m_pLevel->getSceneObjects())
 		{
+			// Need to fix this code. Most 'ZCAMERA' objects refs to 2D scene view, need to find another better way to find 'start' camera.
+			// At least we can try to find ZPlayer/ZHitman3 object to put camera near to player
 			if (sceneObject->getType()->getName() == "ZCAMERA")
 			{
 				// Nice, camera found!
-				cameraPosition.x = sceneObject->getProperties()["Position"][1].getOperand().get<float>();
-				cameraPosition.y = sceneObject->getProperties()["Position"][2].getOperand().get<float>();
-				cameraPosition.z = sceneObject->getProperties()["Position"][3].getOperand().get<float>();
+				cameraPosition = sceneObject->getProperties().getObject<glm::vec3>("Position", glm::vec3(.0f));
 				break;
 			}
 		}
@@ -811,6 +831,12 @@ void main()
 	void SceneRenderWidget::doRenderScene(QOpenGLFunctions_3_3_Core* glFunctions)
 	{
 		LEVEL_SAFE_CHECK()
+
+		// Update projection
+		if (m_bDirtyProj)
+		{
+			updateProjectionMatrix(QWidget::width(), QWidget::height());
+		}
 
 		// Out ROOT is always first object. Start tree hierarchy visit from ROOT
 		const gamelib::scene::SceneObject::Ptr& root = m_pLevel->getSceneObjects()[0];
@@ -828,41 +854,29 @@ void main()
 		m_eState = ELevelState::LS_NONE; // Switch to none, everything is gone
 	}
 
-	void propertyMatrixToGlmMatrix(const gamelib::Span<gamelib::prp::PRPInstruction>& matrix, glm::mat4& result)
-	{
-		result = glm::mat4(1.f);
-
-		for (int i = 0; i < 3; i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				// +1 cuz #0 - begin array opcode
-				result[i][j] = matrix[(1 + (j * 3 + i))].getOperand().get<float>();
-			}
-		}
-	}
-
 	void SceneRenderWidget::doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject::Ptr& geom) // NOLINT(*-no-recursion)
 	{
-		// First of all we need to take primitive id and visibillity flag
-		const std::int32_t primId = geom->getProperties()["PrimId"][0].getOperand().get<std::int32_t>();
-		const bool bIsVisible = !geom->getProperties().hasProperty("Invisible") || geom->getProperties()["Invisible"][0].getOperand().get<bool>();
-		const glm::vec3 vPosition = glm::vec3 {
-		    geom->getProperties()["Position"][1].getOperand().get<float>(),
-		    geom->getProperties()["Position"][2].getOperand().get<float>(),
-		    geom->getProperties()["Position"][3].getOperand().get<float>()
-		};
+		// Take params
+		const auto primId     = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
+		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
+		const auto vPosition  = geom->getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
+		const auto mMatrix    = geom->getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
 
+		// Don't draw invisible things
+		if (bInvisible)
+			return;
+
+		// TODO: Check for culling here (object visible or not)
+
+		// Check that object could be rendered by any way
 		if (primId != 0)
 		{
-			// Do render?
-			if (!bIsVisible)
-				return; // Don't draw children of invisible ZSTDOBJ
-
 			// Extract matrix from properties
-			glm::mat4 modelMatrix = glm::mat4(1.f);
-			modelMatrix = glm::translate(modelMatrix, vPosition);
-			//propertyMatrixToGlmMatrix(geom->getProperties()["Matrix"], modelMatrix);
+			const glm::mat4 transformMatrix = glm::mat4(mMatrix);
+			const glm::mat4 translateMatrix = glm::translate(glm::mat4(1.f), vPosition);
+
+			// Am I right here?
+			const glm::mat4 modelMatrix = translateMatrix * transformMatrix;
 
 			// And bind required resources
 			// TODO: Optimize me
@@ -885,10 +899,55 @@ void main()
 
 					// 2. Submit uniforms
 					m_resources->m_shaders[0].setUniform(glFunctions, "i_uTransform.model", modelMatrix);
-					m_resources->m_shaders[0].setUniform(glFunctions, "i_uCamera.projView", m_matProjection * m_camera.getViewMatrix());
+					m_resources->m_shaders[0].setUniform(glFunctions, "i_uCamera.proj", m_matProjection);
+					m_resources->m_shaders[0].setUniform(glFunctions, "i_uCamera.view", m_camera.getViewMatrix());
+					m_resources->m_shaders[0].setUniform(glFunctions, "i_uCamera.resolution", glm::ivec2(QWidget::width(), QWidget::height()));
+
+					// Encode debug object marker
+					{
+						// Here we have about 31 bits of data
+						int32_t debugMarker = 0;
+
+						union UEncoder
+						{
+							int32_t i32_1{0};
+							int16_t i16_2[2];
+						} encoder;
+
+						auto djb2Hash16 = [](const std::string& str) -> std::int16_t {
+							int16_t hash = 5381; // Initial hash value
+
+							for (char c : str) {
+								hash = ((hash << static_cast<std::int16_t>(5)) + hash) ^ static_cast<int16_t>(c);
+							}
+
+							return hash;
+						};
+
+						encoder.i16_2[0] = static_cast<int16_t>(model.chunkId);
+						encoder.i16_2[1] = djb2Hash16(geom->getName());
+
+						m_resources->m_shaders[0].setUniform(glFunctions, "i_DebugObjectID", encoder.i32_1);
+					}
 
 					// 3. Bind texture
-					glFunctions->glBindTexture(GL_TEXTURE_2D, m_resources->m_textures[mesh.textureId].texture);
+					// TODO: Optimize me
+					{
+					    const auto& allTextures = m_resources->m_textures;
+						auto textureIt = std::find_if(allTextures.begin(), allTextures.end(), [index = mesh.textureId](const GLResources::Texture& tex) -> bool {
+							return tex.index.has_value() && tex.index.value() == index;
+						});
+
+						if (textureIt != allTextures.end())
+						{
+							glFunctions->glBindTexture(GL_TEXTURE_2D, textureIt->texture);
+						}
+						else
+						{
+							// Need bind 'error' texture
+							glFunctions->glBindTexture(GL_TEXTURE_2D, m_resources->m_textures[m_resources->m_iDebugTextureIndex].texture);
+						}
+					}
 
 					// 3. Activate VAO
 					glFunctions->glBindVertexArray(mesh.vao);
@@ -897,7 +956,7 @@ void main()
 					if (mesh.ibo != GLResources::kInvalidResource)
 					{
 						// Draw indexed
-						glFunctions->glDrawElements(GL_TRIANGLES, mesh.trianglesCount, GL_UNSIGNED_SHORT, nullptr);
+						glFunctions->glDrawElements(GL_TRIANGLES, (mesh.trianglesCount * 3), GL_UNSIGNED_SHORT, nullptr);
 					}
 					else
 					{
@@ -913,7 +972,7 @@ void main()
 			// otherwise draw red bbox!
 		}
 
-		// Render others
+		// Draw children
 		for (const auto& childRef : geom->getChildren())
 		{
 			if (auto child = childRef.lock())

@@ -41,7 +41,14 @@ namespace gamelib::prm
 
 	struct Mesh
 	{
+		uint8_t boneDecl = 0;
+		uint8_t packType = 0;
+		uint16_t kind = 0;
 		uint16_t textureId = 0;
+		uint16_t unk6 = 0;
+		uint32_t nextVariation = 0;
+		uint8_t unkC = 0;
+		uint8_t unkD = 0;
 		uint8_t lod = 0;
 		uint16_t material_id = 0;
 		int32_t diffuse_id = 0;
