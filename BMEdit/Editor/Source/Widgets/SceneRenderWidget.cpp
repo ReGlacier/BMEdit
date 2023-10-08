@@ -23,6 +23,8 @@ namespace widgets
 			GLuint vbo { kInvalidResource };
 			GLuint ibo { kInvalidResource };
 			size_t textureId { 0 };
+			uint16_t materialId { 0 };
+
 			int trianglesCount { 0 };
 
 			void discard(QOpenGLFunctions_3_3_Core* gapi)
@@ -707,7 +709,35 @@ namespace widgets
 				glFunctions->glEnableVertexAttribArray(1);
 
 				// Precache color texture
-				glMesh.textureId = mesh.textureId != 0 ? mesh.textureId : m_resources->m_iDebugTextureIndex;  //TODO: here we need to ask material first!
+				glMesh.materialId = mesh.material_id;
+
+				if (mesh.material_id > 0)
+				{
+					// Use attached material
+					const auto& instances = m_pLevel->getLevelMaterials()->materialInstances;
+					const auto& matInstance = instances[mesh.material_id - 1];
+
+					//TODO: Need fix this place, not perfect solution
+					if (!matInstance.getBinders().empty() && !matInstance.getBinders()[0].textures.empty())
+					{
+						// Take texture id
+						const uint32_t textureId = matInstance.getBinders()[0].textures[0].getTextureId();
+
+						// And save texture index back
+						glMesh.textureId = textureId;
+					}
+				}
+				else
+				{
+					// Try to use texture from description
+					glMesh.textureId = mesh.textureId;
+				}
+
+				if (glMesh.textureId == 0)
+				{
+					// Not presented yet, use debug texture
+					glMesh.textureId = m_resources->m_iDebugTextureIndex;
+				}
 
 				// Next mesh
 				++meshIdx;
@@ -952,16 +982,18 @@ void main()
 					// 3. Activate VAO
 					glFunctions->glBindVertexArray(mesh.vao);
 
+					const GLenum mode = GL_TRIANGLES;
+
 					// 4. Submit
 					if (mesh.ibo != GLResources::kInvalidResource)
 					{
 						// Draw indexed
-						glFunctions->glDrawElements(GL_TRIANGLES, (mesh.trianglesCount * 3), GL_UNSIGNED_SHORT, nullptr);
+						glFunctions->glDrawElements(mode, (mesh.trianglesCount * 3), GL_UNSIGNED_SHORT, nullptr);
 					}
 					else
 					{
 						// Draw elements
-						glFunctions->glDrawArrays(GL_TRIANGLES, 0, mesh.trianglesCount);
+						glFunctions->glDrawArrays(mode, 0, mesh.trianglesCount);
 					}
 
 					// ... End
