@@ -19,6 +19,14 @@ namespace ZBio::ZBinaryReader
 
 namespace gamelib::prm
 {
+	enum class VertexFormat : uint32_t {
+		VF_ERROR = 0,
+		VF_10 = 0x10,
+		VF_24 = 0x24,
+		VF_28 = 0x28,
+		VF_34 = 0x34
+	};
+
 #pragma pack(push, 1)   // TODO: Need to use some sort of macro to make this place cross-compiler supportable
 	struct PrmFile;
 
@@ -54,9 +62,11 @@ namespace gamelib::prm
 		int32_t diffuse_id = 0;
 		int32_t normal_id = 0;
 		int32_t specular_id = 0;
+		uint16_t trianglesCount = 0;
 		std::vector<glm::vec3> vertices {};
 		std::vector<Index> indices {};
 		std::vector<glm::vec2> uvs {};
+		VertexFormat vertexFormat { VertexFormat::VF_ERROR };
 		//BoundingBox boundingBox {};
 
 		static void deserialize(Mesh& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader, const PrmFile& prmFile);

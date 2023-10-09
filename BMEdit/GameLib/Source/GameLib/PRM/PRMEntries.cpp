@@ -1,6 +1,7 @@
 #include <GameLib/PRM/PRMEntries.h>
 #include <GameLib/ZBioHelpers.h>
 #include <ZBinaryReader.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 namespace gamelib::prm
@@ -32,9 +33,14 @@ namespace gamelib::prm
 		mesh.nextVariation = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
 		mesh.unkC = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
 		mesh.unkD = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+
+		assert(binaryReader->tell() == 0xE && "Bad offset");
+		if (binaryReader->tell() != 0xE)
+			return;
+
 		mesh.lod = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
 
-		if ((mesh.lod & static_cast<uint8_t>(1)) == static_cast<uint8_t>(1))
+		if (mesh.lod & (uint8_t)1 == (uint8_t)1)
 		{
 			// Seed another 3 bytes?
 			ZBioHelpers::seekBy(binaryReader, 0x3);
@@ -106,6 +112,7 @@ namespace gamelib::prm
 
 				uint16_t trianglesCount = 0;
 				trianglesCount = trianglesReader.read<uint16_t, ZBio::Endianness::LE>();
+				mesh.trianglesCount = trianglesCount;
 
 				// Magic (rly?)
 				uint32_t vertexSize = 0;
@@ -124,28 +131,19 @@ namespace gamelib::prm
 				    static_cast<int64_t>(prmFile.entries[vertexChunk].size)
 				};
 
-				enum VertexFormat : uint32_t {
-					VF_10 = 0x10,
-					VF_24 = 0x24,
-					VF_28 = 0x28,
-					VF_34 = 0x34
-				};
-
 				assert(vertexSize == 0x10 || vertexSize == 0x24 || vertexSize == 0x28 || vertexSize == 0x34);
 				if (vertexSize == 0x10 || vertexSize == 0x24 || vertexSize == 0x28 || vertexSize == 0x34)
 				{
-					VertexFormat format = static_cast<VertexFormat>(vertexSize); // NOLINT(*-use-auto)
+					mesh.vertexFormat = static_cast<VertexFormat>(vertexSize);
 
-					switch (format)
+					switch (mesh.vertexFormat)
 					{
-						case VF_10:
+						case VertexFormat::VF_10:
 						{
 						    for (uint32_t j = 0; j < vertexCount; j++)
 						    {
 							    glm::vec3& vertex = mesh.vertices.emplace_back();
-							    vertex.x = vertexReader.read<float, ZBio::Endianness::LE>();
-							    vertex.y = vertexReader.read<float, ZBio::Endianness::LE>();
-							    vertex.z = vertexReader.read<float, ZBio::Endianness::LE>();
+							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
 
 							    // Skip 4 bytes (it's some sort of data, but ignored by us)
 							    // TODO: Fix this!
@@ -153,14 +151,12 @@ namespace gamelib::prm
 						    }
 					    }
 					    break;
-						case VF_24:
+						case VertexFormat::VF_24:
 					    {
 						    for (uint32_t j = 0; j < vertexCount; j++)
 						    {
 							    glm::vec3& vertex = mesh.vertices.emplace_back();
-							    vertex.x = vertexReader.read<float, ZBio::Endianness::LE>();
-							    vertex.y = vertexReader.read<float, ZBio::Endianness::LE>();
-							    vertex.z = vertexReader.read<float, ZBio::Endianness::LE>();
+							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
 
 							    // Skip another 0x10 useful info
 							    // TODO: Fix this!
@@ -168,19 +164,17 @@ namespace gamelib::prm
 
 							    // Read UVs
 							    glm::vec2& uv = mesh.uvs.emplace_back();
-							    uv.x = vertexReader.read<float, ZBio::Endianness::LE>();
-							    uv.y = 1.f - vertexReader.read<float, ZBio::Endianness::LE>();
+							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
+							    uv.y = 1.f - uv.y;
 						    }
 					    }
 					    break;
-						case VF_28:
+						case VertexFormat::VF_28:
 					    {
 						    for (uint32_t j = 0; j < vertexCount; j++)
 						    {
 							    glm::vec3& vertex = mesh.vertices.emplace_back();
-							    vertex.x = vertexReader.read<float, ZBio::Endianness::LE>();
-							    vertex.y = vertexReader.read<float, ZBio::Endianness::LE>();
-							    vertex.z = vertexReader.read<float, ZBio::Endianness::LE>();
+							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
 
 							    // Skip another 0x10 useful info
 							    // TODO: Fix this!
@@ -188,8 +182,8 @@ namespace gamelib::prm
 
 							    // Read UVs
 							    glm::vec2& uv = mesh.uvs.emplace_back();
-							    uv.x = vertexReader.read<float, ZBio::Endianness::LE>();
-							    uv.y = 1.f - vertexReader.read<float, ZBio::Endianness::LE>();
+							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
+							    uv.y = 1.f - uv.y;
 
 							    // Another seek
 							    // TODO: Fix this!
@@ -197,28 +191,29 @@ namespace gamelib::prm
 						    }
 					    }
 					    break;
-						case VF_34:
+						case VertexFormat::VF_34:
 					    {
 						    glm::vec3& vertex = mesh.vertices.emplace_back();
-						    vertex.x = vertexReader.read<float, ZBio::Endianness::LE>();
-						    vertex.y = vertexReader.read<float, ZBio::Endianness::LE>();
-						    vertex.z = vertexReader.read<float, ZBio::Endianness::LE>();
+						    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
 
 						    // TODO: Fix this!
 						    ZBioHelpers::seekBy(&vertexReader, 0x18);
 
 						    glm::vec2& uv = mesh.uvs.emplace_back();
-						    uv.x = vertexReader.read<float, ZBio::Endianness::LE>();
-						    uv.y = 1.f - vertexReader.read<float, ZBio::Endianness::LE>();
+						    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
+						    uv.y = 1.f - uv.y;
 
 						    // TODO: Fix this
 						    ZBioHelpers::seekBy(&vertexReader, 0x8);
 					    }
 					    break;
+					    default:
+						    assert(false && "Unsupported format");
+						    break;
 					}
 
 					// Store triangle indices
-					for (uint32_t j = 0; j < trianglesCount / 3; j++)
+					for (uint32_t j = 0; j < mesh.trianglesCount / 3; j++)
 					{
 						prm::Index& index = mesh.indices.emplace_back();
 						prm::Index::deserialize(index, &trianglesReader);

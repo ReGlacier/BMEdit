@@ -149,6 +149,17 @@ class QOpenGLFunctions_3_3_Core;
 
 namespace widgets
 {
+	using RenderModeFlags = uint8_t;
+
+	enum RenderMode : RenderModeFlags
+	{
+		RM_TEXTURE = 1 << 0,
+		RM_WIREFRAME = 1 << 1,
+
+		RM_ALL = RM_TEXTURE | RM_WIREFRAME,
+		RM_DEFAULT = RM_TEXTURE
+	};
+
 	class SceneRenderWidget : public QOpenGLWidget
 	{
 		Q_OBJECT
@@ -164,6 +175,14 @@ namespace widgets
 
 		[[nodiscard]] float getFOV() const { return m_fFOV; }
 		void setFOV(float fov) { m_fFOV = fov; m_bDirtyProj = true; }
+
+		void setGeomViewMode(gamelib::scene::SceneObject* sceneObject);
+		void setWorldViewMode();
+		void resetViewMode();
+
+		[[nodiscard]] RenderModeFlags getRenderMode() const;
+		void setRenderMode(RenderModeFlags renderMode);
+		void resetRenderMode();
 
 		void moveCameraTo(const glm::vec3& position);
 
@@ -189,20 +208,23 @@ namespace widgets
 		void doLoadGeometry(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doCompileShaders(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doResetCameraState(QOpenGLFunctions_3_3_Core* glFunctions);
-		void doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject::Ptr& geom);
+		void doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject* geom, bool bIgnoreVisibility = false);
 		void discardResources(QOpenGLFunctions_3_3_Core* glFunctions);
-		void acquireMouseCapture();
-		void releaseMouseCapture();
 
 	private:
+		// Data
 		gamelib::Level* m_pLevel { nullptr };
+
+		// Camera & world view
 		renderer::Camera m_camera {};
 		glm::mat4 m_matProjection {};
 		float m_fFOV { 67.664f };
 		float m_fZNear { .1f };
-		float m_fZFar { 1000.f };
+		float m_fZFar { 100'000.f };
 		bool m_bDirtyProj { true };
+		uint8_t m_renderMode = RenderMode::RM_DEFAULT;
 
+		// State
 		enum class ELevelState : uint8_t
 		{
 			LS_NONE = 0,
@@ -216,6 +238,16 @@ namespace widgets
 		ELevelState m_eState { ELevelState::LS_NONE };
 		QPoint m_mouseLastPosition {};
 		bool m_bFirstMouseQuery { true };
+
+		// View mode
+		enum class EViewMode : uint8_t
+		{
+			VM_WORLD_VIEW,
+			VM_GEOM_PREVIEW
+		};
+
+		EViewMode m_eViewMode { EViewMode::VM_WORLD_VIEW };
+		gamelib::scene::SceneObject* m_pSceneObjectToView {};
 
 		struct GLResources;
 		std::unique_ptr<GLResources> m_resources;

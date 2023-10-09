@@ -22,8 +22,9 @@ namespace widgets
 			GLuint vao { kInvalidResource };
 			GLuint vbo { kInvalidResource };
 			GLuint ibo { kInvalidResource };
-			size_t textureId { 0 };
-			uint16_t materialId { 0 };
+			GLuint glTextureId { kInvalidResource }; /// Render OpenGL texture resource handle
+
+			uint16_t materialId { 0 }; /// Id of material from Glacier mesh (just copy)
 
 			int trianglesCount { 0 };
 
@@ -303,7 +304,9 @@ namespace widgets
 		std::vector<Texture> m_textures {};
 		std::vector<Shader> m_shaders {};
 		std::vector<Model> m_models {};
-		std::uint32_t m_iDebugTextureIndex { 0 };
+		GLuint m_iGLDebugTexture { 0 };
+		size_t m_iTexturedShaderIdx = 0;
+		size_t m_iGizmoShaderIdx = 0;
 
 		GLResources() {}
 		~GLResources() {}
@@ -337,7 +340,7 @@ namespace widgets
 				m_models.clear();
 			}
 
-			m_iDebugTextureIndex = 0u;
+			m_iGLDebugTexture = 0u;
 		}
 
 		[[nodiscard]] bool hasResources() const
@@ -418,7 +421,18 @@ namespace widgets
 			break;
 			case ELevelState::LS_READY:
 		    {
-			    doRenderScene(funcs);
+			    if (m_eViewMode == EViewMode::VM_WORLD_VIEW)
+			    {
+					doRenderScene(funcs);
+				}
+			    else if (m_eViewMode == EViewMode::VM_GEOM_PREVIEW)
+			    {
+				    if (m_pSceneObjectToView)
+				    {
+						// Render object & ignore Invisible flag
+						doRenderGeom(funcs, m_pSceneObjectToView, true);
+					}
+			    }
 		    }
 		    break;
 		}
@@ -525,6 +539,8 @@ namespace widgets
 			m_eState = ELevelState::LS_NONE;
 			m_pLevel = pLevel;
 			m_bFirstMouseQuery = true;
+			resetViewMode();
+			resetRenderMode();
 		}
 	}
 
@@ -534,7 +550,52 @@ namespace widgets
 		{
 			m_pLevel = nullptr;
 			m_bFirstMouseQuery = true;
+			resetViewMode();
+			resetRenderMode();
 		}
+	}
+
+	void SceneRenderWidget::setGeomViewMode(gamelib::scene::SceneObject* sceneObject)
+	{
+		assert(sceneObject != nullptr);
+
+		if (sceneObject)
+		{
+			m_eViewMode = EViewMode::VM_GEOM_PREVIEW;
+			m_pSceneObjectToView = sceneObject;
+			m_camera.setPosition(glm::vec3(0.f));
+			repaint();
+		}
+	}
+
+	void SceneRenderWidget::setWorldViewMode()
+	{
+		m_eViewMode = EViewMode::VM_WORLD_VIEW;
+		m_pSceneObjectToView = nullptr;
+		m_camera.setPosition(glm::vec3(0.f));
+		repaint();
+	}
+
+	void SceneRenderWidget::resetViewMode()
+	{
+		setWorldViewMode();
+	}
+
+	RenderModeFlags SceneRenderWidget::getRenderMode() const
+	{
+		return m_renderMode;
+	}
+
+	void SceneRenderWidget::setRenderMode(RenderModeFlags renderMode)
+	{
+		m_renderMode = renderMode;
+		repaint();
+	}
+
+	void SceneRenderWidget::resetRenderMode()
+	{
+		m_renderMode = RenderMode::RM_DEFAULT;
+		repaint();
 	}
 
 	void SceneRenderWidget::moveCameraTo(const glm::vec3& position)
@@ -601,16 +662,17 @@ namespace widgets
 
 			glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
 
-			m_resources->m_textures.emplace_back(newTexture);
-
 			// Precache debug texture if it's not precached yet
 			static constexpr const char* kGlacierMissingTex = "_Glacier/Missing_01";
 			static constexpr const char* kWorldColiTex = "_TEST/Worldcoli";
 
-			if (m_resources->m_iDebugTextureIndex == 0 && texture.m_fileName.has_value() && (texture.m_fileName.value() == kGlacierMissingTex || texture.m_fileName.value() == kWorldColiTex))
+			if (m_resources->m_iGLDebugTexture == 0 && texture.m_fileName.has_value() && (texture.m_fileName.value() == kGlacierMissingTex || texture.m_fileName.value() == kWorldColiTex))
 			{
-				m_resources->m_iDebugTextureIndex = static_cast<std::uint32_t>(m_resources->m_textures.size() - 1);
+				m_resources->m_iGLDebugTexture = newTexture.texture;
 			}
+
+			// Save texture
+			m_resources->m_textures.emplace_back(newTexture);
 		}
 
 		qDebug() << "All textures (" << m_pLevel->getSceneTextures()->entries.size() << ") are loaded and ready to be used";
@@ -668,16 +730,16 @@ namespace widgets
 					}
 				}
 
-				for (const auto& index : mesh.indices)
+				for (const auto& [a,b,c] : mesh.indices)
 				{
-					indices.emplace_back(index.a);
-					indices.emplace_back(index.b);
-					indices.emplace_back(index.c);
+					indices.emplace_back(a);
+					indices.emplace_back(b);
+					indices.emplace_back(c);
 				}
 
 				// And upload it to GPU
 				GLResources::Mesh& glMesh = glModel.meshes.emplace_back();
-				glMesh.trianglesCount = static_cast<int>(mesh.indices.size() / 3);
+				glMesh.trianglesCount = mesh.trianglesCount;
 
 				// Allocate VAO, VBO & IBO stuff
 				glFunctions->glGenVertexArrays(1, &glMesh.vao);
@@ -702,42 +764,103 @@ namespace widgets
 				}
 
 				// Setup vertex format
-				glFunctions->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-				glFunctions->glEnableVertexAttribArray(0);
+				const GLintptr vertexCoordinateOffset = 0 * sizeof(float);
+				const GLintptr UVCoordinateOffset = 3 * sizeof(float);
+				const GLsizei stride = 5 * sizeof(float);
 
-				glFunctions->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+				glFunctions->glEnableVertexAttribArray(0);
+				glFunctions->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const GLvoid*)vertexCoordinateOffset);
+
 				glFunctions->glEnableVertexAttribArray(1);
+				glFunctions->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid*)UVCoordinateOffset);
 
 				// Precache color texture
 				glMesh.materialId = mesh.material_id;
 
-				if (mesh.material_id > 0)
+				if (glMesh.materialId > 0)
 				{
-					// Use attached material
+					// Use material (for meshes)
+					// First of all we need to know that 'shadows' and other things must be filtered here
 					const auto& instances = m_pLevel->getLevelMaterials()->materialInstances;
+					const auto& classes = m_pLevel->getLevelMaterials()->materialClasses;
 					const auto& matInstance = instances[mesh.material_id - 1];
 
-					//TODO: Need fix this place, not perfect solution
-					if (!matInstance.getBinders().empty() && !matInstance.getBinders()[0].textures.empty())
+					if (const auto& parentName = matInstance.getParentName(); parentName == "StaticShadow" || parentName == "StaticShadowTextureShadow" || matInstance.getName().find("AlwaysInShadow") != std::string::npos)
 					{
-						// Take texture id
-						const uint32_t textureId = matInstance.getBinders()[0].textures[0].getTextureId();
+						// Shadows - do not use texturing (and don't show for now)
+						glMesh.glTextureId = GLResources::kInvalidResource;
+					}
+					else if (parentName == "Old" || parentName == "Glow")
+					{
+						// TODO: Impl later
+						glMesh.glTextureId = GLResources::kInvalidResource;
+					}
+					else if (matInstance.getBinders().empty())
+					{
+						// No texture at all
+						glMesh.glTextureId = GLResources::kInvalidResource;
+					}
+					else if (parentName == "Bad")
+					{
+						// Use 'bad' debug texture
+						glMesh.glTextureId = m_resources->m_iGLDebugTexture;
+					}
+					else
+					{
+						bool bTextureFound = false;
 
-						// And save texture index back
-						glMesh.textureId = textureId;
+						// Here we need to find 'color' texture. In most cases we able to use matDiffuse as color texture
+						for (const auto& binder : matInstance.getBinders())
+						{
+							if (bTextureFound)
+								break;
+
+							for (const auto& texture : binder.textures)
+							{
+								if (texture.getName() == "mapDiffuse" && texture.getTextureId() != 0)
+								{
+									// And find texture in textures pool
+									for (const auto& textureResource : m_resources->m_textures)
+									{
+										if (textureResource.index.has_value() && textureResource.index.value() == texture.getTextureId())
+										{
+											glMesh.glTextureId = textureResource.texture;
+
+											// Ok, we are ready to show this
+											bTextureFound = true;
+											break;
+										}
+									}
+
+									if (!bTextureFound)
+									{
+										// Use error texture
+										glMesh.glTextureId = m_resources->m_iGLDebugTexture;
+									}
+
+									// But mark us as 'found'
+									bTextureFound = true;
+
+									// Done
+									break;
+								}
+							}
+						}
 					}
 				}
-				else
+				else if (mesh.textureId > 0)
 				{
-					// Try to use texture from description
-					glMesh.textureId = mesh.textureId;
+					// Use texture here (for sprites). Need to find that texture in loaded textures list
+					for (const auto& texture : m_resources->m_textures)
+					{
+						if (texture.index.has_value() && texture.index.value() == mesh.textureId)
+						{
+							glMesh.glTextureId = texture.texture;
+							break;
+						}
+					}
 				}
-
-				if (glMesh.textureId == 0)
-				{
-					// Not presented yet, use debug texture
-					glMesh.textureId = m_resources->m_iDebugTextureIndex;
-				}
+				// Otherwise no texture. So, we will render only bounding box (if it needed)
 
 				// Next mesh
 				++meshIdx;
@@ -753,7 +876,7 @@ namespace widgets
 		LEVEL_SAFE_CHECK()
 
 		// TODO: In future we will use shaders from FS, but now I need to debug this stuff easier
-		static constexpr const char* kVertexShader = R"(
+		static constexpr const char* kTexturedVertexShader = R"(
 #version 330 core
 
 // Layout
@@ -787,21 +910,10 @@ void main()
 }
 )";
 
-		static constexpr const char* kFragmentShader = R"(
+		static constexpr const char* kTexturedFragmentShader = R"(
 #version 330 core
 
-vec4 decodeDebugId(int objectId)
-{
-	float r = float((objectId >> 24) & 0xFF) / 255.0;
-	float g = float((objectId >> 16) & 0xFF) / 255.0;
-	float b = float((objectId >> 8) & 0xFF) / 255.0;
-	float a = float(objectId & 0xFF) / 255.0;
-
-	return vec4(r, g, b, a);
-}
-
 uniform sampler2D i_ActiveTexture;
-uniform int i_DebugObjectID;
 in vec2 g_TexCoord;
 
 // Out
@@ -809,24 +921,84 @@ out vec4 o_FragColor;
 
 void main()
 {
-	//o_FragColor = decodeDebugId(i_DebugObjectID);
     o_FragColor = texture(i_ActiveTexture, g_TexCoord);
 }
 )";
 
-		// TODO: Compile shader
-		std::string compileError;
-		GLResources::Shader defaultShader;
-		if (!defaultShader.compile(glFunctions, kVertexShader, kFragmentShader, compileError))
-		{
-			m_pLevel = nullptr;
-			m_eState = ELevelState::LS_NONE;
+		static constexpr const char* kGizmoVertexShader = R"(
+#version 330 core
 
-			emit resourceLoadFailed(QString("Failed to compile shaders: %1").arg(QString::fromStdString(compileError)));
-			return;
+// Layout
+layout (location = 0) in vec3 aPos;
+
+// Common
+struct Camera
+{
+    mat4  proj;
+    mat4  view;
+	ivec2 resolution;
+};
+
+struct Transform
+{
+    mat4 model;
+};
+
+// Uniforms
+uniform Camera i_uCamera;
+uniform Transform i_uTransform;
+
+void main()
+{
+    gl_Position = i_uCamera.proj * i_uCamera.view * i_uTransform.model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
+}
+)";
+
+		static constexpr const char* kGizmoFragmentShader = R"(
+#version 330 core
+
+uniform vec4 i_Color;
+
+// Out
+out vec4 o_FragColor;
+
+void main()
+{
+    o_FragColor = i_Color;
+}
+)";
+
+		// Compile shaders
+		std::string compileError;
+		{
+			GLResources::Shader texturedShader;
+			if (!texturedShader.compile(glFunctions, kTexturedVertexShader, kTexturedFragmentShader, compileError))
+			{
+				m_pLevel = nullptr;
+				m_eState = ELevelState::LS_NONE;
+
+				emit resourceLoadFailed(QString("Failed to compile shaders (textured): %1").arg(QString::fromStdString(compileError)));
+				return;
+			}
+
+			m_resources->m_shaders.emplace_back(texturedShader);
+			m_resources->m_iTexturedShaderIdx = m_resources->m_shaders.size() - 1;
 		}
 
-		m_resources->m_shaders.emplace_back(defaultShader);
+		{
+			GLResources::Shader gizmoShader;
+			if (!gizmoShader.compile(glFunctions, kGizmoVertexShader, kGizmoFragmentShader, compileError))
+			{
+				m_pLevel = nullptr;
+				m_eState = ELevelState::LS_NONE;
+
+				emit resourceLoadFailed(QString("Failed to compile shaders (gizmo): %1").arg(QString::fromStdString(compileError)));
+				return;
+			}
+
+			m_resources->m_shaders.emplace_back(gizmoShader);
+			m_resources->m_iGizmoShaderIdx = m_resources->m_shaders.size() - 1;
+		}
 
 		qDebug() << "Shaders (" << m_resources->m_shaders.size() << ") compiled and ready to use!";
 		m_eState = ELevelState::LS_RESET_CAMERA_STATE;
@@ -871,7 +1043,7 @@ void main()
 		// Out ROOT is always first object. Start tree hierarchy visit from ROOT
 		const gamelib::scene::SceneObject::Ptr& root = m_pLevel->getSceneObjects()[0];
 
-		doRenderGeom(glFunctions, root);
+		doRenderGeom(glFunctions, root.get());
 	}
 
 	void SceneRenderWidget::discardResources(QOpenGLFunctions_3_3_Core* glFunctions)
@@ -884,16 +1056,20 @@ void main()
 		m_eState = ELevelState::LS_NONE; // Switch to none, everything is gone
 	}
 
-	void SceneRenderWidget::doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject::Ptr& geom) // NOLINT(*-no-recursion)
+	void SceneRenderWidget::doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject* geom, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
 	{
+		// Save "scene" resolution
+		const glm::ivec2 viewResolution { QWidget::width(), QWidget::height() };
+
 		// Take params
 		const auto primId     = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
 		const auto mMatrix    = geom->getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
+		const auto mMatrixT   = glm::transpose(mMatrix);
 
 		// Don't draw invisible things
-		if (bInvisible)
+		if (bInvisible && !bIgnoreVisibility)
 			return;
 
 		// TODO: Check for culling here (object visible or not)
@@ -902,7 +1078,7 @@ void main()
 		if (primId != 0)
 		{
 			// Extract matrix from properties
-			const glm::mat4 transformMatrix = glm::mat4(mMatrix);
+			const glm::mat4 transformMatrix = glm::mat4(mMatrixT);
 			const glm::mat4 translateMatrix = glm::translate(glm::mat4(1.f), vPosition);
 
 			// Am I right here?
@@ -924,79 +1100,64 @@ void main()
 				for (const auto& mesh : model.meshes)
 				{
 					// Render single mesh
-					// 1. Activate default shader
-					m_resources->m_shaders[0].bind(glFunctions);
-
-					// 2. Submit uniforms
-					m_resources->m_shaders[0].setUniform(glFunctions, "i_uTransform.model", modelMatrix);
-					m_resources->m_shaders[0].setUniform(glFunctions, "i_uCamera.proj", m_matProjection);
-					m_resources->m_shaders[0].setUniform(glFunctions, "i_uCamera.view", m_camera.getViewMatrix());
-					m_resources->m_shaders[0].setUniform(glFunctions, "i_uCamera.resolution", glm::ivec2(QWidget::width(), QWidget::height()));
-
-					// Encode debug object marker
+					// 0. Check that we able to draw it
+					if (mesh.glTextureId == GLResources::kInvalidResource)
 					{
-						// Here we have about 31 bits of data
-						int32_t debugMarker = 0;
-
-						union UEncoder
-						{
-							int32_t i32_1{0};
-							int16_t i16_2[2];
-						} encoder;
-
-						auto djb2Hash16 = [](const std::string& str) -> std::int16_t {
-							int16_t hash = 5381; // Initial hash value
-
-							for (char c : str) {
-								hash = ((hash << static_cast<std::int16_t>(5)) + hash) ^ static_cast<int16_t>(c);
-							}
-
-							return hash;
-						};
-
-						encoder.i16_2[0] = static_cast<int16_t>(model.chunkId);
-						encoder.i16_2[1] = djb2Hash16(geom->getName());
-
-						m_resources->m_shaders[0].setUniform(glFunctions, "i_DebugObjectID", encoder.i32_1);
+						// Draw "error" bounding box
+						// And continue
+						continue;
 					}
 
-					// 3. Bind texture
-					// TODO: Optimize me
-					{
-					    const auto& allTextures = m_resources->m_textures;
-						auto textureIt = std::find_if(allTextures.begin(), allTextures.end(), [index = mesh.textureId](const GLResources::Texture& tex) -> bool {
-							return tex.index.has_value() && tex.index.value() == index;
-						});
+					// 1. Activate default shader
+					GLResources::Shader& texturedShader = m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
 
-						if (textureIt != allTextures.end())
-						{
-							glFunctions->glBindTexture(GL_TEXTURE_2D, textureIt->texture);
-						}
-						else
-						{
-							// Need bind 'error' texture
-							glFunctions->glBindTexture(GL_TEXTURE_2D, m_resources->m_textures[m_resources->m_iDebugTextureIndex].texture);
-						}
+					texturedShader.bind(glFunctions);
+
+					// 2. Submit uniforms
+					texturedShader.setUniform(glFunctions, "i_uTransform.model", modelMatrix);
+					texturedShader.setUniform(glFunctions, "i_uCamera.proj", m_matProjection);
+					texturedShader.setUniform(glFunctions, "i_uCamera.view", m_camera.getViewMatrix());
+					texturedShader.setUniform(glFunctions, "i_uCamera.resolution", viewResolution);
+
+					// 3. Bind texture
+					if (mesh.glTextureId != GLResources::kInvalidResource)
+					{
+						glFunctions->glBindTexture(GL_TEXTURE_2D, mesh.glTextureId);
 					}
 
 					// 3. Activate VAO
 					glFunctions->glBindVertexArray(mesh.vao);
 
-					const GLenum mode = GL_TRIANGLES;
+					auto doSubmitGPUCommands = [glFunctions, mesh]() {
+						if (mesh.ibo != GLResources::kInvalidResource)
+						{
+							// Draw indexed
+							glFunctions->glDrawElements(GL_TRIANGLES, (mesh.trianglesCount * 3), GL_UNSIGNED_SHORT, nullptr);
+						}
+						else
+						{
+							// Draw elements
+							glFunctions->glDrawArrays(GL_TRIANGLES, 0, mesh.trianglesCount);
+						}
+					};
 
-					// 4. Submit
-					if (mesh.ibo != GLResources::kInvalidResource)
+					if (m_renderMode & RenderMode::RM_TEXTURE)
 					{
-						// Draw indexed
-						glFunctions->glDrawElements(mode, (mesh.trianglesCount * 3), GL_UNSIGNED_SHORT, nullptr);
-					}
-					else
-					{
-						// Draw elements
-						glFunctions->glDrawArrays(mode, 0, mesh.trianglesCount);
+						// normal draw
+						doSubmitGPUCommands();
 					}
 
-					// ... End
+					if (m_renderMode & RenderMode::RM_WIREFRAME)
+					{
+						glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+						doSubmitGPUCommands();
+						// reset back
+						glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+					}
+
+					// 5. Draw bounding box
+
+					// 6. Unbind texture and shader (expected to switch between materials, but not now)
 					glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
 					m_resources->m_shaders[0].unbind(glFunctions);
 				}
@@ -1009,7 +1170,7 @@ void main()
 		{
 			if (auto child = childRef.lock())
 			{
-				doRenderGeom(glFunctions, child);
+				doRenderGeom(glFunctions, child.get());
 			}
 		}
 	}

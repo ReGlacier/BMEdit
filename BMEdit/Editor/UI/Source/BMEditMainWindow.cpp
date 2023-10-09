@@ -105,6 +105,29 @@ void BMEditMainWindow::connectActions()
 	connect(ui->actionSave_properties, &QAction::triggered, this, &BMEditMainWindow::onExportProperties);
 	connect(ui->actionExport_PRP_properties, &QAction::triggered, this, &BMEditMainWindow::onExportPRP);
 	connect(ui->actionTextures, &QAction::triggered, this, &BMEditMainWindow::onShowTexturesDialog);
+	connect(ui->actionView_whole_scene, &QAction::triggered, this, [this] { ui->sceneGLView->setWorldViewMode(); });
+
+	// Modes
+	connect(ui->actionRenderMode_Texture, &QAction::toggled, this, [this](bool val) {
+		widgets::RenderModeFlags newMode = ui->sceneGLView->getRenderMode();
+
+		if (val)
+			newMode |= widgets::RenderMode::RM_TEXTURE;
+		else
+			newMode &= ~widgets::RenderMode::RM_TEXTURE;
+
+		ui->sceneGLView->setRenderMode(newMode);
+	});
+	connect(ui->actionRenderMode_Wireframe, &QAction::toggled, this, [this](bool val) {
+		widgets::RenderModeFlags newMode = ui->sceneGLView->getRenderMode();
+
+		if (val)
+			newMode |= widgets::RenderMode::RM_WIREFRAME;
+		else
+			newMode &= ~widgets::RenderMode::RM_WIREFRAME;
+
+		ui->sceneGLView->setRenderMode(newMode);
+	});
 }
 
 void BMEditMainWindow::connectDockWidgetActions()
@@ -140,7 +163,7 @@ void BMEditMainWindow::connectDockWidgetActions()
 	});
 
 	// Properties
-	connect(ui->propertiesDock, &QDockWidget::visibilityChanged, [=](bool visibility)
+	connect(ui->gameObjectDock, &QDockWidget::visibilityChanged, [=](bool visibility)
 	{
 		QSignalBlocker actionPropertiesBlocker{ui->actionProperties};
 
@@ -149,9 +172,9 @@ void BMEditMainWindow::connectDockWidgetActions()
 
 	connect(ui->actionProperties, &QAction::triggered, [=](bool checked)
 	{
-		QSignalBlocker propertiesDockBlocker{ui->propertiesDock};
+		QSignalBlocker propertiesDockBlocker{ui->gameObjectDock};
 
-		ui->propertiesDock->setVisible(checked);
+		ui->gameObjectDock->setVisible(checked);
 	});
 }
 
@@ -192,9 +215,9 @@ void BMEditMainWindow::onOpenLevel()
 }
 
 void BMEditMainWindow::onRestoreLayout() {
-	ui->propertiesDock->setVisible(true);
+	ui->gameObjectDock->setVisible(true);
 	ui->sceneDock->setVisible(true);
-	ui->propertiesDock->setVisible(true);
+	ui->gameObjectDock->setVisible(true);
 }
 
 void BMEditMainWindow::onShowTypesViewer()
@@ -213,7 +236,14 @@ void BMEditMainWindow::onLevelLoadSuccess()
 
 	// Level loaded, show objects tree
 	ui->searchInputField->clear();
+	ui->actionView_whole_scene->setEnabled(true);
+	ui->actionView_whole_scene->setChecked(true);
+	ui->actionRenderMode_Texture->setEnabled(true);
+	ui->actionRenderMode_Texture->setChecked(true);
+	ui->actionRenderMode_Wireframe->setEnabled(true);
+	ui->actionRenderMode_Wireframe->setChecked(false);
 
+	// Setup models
 	if (m_sceneTreeModel)
 	{
 		m_sceneTreeModel->setLevel(currentLevel);
@@ -357,6 +387,14 @@ void BMEditMainWindow::onCloseLevel()
 	ui->actionExport_PRP_properties->setEnabled(false);
 	ui->actionTextures->setEnabled(false);
 
+	// Reset world view mode
+	ui->actionView_whole_scene->setEnabled(false);
+	ui->actionView_whole_scene->setChecked(true);
+	ui->actionRenderMode_Texture->setEnabled(false);
+	ui->actionRenderMode_Texture->setChecked(true);
+	ui->actionRenderMode_Wireframe->setEnabled(false);
+	ui->actionRenderMode_Wireframe->setChecked(true);
+
 	// Disable filtering
 	QSignalBlocker blocker { ui->searchInputField };
 	ui->searchInputField->setEnabled(false);
@@ -441,12 +479,22 @@ void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& poin
 			ui->sceneGLView->moveCameraTo(vPosition);
 		};
 
+		auto implShowSelectedGeom = [this](gamelib::scene::SceneObject* sceneObject)
+		{
+			ui->actionView_whole_scene->setChecked(false);
+			ui->sceneGLView->setGeomViewMode(sceneObject);
+		};
+
 		contextMenu.addAction(QString("Object: '%1'").arg(QString::fromStdString(selectedGeom->getName())))->setDisabled(true);
 		contextMenu.addAction(QString("Type: '%1'").arg(QString::fromStdString(selectedGeom->getType()->getName())))->setDisabled(true);
+
 		contextMenu.addSeparator();
 		contextMenu.addAction("Copy path", [implCopyPathToGeom, selectedGeom] { implCopyPathToGeom(selectedGeom, false); });
 		contextMenu.addAction("Copy path (ignore ROOT)", [implCopyPathToGeom, selectedGeom] { implCopyPathToGeom(selectedGeom, true); });
+
+		contextMenu.addSeparator();
 		contextMenu.addAction("Move camera to this object", [implMoveCameraToGeom, selectedGeom] { implMoveCameraToGeom(const_cast<gamelib::scene::SceneObject*>(selectedGeom)); });
+		contextMenu.addAction("Show only this geom", [implShowSelectedGeom, selectedGeom] { implShowSelectedGeom(const_cast<gamelib::scene::SceneObject*>(selectedGeom)); });
 
 		contextMenu.exec(ui->sceneTreeView->viewport()->mapToGlobal(point));
 	}

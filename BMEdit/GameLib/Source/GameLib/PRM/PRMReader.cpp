@@ -44,7 +44,7 @@ namespace gamelib
 				chunk.data = std::make_unique<std::uint8_t[]>(m_file.entries[i].size);
 
 				// TODO: Need to check that data is valid (malloc is ok)
-				chunksReader.read<std::uint8_t, ZBio::Endianness::LE>(&chunk.data[0], m_file.entries[i].size);
+				chunksReader.read<std::uint8_t, ZBio::Endianness::LE>(chunk.data.get(), m_file.entries[i].size);
 
 				// TODO: Need to refactor and use former header for chunk buffer instead of cropping few bytes (will fix later)
 				// TODO: Need to use proper way to read bytes (endianness)
@@ -95,8 +95,11 @@ namespace gamelib
 					prm::Mesh currentMesh {};
 					prm::Mesh::deserialize(currentMesh, &meshEntryReader, m_file);
 
-					// Save mesh
-					model.meshes.emplace_back(std::move(currentMesh));
+					if (currentMesh.lod & (uint8_t)1 == (uint8_t)1)
+					{
+						// Save mesh
+						model.meshes.emplace_back(std::move(currentMesh));
+					}
 				}
 			}
 		}

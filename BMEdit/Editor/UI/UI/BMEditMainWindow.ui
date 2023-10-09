@@ -75,7 +75,17 @@
     <property name="title">
      <string>Scene</string>
     </property>
+    <widget class="QMenu" name="menuRender_Mode">
+     <property name="title">
+      <string>Render Mode</string>
+     </property>
+     <addaction name="actionRenderMode_Texture"/>
+     <addaction name="actionRenderMode_Wireframe"/>
+    </widget>
     <addaction name="actionSave_properties"/>
+    <addaction name="separator"/>
+    <addaction name="actionView_whole_scene"/>
+    <addaction name="menuRender_Mode"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -193,7 +203,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="propertiesDock">
+  <widget class="QDockWidget" name="gameObjectDock">
    <property name="minimumSize">
     <size>
      <width>260</width>
@@ -207,7 +217,7 @@
     <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="windowTitle">
-    <string>Properties</string>
+    <string>Game Object</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -286,6 +296,55 @@
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <item>
           <widget class="widgets::GeomControllersWidget" name="geomControllers" native="true"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="materialInfo">
+        <attribute name="title">
+         <string>Material</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Material ID: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="materialIdLabel">
+             <property name="text">
+              <string>N/A</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Material Name:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="materialNameLabel">
+             <property name="text">
+              <string>N/A</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -373,6 +432,47 @@
    </property>
    <property name="text">
     <string>Localization</string>
+   </property>
+  </action>
+  <action name="actionView_whole_scene">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>View whole scene</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+V</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_Texture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Texture</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_Wireframe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wireframe</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_TextureAndWireframe">
+   <property name="text">
+    <string>Texture &amp; Wireframe</string>
    </property>
   </action>
  </widget>
