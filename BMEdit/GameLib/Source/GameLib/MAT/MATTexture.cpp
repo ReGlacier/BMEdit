@@ -7,17 +7,18 @@
 
 namespace gamelib::mat
 {
-	MATTexture::MATTexture(std::string name, bool bEnabled, uint32_t textureId, MATTilingMode tilingU, MATTilingMode tilingV)
-		: m_name(std::move(name)), m_bEnabled(bEnabled), m_iTextureId(textureId), m_tileU(tilingU), m_tileV(tilingV)
+	MATTexture::MATTexture(std::string name, bool bEnabled, uint32_t textureId, std::string path, MATTilingMode tilingU, MATTilingMode tilingV, MATTilingMode tilingW)
+		: m_name(std::move(name)), m_texturePath(std::move(path)), m_bEnabled(bEnabled), m_iTextureId(textureId), m_tileU(tilingU), m_tileV(tilingV), m_tileW(tilingW)
 	{
 	}
 
 	MATTexture MATTexture::makeFromStream(ZBio::ZBinaryReader::BinaryReader* binaryReader, int propertiesCount)
 	{
 		std::string name{};
+		std::string path{};
 		bool bEnabled{false};
 		uint32_t textureId {0};
-		MATTilingMode tileU { MATTilingMode::TM_NONE }, tileV { MATTilingMode::TM_NONE };
+		MATTilingMode tileU { MATTilingMode::TM_NONE }, tileV { MATTilingMode::TM_NONE }, tileW { MATTilingMode::TM_NONE };
 
 		for (int i = 0; i < propertiesCount; i++)
 		{
@@ -39,7 +40,7 @@ namespace gamelib::mat
 			{
 				textureId = entry.reference;
 			}
-			else if (kind == MATPropertyKind::PK_TILINIG_U || kind == MATPropertyKind::PK_TILINIG_V)
+			else if (kind == MATPropertyKind::PK_TILINIG_U || kind == MATPropertyKind::PK_TILINIG_V || kind == MATPropertyKind::PK_TILINIG_W)
 			{
 				ZBioSeekGuard guard { binaryReader };
 				binaryReader->seek(entry.reference);
@@ -55,6 +56,10 @@ namespace gamelib::mat
 				{
 					tempMode = MATTilingMode::TM_TILED;
 				}
+				else if (temp == "MIRRORED")
+				{
+					tempMode = MATTilingMode::TM_MIRRORED;
+				}
 				else
 				{
 					assert(false && "Unsupported mode!");
@@ -63,10 +68,23 @@ namespace gamelib::mat
 
 				if (kind == MATPropertyKind::PK_TILINIG_U) tileU = tempMode;
 				if (kind == MATPropertyKind::PK_TILINIG_V) tileV = tempMode;
+				if (kind == MATPropertyKind::PK_TILINIG_W) tileW = tempMode;
+			}
+			else if (kind == MATPropertyKind::PK_PATH)
+			{
+				// Path to the texture
+				ZBioSeekGuard guard { binaryReader };
+				binaryReader->seek(entry.reference);
+
+				path = binaryReader->readCString();
+			}
+			else
+			{
+				assert(false && "Unsupported entry! Need to support!");
 			}
 		}
 
-		return MATTexture(std::move(name), bEnabled, textureId, tileU, tileV);
+		return MATTexture(std::move(name), bEnabled, textureId, path, tileU, tileV, tileW);
 	}
 
 	const std::string& MATTexture::getName() const
@@ -74,9 +92,19 @@ namespace gamelib::mat
 		return m_name;
 	}
 
+	bool MATTexture::isEnabled() const
+	{
+		return m_bEnabled;
+	}
+
 	uint32_t MATTexture::getTextureId() const
 	{
 		return m_iTextureId;
+	}
+
+	const std::string& MATTexture::getTexturePath() const
+	{
+		return m_texturePath;
 	}
 
 	MATTilingMode MATTexture::getTilingU() const
@@ -87,5 +115,24 @@ namespace gamelib::mat
 	MATTilingMode MATTexture::getTilingV() const
 	{
 		return m_tileV;
+	}
+
+	MATTilingMode MATTexture::getTilingW() const
+	{
+		return m_tileW;
+	}
+
+	PresentedTextureSource MATTexture::getPresentedTextureSources() const
+	{
+		if (m_texturePath.empty() && m_iTextureId == 0)
+			return PresentedTextureSource::PTS_NOTHING;
+
+		if (m_texturePath.empty() && m_iTextureId > 0)
+			return PresentedTextureSource::PTS_TEXTURE_ID;
+
+		if (!m_texturePath.empty() && m_iTextureId == 0)
+			return PresentedTextureSource::PTS_TEXTURE_PATH;
+
+		return PresentedTextureSource::PTS_TEXTURE_ID_AND_PATH;
 	}
 }

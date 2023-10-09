@@ -6,8 +6,9 @@
 #include <GameLib/Scene/SceneObjectPropertiesLoader.h>
 #include <GameLib/Scene/SceneObjectPropertiesDumper.h>
 
-#include <GameLib/Type.h>
 #include <GameLib/TypeRegistry.h>
+#include <GameLib/TypeComplex.h>
+#include <GameLib/Type.h>
 
 
 namespace gamelib
@@ -127,6 +128,39 @@ namespace gamelib
 		{
 			scene::SceneObjectPropertiesDumper dumper;
 			dumper.dump(this, &outBuffer);
+		}
+	}
+
+	void Level::forEachObjectOfType(const std::string& objectTypeName, const std::function<bool(const scene::SceneObject::Ptr&)>& pred) const
+	{
+		for (const auto& object: m_sceneObjects)
+		{
+			if (object->getType()->getName() == objectTypeName)
+			{
+				if (pred(object))
+					continue;
+
+				return;
+			}
+		}
+	}
+
+	bool isComplexTypeInheritedOf(const std::string& baseTypeName, const TypeComplex* pType)
+	{
+		return pType != nullptr && (pType->getName() == baseTypeName || isComplexTypeInheritedOf(baseTypeName, reinterpret_cast<const TypeComplex*>(pType->getParent())));
+	}
+
+	void Level::forEachObjectOfTypeWithInheritance(const std::string& objectBaseType, const std::function<bool(const scene::SceneObject::Ptr&)>& pred) const
+	{
+		for (const auto& object: m_sceneObjects)
+		{
+			if (object->getType()->getKind() == TypeKind::COMPLEX && isComplexTypeInheritedOf(objectBaseType, reinterpret_cast<const TypeComplex*>(object->getType())))
+			{
+				if (pred(object))
+					continue;
+
+				return;
+			}
 		}
 	}
 

@@ -2,8 +2,10 @@
 
 #include <vector>
 
+#include <GameLib/MAT/MATFloat.h>
 #include <GameLib/MAT/MATSprite.h>
 #include <GameLib/MAT/MATOption.h>
+#include <GameLib/MAT/MATScroll.h>
 #include <GameLib/MAT/MATTexture.h>
 #include <GameLib/MAT/MATRenderState.h>
 #include <GameLib/MAT/MATColorChannel.h>
@@ -29,6 +31,9 @@ namespace gamelib::mat
 		std::vector<MATTexture> textures;
 		std::vector<MATColorChannel> colorChannels;
 		std::vector<MATSprite> sprites;
+		std::vector<MATOption> options;
+		std::vector<MATScroll> scrolls;
+		std::vector<MATFloat>  floats;
 		/// ... another fields?
 	};
 }

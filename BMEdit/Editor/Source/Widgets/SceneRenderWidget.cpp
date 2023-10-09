@@ -72,6 +72,7 @@ namespace widgets
 			uint16_t height { 0 };
 			GLuint texture { kInvalidResource };
 			std::optional<std::uint32_t> index {}; /// Index of texture from TEX container
+			std::optional<std::string> texPath {}; /// [Optional] Path to texture in TEX container (path may not be defined in TEX!)
 
 			void discard(QOpenGLFunctions_3_3_Core* gapi)
 			{
@@ -304,6 +305,7 @@ namespace widgets
 		std::vector<Texture> m_textures {};
 		std::vector<Shader> m_shaders {};
 		std::vector<Model> m_models {};
+		std::unordered_map<uint32_t, size_t> m_modelsCache {};  /// primitive index to model index in m_models
 		GLuint m_iGLDebugTexture { 0 };
 		size_t m_iTexturedShaderIdx = 0;
 		size_t m_iGizmoShaderIdx = 0;
@@ -313,6 +315,7 @@ namespace widgets
 
 		void discard(QOpenGLFunctions_3_3_Core* gapi)
 		{
+			// Destroy textures
 			{
 				for (auto& texture : m_textures)
 				{
@@ -322,6 +325,7 @@ namespace widgets
 				m_textures.clear();
 			}
 
+			// Destroy shaders
 			{
 				for (auto& shader : m_shaders)
 				{
@@ -331,6 +335,7 @@ namespace widgets
 				m_shaders.clear();
 			}
 
+			// Destroy models
 			{
 				for (auto& model : m_models)
 				{
@@ -340,7 +345,13 @@ namespace widgets
 				m_models.clear();
 			}
 
+			// Empty cache
+			m_modelsCache.clear();
+
+			// Release refs
 			m_iGLDebugTexture = 0u;
+			m_iTexturedShaderIdx = 0u;
+			m_iGizmoShaderIdx = 0u;
 		}
 
 		[[nodiscard]] bool hasResources() const
@@ -383,11 +394,19 @@ namespace widgets
 		}
 
 		// Begin frame
-		funcs->glEnable(GL_DEPTH_TEST);
 		funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		funcs->glClearColor(0.15f, 0.2f, 0.45f, 1.0f);
-		funcs->glDepthFunc(GL_ALWAYS);
 
+		// Z-Buffer testing
+		funcs->glEnable(GL_DEPTH_TEST);
+		funcs->glDepthFunc(GL_LESS);
+
+		// Blending
+		funcs->glEnable(GL_BLEND);
+		funcs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// NOTE: Before render anything we need to look at material and check MATRenderState.
+		//       If it's applied we need to setup OpenGL into correct state to make perfect rendering
 		switch (m_eState)
 		{
 			case ELevelState::LS_NONE:
@@ -453,7 +472,11 @@ namespace widgets
 		{
 			bool bMoved = false;
 			constexpr float kBaseDt = 1.f / 60.f;
-			constexpr float kSpeedUp = 100.f;
+			float kSpeedUp = 100.f;
+
+			if (event->modifiers().testFlag(Qt::KeyboardModifier::ShiftModifier))
+				    kSpeedUp *= 4.f;
+
 
 			if (event->key() == Qt::Key_W)
 			{
@@ -607,6 +630,12 @@ namespace widgets
 		repaint();
 	}
 
+	void SceneRenderWidget::onRedrawRequested()
+	{
+		if (m_pLevel)
+			repaint();
+	}
+
 #define LEVEL_SAFE_CHECK() \
 		if (!m_pLevel) \
 		{ \
@@ -648,6 +677,7 @@ namespace widgets
 
 			// Store texture index from TEX container
 			newTexture.index = std::make_optional(texture.m_index);
+			newTexture.texPath = texture.m_fileName;  // just copy file name from tex (if it defined!)
 
 			// Create GL resource
 			glFunctions->glGenTextures(1, &newTexture.texture);
@@ -677,11 +707,15 @@ namespace widgets
 
 		qDebug() << "All textures (" << m_pLevel->getSceneTextures()->entries.size() << ") are loaded and ready to be used";
 		m_eState = ELevelState::LS_LOAD_GEOMETRY;
+		repaint(); // call to force jump into next state
 	}
 
 	void SceneRenderWidget::doLoadGeometry(QOpenGLFunctions_3_3_Core* glFunctions)
 	{
 		LEVEL_SAFE_CHECK()
+
+		// To avoid of future problems we've allocating null model at slot #0 and assign to it chunk #0
+		m_resources->m_models.emplace_back().chunkId = 0;
 
 		// TODO: Optimize and load "chunk by chunk"
 		for (const auto& model : m_pLevel->getLevelGeometry()->primitives.models)
@@ -697,6 +731,10 @@ namespace widgets
 			GLResources::Model& glModel = m_resources->m_models.emplace_back();
 			glModel.chunkId = model.chunk;
 
+			// Store cache
+			m_resources->m_modelsCache[model.chunk] = m_resources->m_models.size() - 1;
+
+			// Lookup mesh
 			int meshIdx = 0;
 			for (const auto& mesh : model.meshes)
 			{
@@ -790,16 +828,6 @@ namespace widgets
 						// Shadows - do not use texturing (and don't show for now)
 						glMesh.glTextureId = GLResources::kInvalidResource;
 					}
-					else if (parentName == "Old" || parentName == "Glow")
-					{
-						// TODO: Impl later
-						glMesh.glTextureId = GLResources::kInvalidResource;
-					}
-					else if (matInstance.getBinders().empty())
-					{
-						// No texture at all
-						glMesh.glTextureId = GLResources::kInvalidResource;
-					}
 					else if (parentName == "Bad")
 					{
 						// Use 'bad' debug texture
@@ -817,18 +845,46 @@ namespace widgets
 
 							for (const auto& texture : binder.textures)
 							{
-								if (texture.getName() == "mapDiffuse" && texture.getTextureId() != 0)
+								if (texture.getName() == "mapDiffuse" && (texture.getTextureId() != 0 || !texture.getTexturePath().empty()))
 								{
 									// And find texture in textures pool
 									for (const auto& textureResource : m_resources->m_textures)
 									{
-										if (textureResource.index.has_value() && textureResource.index.value() == texture.getTextureId())
+										switch (texture.getPresentedTextureSources())
 										{
-											glMesh.glTextureId = textureResource.texture;
+											case gamelib::mat::PresentedTextureSource::PTS_NOTHING:
+											    continue;  // Nothing
 
-											// Ok, we are ready to show this
-											bTextureFound = true;
+										    case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID:
+										    {
+											    // Only texture id
+											    if (textureResource.index.has_value() && textureResource.index.value() == texture.getTextureId())
+											    {
+												    // Good
+												    glMesh.glTextureId = textureResource.texture;
+												    bTextureFound = true;
+												    break;
+											    }
+										    }
 											break;
+										    case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH:
+										    {
+											    // Only path
+											    if (textureResource.texPath.has_value() && textureResource.texPath.value() == texture.getTexturePath())
+											    {
+												    // Good
+												    glMesh.glTextureId = textureResource.texture;
+												    bTextureFound = true;
+												    break;
+											    }
+										    }
+											break;
+										    default:
+										    {
+											    // Bad case! Undefined behaviour!
+											    assert(false && "Impossible case!");
+											    continue;
+										    }
 										}
 									}
 
@@ -845,6 +901,12 @@ namespace widgets
 									break;
 								}
 							}
+						}
+
+						if (matInstance.getBinders().empty())
+						{
+							// use debug texture
+							glMesh.glTextureId = m_resources->m_iGLDebugTexture;
 						}
 					}
 				}
@@ -869,6 +931,7 @@ namespace widgets
 
 		qDebug() << "All models (" << m_pLevel->getLevelGeometry()->primitives.models.size() << ") are loaded & ready to use!";
 		m_eState = ELevelState::LS_COMPILE_SHADERS;
+		repaint(); // call to force jump into next state
 	}
 
 	void SceneRenderWidget::doCompileShaders(QOpenGLFunctions_3_3_Core* glFunctions)
@@ -1002,6 +1065,7 @@ void main()
 
 		qDebug() << "Shaders (" << m_resources->m_shaders.size() << ") compiled and ready to use!";
 		m_eState = ELevelState::LS_RESET_CAMERA_STATE;
+		repaint(); // call to force jump into next state
 	}
 
 	void SceneRenderWidget::doResetCameraState(QOpenGLFunctions_3_3_Core* glFunctions)
@@ -1028,6 +1092,7 @@ void main()
 		emit resourcesReady();
 
 		m_eState = ELevelState::LS_READY; // Done!
+		repaint(); // call to force jump into next state
 	}
 
 	void SceneRenderWidget::doRenderScene(QOpenGLFunctions_3_3_Core* glFunctions)
@@ -1040,10 +1105,35 @@ void main()
 			updateProjectionMatrix(QWidget::width(), QWidget::height());
 		}
 
-		// Out ROOT is always first object. Start tree hierarchy visit from ROOT
-		const gamelib::scene::SceneObject::Ptr& root = m_pLevel->getSceneObjects()[0];
+		// First of all we need to find ZBackdrop and render scene from this geom
+		m_pLevel->forEachObjectOfType("ZBackdrop", [this, glFunctions](const gamelib::scene::SceneObject::Ptr& sceneObject) -> bool {
+			doRenderGeom(glFunctions, sceneObject.get());
 
-		doRenderGeom(glFunctions, root.get());
+			// Render only 1 ZBackdrop
+			return false;
+		});
+
+		// Then we need to find our 'current room'
+		// How to find current room? Idk, let's find all 'rooms'?
+		std::vector<gamelib::scene::SceneObject::Ptr> roomsToRender;
+		roomsToRender.reserve(16);
+
+		m_pLevel->forEachObjectOfTypeWithInheritance("ZROOM", [&roomsToRender](const gamelib::scene::SceneObject::Ptr& sceneObject) -> bool {
+			if (sceneObject->getName() != "ROOT" && sceneObject->getType()->getName() != "ZBackdrop")
+			{
+				// Save room
+				roomsToRender.emplace_back(sceneObject);
+			}
+
+			// Render every room
+			return true;
+		});
+
+		// Ok, we have rooms to draw, let's draw 'em all
+		for (const auto& room : roomsToRender)
+		{
+			doRenderGeom(glFunctions, room.get());
+		}
 	}
 
 	void SceneRenderWidget::discardResources(QOpenGLFunctions_3_3_Core* glFunctions)
@@ -1066,7 +1156,6 @@ void main()
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
 		const auto mMatrix    = geom->getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
-		const auto mMatrixT   = glm::transpose(mMatrix);
 
 		// Don't draw invisible things
 		if (bInvisible && !bIgnoreVisibility)
@@ -1078,23 +1167,16 @@ void main()
 		if (primId != 0)
 		{
 			// Extract matrix from properties
-			const glm::mat4 transformMatrix = glm::mat4(mMatrixT);
+			const glm::mat4 transformMatrix = glm::mat4(glm::transpose(mMatrix));
 			const glm::mat4 translateMatrix = glm::translate(glm::mat4(1.f), vPosition);
 
 			// Am I right here?
 			const glm::mat4 modelMatrix = translateMatrix * transformMatrix;
 
-			// And bind required resources
-			// TODO: Optimize me
-			const auto& models = m_resources->m_models;
-			auto modelIt = std::find_if(models.begin(), models.end(),
-			    [&primId](const GLResources::Model& model) -> bool {
-				    return model.chunkId == (primId - 1);
-			    });
-
-			if (modelIt != models.end())
+			// RenderGod
+			if (m_resources->m_modelsCache.contains(primId))
 			{
-				const GLResources::Model& model = *modelIt;
+				const GLResources::Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
 
 				// Render all meshes
 				for (const auto& mesh : model.meshes)

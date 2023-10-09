@@ -190,6 +190,9 @@ namespace widgets
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
 
+	public slots:
+		void onRedrawRequested();
+
 	protected:
 		void initializeGL() override;
 		void paintGL() override;

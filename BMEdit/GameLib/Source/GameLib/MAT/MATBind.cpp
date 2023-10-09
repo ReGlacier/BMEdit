@@ -52,6 +52,31 @@ namespace gamelib::mat
 
 				b.sprites.emplace_back(MATSprite::makeFromStream(binaryReader, entry.containerCapacity));
 			}
+			else if (entry.kind == MATPropertyKind::PK_BOOLEAN)
+			{
+				ZBioSeekGuard guard { binaryReader };
+				binaryReader->seek(entry.reference);
+
+				b.options.emplace_back(MATOption::makeFromStream(binaryReader, entry.containerCapacity));
+			}
+			else if (entry.kind == MATPropertyKind::PK_SCROLL)
+			{
+				ZBioSeekGuard guard { binaryReader };
+				binaryReader->seek(entry.reference);
+
+				b.scrolls.emplace_back(MATScroll::makeFromStream(binaryReader, entry.containerCapacity));
+			}
+			else if (entry.kind == MATPropertyKind::PK_FLOAT_VALUE)
+			{
+				ZBioSeekGuard guard { binaryReader };
+				binaryReader->seek(entry.reference);
+
+				b.floats.emplace_back(MATFloat::makeFromStream(binaryReader, entry.containerCapacity));
+			}
+			else
+			{
+				assert(false && "Unprocessed entry!");
+			}
 		}
 
 		return b;

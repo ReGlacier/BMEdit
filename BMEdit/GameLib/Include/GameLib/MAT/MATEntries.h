@@ -76,7 +76,7 @@ namespace gamelib::mat
 		PK_TEXTURE_ID      = 0x54584944u,  ///< [TRIVIAL] Hold uint32 value, in `reference` stored ID of texture (TEXEntry id, see TEX parser for details)
 		PK_TILINIG_U       = 0x54494C55u,  ///< [STRREF] Reference to string represents U tiling mode. Possible values: NONE, TILED. See MATTilingMode enum for details
 		PK_TILINIG_V       = 0x54494C56u,  ///< [STRREF] Reference to string represents V tiling mode. Possible values: NONE, TILED
-		PK_TILINIG_W       = 0x574C4954u,  ///< [STRREF] Reference to string represents W tiling mode. Possible values are unknown. Probably unused, but declared in Glacier1 code.
+		PK_TILINIG_W       = 0x54494C57u,  ///< [STRREF] Reference to string represents W tiling mode. Possible values are unknown. Probably unused, but declared in Glacier1 code.
 		PK_VAL_I           = 0x56414C49u,  ///< [STRREF] Reference to string. I guess it's something about 'set boolean parameter by string literal'. `ReflectionEnabled` as example.
 		PK_VAL_U           = 0x56414C55u,  ///< [TRIVIAL] Hold float or int value
 		PK_VAL_F           = 0x554C4156u,  ///< Idk, unused
@@ -84,13 +84,13 @@ namespace gamelib::mat
 		PK_TEXTURE         = 0x54455854u,  ///< [MATTexture] Reference to list of properties represents texture (PK_PATH - path to texture/PK_TEXTURE_ID - index of texture)
 		PK_COLOR           = 0x434F4C4Fu,  ///< [MATColorChannel] Reference to list of properties represents usage of color channel (as example v4IlluminationColor, presented via 2 properties: PK_NAME (name of channel) and PK_ENABLED)
 		PK_BOOLEAN         = 0x424F4F4Cu,  ///< [MATOption] Reference to list of properties represents boolean flag. Presented via 3 properties: PK_NAME: AlphaFadeEnabled, PK_ENABLED - use parameter or not and PK_VAL_U - value of flag
-		PK_FLOAT_VALUE     = 0x464C5456u,  ///< Weird to see this here. OK, maybe supports (at least referenced)
+		PK_FLOAT_VALUE     = 0x464C5456u,  ///< [MATFloat] Reference to list of properties represents some float argument (or group of floats)
 		PK_DMAP            = 0x50414D44u,  ///< Idk, unused (Glacier supports, but no usage)
 		PK_FMIN            = 0x4E494D46u,  ///< Min filter (Idk, looks like legacy from OpenGL times)
 		PK_FMAG            = 0x47414D46u,  ///< Mag filter (Idk, looks like legacy from OpenGL times)
 		PK_FMIP            = 0x50494D46u,  ///< Idk, unused
-		PK_SCROLL          = 0x4C524353u,  ///< Idk, unused
-		PK_SCROLL_SPEED    = 0x44455053u,  ///< Idk, unused
+		PK_SCROLL          = 0x5343524Cu,  ///< [MATScroll] Some scrollable something...
+		PK_SCROLL_SPEED    = 0x53504544u,  ///< Idk, unused
 		PK_ENUM            = 0x4D554E45u   ///< Idk, unused
 	};
 

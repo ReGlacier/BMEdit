@@ -14,6 +14,7 @@ namespace gamelib::mat
 		uint32_t iAlphaReference { 0u };
 		MATCullMode cullMode { MATCullMode::CM_DontCare };
 		MATBlendMode blendMode { MATBlendMode::BM_ADD };
+		MATValU valU {};
 
 		for (int i = 0; i < propertiesCount; i++)
 		{
@@ -116,11 +117,19 @@ namespace gamelib::mat
 				    }
 			    }
 			    break;
+			    case MATPropertyKind::PK_VAL_U:
+			    {
+				    assert(valU.getValues().empty() && "Must be empty here!");
+
+				    valU = MATValU::makeFromStream(binaryReader, entry);
+			    }
+				break;
 			    default:
+				    assert(false && "Unprocessed entry!");
 				    break;
 			}
 		}
 
-		return MATRenderState(std::move(name), bEnabled, bBlendEnabled, bAlphaTest, bFogEnabled, bZBias, fOpacity, fZOffset, iAlphaReference, cullMode, blendMode);
+		return MATRenderState(std::move(name), bEnabled, bBlendEnabled, bAlphaTest, bFogEnabled, bZBias, fOpacity, fZOffset, iAlphaReference, cullMode, blendMode, std::move(valU));
 	}
 }

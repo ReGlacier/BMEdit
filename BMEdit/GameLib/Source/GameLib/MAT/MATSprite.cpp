@@ -38,6 +38,10 @@ namespace gamelib::mat
 
 				++lastUpdatedUnk;
 			}
+			else
+			{
+				assert(false && "Unprocessed entry!");
+			}
 		}
 
 		return MATSprite(std::move(name), bUnk0, bUnk1);

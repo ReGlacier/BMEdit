@@ -214,7 +214,7 @@ namespace gamelib::mat
 
 					matReader->seek(properties[i].reference);
 
-					binders.emplace_back(MATBind::makeFromStream(matReader, properties[i].containerCapacity));
+					binders.emplace_back(MATBind::makeFromStream(matReader, static_cast<int>(properties[i].containerCapacity)));
 				}
 			}
 

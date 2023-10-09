@@ -8,6 +8,7 @@
 #include <GameLib/PRM/PRM.h>
 #include <GameLib/MAT/MAT.h>
 
+#include <functional>
 #include <memory>
 #include <vector>
 #include <cstdint>
@@ -67,9 +68,12 @@ namespace gamelib
 		[[nodiscard]] const LevelMaterials* getLevelMaterials() const;
 		[[nodiscard]] LevelMaterials* getLevelMaterials();
 
-		[[nodiscard]] const std::vector<scene::SceneObject::Ptr> &getSceneObjects() const;
+		[[nodiscard]] const std::vector<scene::SceneObject::Ptr>& getSceneObjects() const;
 
 		void dumpAsset(io::AssetKind assetKind, std::vector<uint8_t> &outBuffer) const;
+
+		void forEachObjectOfType(const std::string& objectTypeName, const std::function<bool(const scene::SceneObject::Ptr&)>& pred) const;
+		void forEachObjectOfTypeWithInheritance(const std::string& objectBaseType, const std::function<bool(const scene::SceneObject::Ptr&)>& pred) const;
 
 	private:
 		bool loadLevelProperties();

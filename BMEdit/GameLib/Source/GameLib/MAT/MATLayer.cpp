@@ -68,6 +68,10 @@ namespace gamelib::mat
 			{
 				valI = binaryReader->readCString();
 			}
+			else
+			{
+				assert(false && "Unprocessed entry!");
+			}
 		}
 
 		return MATLayer(std::move(name), std::move(type), std::move(shaderPath), std::move(identity), std::move(valI));

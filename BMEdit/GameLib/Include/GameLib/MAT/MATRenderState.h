@@ -2,6 +2,7 @@
 
 #include <GameLib/MAT/MATBlendMode.h>
 #include <GameLib/MAT/MATCullMode.h>
+#include <GameLib/MAT/MATValU.h>
 #include <string>
 
 
@@ -19,12 +20,14 @@ namespace gamelib::mat
 		               bool bEnabled, bool bBlendEnabled, bool bAlphaTest, bool bFogEnabled, bool bZBias,
 		               float fOpacity, float fZOffset,
 		               uint32_t iAlphaReference,
-		               MATCullMode cullMode, MATBlendMode blendMode):
+		               MATCullMode cullMode, MATBlendMode blendMode,
+		               MATValU&& valU):
 			   	m_name(std::move(name)),
    				m_bEnabled(bEnabled), m_bEnableBlend(bBlendEnabled), m_bAlphaTest(bAlphaTest), m_bFogEnabled(bFogEnabled), m_bZBias(bZBias),
 			   	m_fOpacity(fOpacity), m_fZOffset(fZOffset),
 			   	m_iAlphaReference(iAlphaReference),
-			   	m_eCullMode(cullMode), m_eBlendMode(blendMode)
+			   	m_eCullMode(cullMode), m_eBlendMode(blendMode),
+				m_valU(std::move(valU))
 		{
 		}
 
@@ -54,5 +57,6 @@ namespace gamelib::mat
 		uint32_t m_iAlphaReference { 0u };
 		float m_fOpacity { 1.f };
 		float m_fZOffset { .0f };
+		MATValU m_valU {};
 	};
 }

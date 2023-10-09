@@ -7,7 +7,7 @@
 
 namespace gamelib::mat
 {
-	MATColorChannel::MATColorChannel(std::string name, bool bEnabled, MATColorRGBA&& color)
+	MATColorChannel::MATColorChannel(std::string name, bool bEnabled, MATValU&& color)
 		: m_name(std::move(name)), m_bEnabled(bEnabled), m_color(color)
 	{
 	}
@@ -16,7 +16,7 @@ namespace gamelib::mat
 	{
 		std::string name {};
 		bool bEnabled { false };
-		MATColorRGBA color;
+		MATValU color;
 
 		for (int i = 0; i < propertiesCount; i++)
 		{
@@ -36,52 +36,12 @@ namespace gamelib::mat
 			}
 			else if (kind == MATPropertyKind::PK_VAL_U)
 			{
-				// We will jump to unmarked region (raw buffer)
-				ZBioSeekGuard guard { binaryReader };
-				binaryReader->seek(entry.reference);
-
-				if (entry.containerCapacity == 3)
-				{
-					// RGB
-					if (entry.valueType == MATValueType::PT_UINT32)
-					{
-						color.emplace<glm::ivec3>(
-						    binaryReader->read<uint32_t, ZBio::Endianness::LE>(),
-						    binaryReader->read<uint32_t, ZBio::Endianness::LE>(),
-						    binaryReader->read<uint32_t, ZBio::Endianness::LE>()
-						);
-					}
-					else if (entry.valueType == MATValueType::PT_FLOAT)
-					{
-						color.emplace<glm::vec3>(
-						    binaryReader->read<float, ZBio::Endianness::LE>(),
-						    binaryReader->read<float, ZBio::Endianness::LE>(),
-						    binaryReader->read<float, ZBio::Endianness::LE>()
-						);
-					}
-				}
-				else if (entry.containerCapacity == 4)
-				{
-					// RGBA
-					if (entry.valueType == MATValueType::PT_UINT32)
-					{
-						color.emplace<glm::ivec4>(
-						    binaryReader->read<uint32_t, ZBio::Endianness::LE>(),
-						    binaryReader->read<uint32_t, ZBio::Endianness::LE>(),
-						    binaryReader->read<uint32_t, ZBio::Endianness::LE>(),
-						    binaryReader->read<uint32_t, ZBio::Endianness::LE>()
-						);
-					}
-					else if (entry.valueType == MATValueType::PT_FLOAT)
-					{
-						color.emplace<glm::vec4>(
-						    binaryReader->read<float, ZBio::Endianness::LE>(),
-						    binaryReader->read<float, ZBio::Endianness::LE>(),
-						    binaryReader->read<float, ZBio::Endianness::LE>(),
-						    binaryReader->read<float, ZBio::Endianness::LE>()
-						);
-					}
-				}
+				// Read ValU
+				color = MATValU::makeFromStream(binaryReader, entry);
+			}
+			else
+			{
+				assert(false && "Unprocessed entry!");
 			}
 		}
 
@@ -98,7 +58,7 @@ namespace gamelib::mat
 		return m_bEnabled;
 	}
 
-	const MATColorRGBA& MATColorChannel::getColor() const
+	const MATValU& MATColorChannel::getColor() const
 	{
 		return m_color;
 	}

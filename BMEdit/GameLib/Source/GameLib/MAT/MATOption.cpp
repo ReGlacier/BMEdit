@@ -7,8 +7,8 @@
 
 namespace gamelib::mat
 {
-	MATOption::MATOption(std::string name, bool bEnabled, bool bDefault)
-		: m_name(std::move(name)), m_bEnabled(bEnabled), m_bDefault(bDefault)
+	MATOption::MATOption(std::string name, bool bEnabled, MATValU&& valU)
+		: m_name(std::move(name)), m_bEnabled(bEnabled), m_valU(std::move(valU))
 	{
 	}
 
@@ -22,15 +22,16 @@ namespace gamelib::mat
 		return m_bEnabled;
 	}
 
-	bool MATOption::getDefault() const
+	const MATValU& MATOption::getValU() const
 	{
-		return m_bDefault;
+		return m_valU;
 	}
 
 	MATOption MATOption::makeFromStream(ZBio::ZBinaryReader::BinaryReader* binaryReader, int propertiesCount)
 	{
 		std::string name {};
-		bool bEnabled = false, bDefault = false;
+		bool bEnabled = false;
+		MATValU valU {};
 
 		for (int i = 0; i < propertiesCount; i++)
 		{
@@ -50,10 +51,14 @@ namespace gamelib::mat
 			}
 			else if (kind == MATPropertyKind::PK_VAL_U)
 			{
-				bDefault = static_cast<bool>(entry.reference);
+				valU = MATValU::makeFromStream(binaryReader, entry);
+			}
+			else
+			{
+				assert(false && "Unprocessed entry!");
 			}
 		}
 
-		return MATOption(std::move(name), bEnabled, bDefault);
+		return MATOption(std::move(name), bEnabled, std::move(valU));
 	}
 }
