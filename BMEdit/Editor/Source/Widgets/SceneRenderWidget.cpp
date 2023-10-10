@@ -553,11 +553,14 @@ namespace widgets
 	void SceneRenderWidget::mouseReleaseEvent(QMouseEvent* event)
 	{
 		QOpenGLWidget::mouseReleaseEvent(event);
+
+		m_bFirstMouseQuery = true;
+		m_mouseLastPosition = QPoint(0, 0);
 	}
 
 	void SceneRenderWidget::updateProjectionMatrix(int w, int h)
 	{
-		m_matProjection = glm::perspectiveFov(glm::radians(m_fFOV), static_cast<float>(w), static_cast<float>(h), m_fZNear, m_fZFar);
+		m_matProjection = glm::perspectiveFovLH(glm::radians(m_fFOV), static_cast<float>(w), static_cast<float>(h), m_fZNear, m_fZFar);
 		m_bDirtyProj = false;
 	}
 
@@ -1173,8 +1176,6 @@ namespace widgets
 			 *        | m02 m01 m00 |
 			 * mDst = | m12 m11 m21 |
 			 *        | m22 m21 m20 |
-			 *
-			 * TODO: Need to find how to fix X flipping of map (or missrotating, idk)
 			 */
 			mTransform[0][0] = mMatrix[0][2];
 			mTransform[1][0] = mMatrix[0][1];

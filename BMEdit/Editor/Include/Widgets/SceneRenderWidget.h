@@ -87,9 +87,9 @@ namespace renderer
 		{
 			float velocity = MovementSpeed * deltaTime * moveScale;
 			if (direction == FORWARD)
-				Position += Front * velocity;
-			if (direction == BACKWARD)
 				Position -= Front * velocity;
+			if (direction == BACKWARD)
+				Position += Front * velocity;
 			if (direction == LEFT)
 				Position -= Right * velocity;
 			if (direction == RIGHT)
