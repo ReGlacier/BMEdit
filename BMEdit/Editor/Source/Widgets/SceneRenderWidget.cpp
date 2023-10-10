@@ -11,6 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <GameLib/TEX/TEXEntry.h>
 #include <GameLib/PRP/PRPMathTypes.h>
+#include <GameLib/BoundingBox.h>
 #include <optional>
 
 
@@ -56,7 +57,8 @@ namespace widgets
 		struct Model
 		{
 			std::vector<Mesh> meshes {};
-			std::uint32_t chunkId { 0 };
+			gamelib::BoundingBox boundingBox {};
+			[[maybe_unused]] uint32_t chunkId {0u};
 
 			void discardAll(QOpenGLFunctions_3_3_Core* gapi)
 			{
@@ -763,9 +765,6 @@ namespace widgets
 	{
 		LEVEL_SAFE_CHECK()
 
-		// To avoid of future problems we've allocating null model at slot #0 and assign to it chunk #0
-		m_resources->m_models.emplace_back().chunkId = 0;
-
 		// TODO: Optimize and load "chunk by chunk"
 		for (const auto& model : m_pLevel->getLevelGeometry()->primitives.models)
 		{
@@ -779,6 +778,7 @@ namespace widgets
 
 			GLResources::Model& glModel = m_resources->m_models.emplace_back();
 			glModel.chunkId = model.chunk;
+			glModel.boundingBox = gamelib::BoundingBox(model.boundingBox.vMin, model.boundingBox.vMax);
 
 			// Store cache
 			m_resources->m_modelsCache[model.chunk] = m_resources->m_models.size() - 1;
@@ -1131,16 +1131,6 @@ namespace widgets
 		{
 			doRenderGeom(glFunctions, room.get());
 		}
-	}
-
-	void SceneRenderWidget::discardResources(QOpenGLFunctions_3_3_Core* glFunctions)
-	{
-		if (m_resources)
-		{
-			m_resources->discard(glFunctions);
-		}
-
-		m_eState = ELevelState::LS_NONE; // Switch to none, everything is gone
 	}
 
 	void SceneRenderWidget::doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject* geom, bool bIgnoreVisibility) // NOLINT(*-no-recursion)

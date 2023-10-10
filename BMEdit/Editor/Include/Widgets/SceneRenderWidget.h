@@ -212,7 +212,6 @@ namespace widgets
 		void doCompileShaders(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doResetCameraState(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject* geom, bool bIgnoreVisibility = false);
-		void discardResources(QOpenGLFunctions_3_3_Core* glFunctions);
 
 	private:
 		// Data

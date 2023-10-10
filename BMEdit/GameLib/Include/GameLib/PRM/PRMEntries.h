@@ -67,7 +67,6 @@ namespace gamelib::prm
 		std::vector<Index> indices {};
 		std::vector<glm::vec2> uvs {};
 		VertexFormat vertexFormat { VertexFormat::VF_ERROR };
-		//BoundingBox boundingBox {};
 
 		static void deserialize(Mesh& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader, const PrmFile& prmFile);
 	};
@@ -75,6 +74,7 @@ namespace gamelib::prm
 	struct Model
 	{
 		uint32_t chunk = 0;
+		BoundingBox boundingBox {};
 		std::vector<Mesh> meshes {};
 	};
 

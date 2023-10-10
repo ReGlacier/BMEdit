@@ -71,8 +71,13 @@ namespace gamelib
 				modelReader.seek(0x14);
 				uint32_t meshCount = 0, meshTable = 0;
 
-				meshCount = modelReader.read<uint32_t, ZBio::Endianness::LE>();
-				meshTable = modelReader.read<uint32_t, ZBio::Endianness::LE>();
+				meshCount = modelReader.read<uint32_t, ZBio::Endianness::LE>(); // 0x14 -> 0x18
+				meshTable = modelReader.read<uint32_t, ZBio::Endianness::LE>(); // 0x18 -> 0x1C
+
+				// Read bbox
+				ZBioHelpers::seekBy(&modelReader, 0x4);
+
+				prm::BoundingBox::deserialize(model.boundingBox, &modelReader);
 
 				// Read mesh table
 				ZBio::ZBinaryReader::BinaryReader meshTableReader {
