@@ -375,19 +375,18 @@ namespace widgets
 
 	SceneRenderWidget::SceneRenderWidget(QWidget *parent, Qt::WindowFlags f) : QOpenGLWidget(parent, f)
 	{
-	}
-
-	SceneRenderWidget::~SceneRenderWidget() noexcept = default;
-
-	void SceneRenderWidget::initializeGL()
-	{
 		QSurfaceFormat format;
 		format.setDepthBufferSize(24);
 		format.setStencilBufferSize(8);
 		format.setVersion(3, 3);
 		format.setProfile(QSurfaceFormat::CoreProfile);
 		setFormat(format);
+	}
 
+	SceneRenderWidget::~SceneRenderWidget() noexcept = default;
+
+	void SceneRenderWidget::initializeGL()
+	{
 		// Create resource holder
 		m_resources = std::make_unique<GLResources>();
 	}
@@ -996,12 +995,41 @@ namespace widgets
 		texturedEntityVertexShader.open(QIODevice::ReadOnly);
 		texturedEntityFragmentShader.open(QIODevice::ReadOnly);
 
+		const std::string texturedEntityVertexShaderSource = texturedEntityVertexShader.readAll().toStdString();
+		const std::string texturedEntityFragmentShaderSource = texturedEntityFragmentShader.readAll().toStdString();
+		const std::string coloredEntityVertexShaderSource = coloredEntityVertexShader.readAll().toStdString();
+		const std::string coloredEntityFragmentShaderSource = coloredEntityFragmentShader.readAll().toStdString();
+
+		if (texturedEntityVertexShaderSource.empty())
+		{
+			emit resourceLoadFailed(QString("Failed to compile shaders (textured:vertex): no embedded asset found."));
+			return;
+		}
+
+		if (texturedEntityFragmentShaderSource.empty())
+		{
+			emit resourceLoadFailed(QString("Failed to compile shaders (textured:fragment): no embedded asset found."));
+			return;
+		}
+
+		if (coloredEntityVertexShaderSource.empty())
+		{
+			emit resourceLoadFailed(QString("Failed to compile shaders (colored:vertex): no embedded asset found."));
+			return;
+		}
+
+		if (coloredEntityFragmentShaderSource.empty())
+		{
+			emit resourceLoadFailed(QString("Failed to compile shaders (colored:fragment): no embedded asset found."));
+			return;
+		}
+
 		// Compile shaders
 		std::string compileError;
 		{
 			GLResources::Shader texturedShader;
 
-			if (!texturedShader.compile(glFunctions, texturedEntityVertexShader.readAll().toStdString(), texturedEntityFragmentShader.readAll().toStdString(), compileError))
+			if (!texturedShader.compile(glFunctions, texturedEntityVertexShaderSource, texturedEntityFragmentShaderSource, compileError))
 			{
 				m_pLevel = nullptr;
 				m_eState = ELevelState::LS_NONE;
@@ -1016,12 +1044,12 @@ namespace widgets
 
 		{
 			GLResources::Shader gizmoShader;
-			if (!gizmoShader.compile(glFunctions, coloredEntityVertexShader.readAll().toStdString(), texturedEntityFragmentShader.readAll().toStdString(), compileError))
+			if (!gizmoShader.compile(glFunctions, coloredEntityVertexShaderSource, coloredEntityFragmentShaderSource, compileError))
 			{
 				m_pLevel = nullptr;
 				m_eState = ELevelState::LS_NONE;
 
-				emit resourceLoadFailed(QString("Failed to compile shaders (gizmo): %1").arg(QString::fromStdString(compileError)));
+				emit resourceLoadFailed(QString("Failed to compile shaders (colored): %1").arg(QString::fromStdString(compileError)));
 				return;
 			}
 
