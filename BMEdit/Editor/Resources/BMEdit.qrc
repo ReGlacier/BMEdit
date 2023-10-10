@@ -11,5 +11,13 @@
     <file alias="weapon_icon.png">Icons/Glacier/Weapon.png</file>
     <file alias="cloth_icon.png">Icons/Glacier/Cloth.png</file>
     <file alias="unknown_icon.png">Icons/Glacier/Unknown.png</file>
+
+    <file alias="mtl_unsupported.png">Textures/unsupported_material.png</file>
+    <file alias="mtl_missing_texture.png">Textures/missing_texture.png</file>
+
+    <file alias="mtl_colored_gl33.vsh">Shaders/ColoredEntity_GL33.vsh</file>
+    <file alias="mtl_colored_gl33.fsh">Shaders/ColoredEntity_GL33.fsh</file>
+    <file alias="mtl_textured_gl33.vsh">Shaders/TexturedEntity_GL33.vsh</file>
+    <file alias="mtl_textured_gl33.fsh">Shaders/TexturedEntity_GL33.fsh</file>
 </qresource>
 </RCC>

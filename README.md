@@ -18,6 +18,7 @@ Dependencies
  * [Nlohmann JSON](https://github.com/nlohmann/json)
  * [zlib](https://github.com/madler/zlib)
  * [conan](https://conan.io) (see "Build" for details)
+ * [Kenney Prototype Textures](https://www.kenney.nl/assets/prototype-textures)
 
 Build
 -----

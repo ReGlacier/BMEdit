@@ -145,9 +145,8 @@ namespace gamelib::prm
 							    glm::vec3& vertex = mesh.vertices.emplace_back();
 							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
 
-							    // Skip 4 bytes (it's some sort of data, but ignored by us)
-							    // TODO: Fix this!
-							    ZBioHelpers::seekBy(&vertexReader, 0x4);
+							    uint8_t l[4] { 0, 0, 0, 0 };
+							    vertexReader.read<uint8_t, ZBio::Endianness::LE>(&l[0], 4);
 						    }
 					    }
 					    break;

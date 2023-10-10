@@ -3,7 +3,10 @@
 #include <QOpenGLVersionFunctionsFactory>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLContext>
+#include <QBuffer>
 #include <QDebug>
+#include <QImage>
+#include <QFile>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <GameLib/TEX/TEXEntry.h>
@@ -307,6 +310,8 @@ namespace widgets
 		std::vector<Model> m_models {};
 		std::unordered_map<uint32_t, size_t> m_modelsCache {};  /// primitive index to model index in m_models
 		GLuint m_iGLDebugTexture { 0 };
+		GLuint m_iGLMissingTexture { 0 };
+		GLuint m_iGLUnsupportedMaterialTexture { 0 };
 		size_t m_iTexturedShaderIdx = 0;
 		size_t m_iGizmoShaderIdx = 0;
 
@@ -350,6 +355,8 @@ namespace widgets
 
 			// Release refs
 			m_iGLDebugTexture = 0u;
+			m_iGLMissingTexture = 0u;
+			m_iGLUnsupportedMaterialTexture = 0u;
 			m_iTexturedShaderIdx = 0u;
 			m_iGizmoShaderIdx = 0u;
 		}
@@ -586,7 +593,6 @@ namespace widgets
 		{
 			m_eViewMode = EViewMode::VM_GEOM_PREVIEW;
 			m_pSceneObjectToView = sceneObject;
-			m_camera.setPosition(glm::vec3(0.f));
 			repaint();
 		}
 	}
@@ -595,7 +601,6 @@ namespace widgets
 	{
 		m_eViewMode = EViewMode::VM_WORLD_VIEW;
 		m_pSceneObjectToView = nullptr;
-		m_camera.setPosition(glm::vec3(0.f));
 		repaint();
 	}
 
@@ -705,6 +710,48 @@ namespace widgets
 			m_resources->m_textures.emplace_back(newTexture);
 		}
 
+		// And load extra textures (render specific)
+		auto uploadQImageToGPU = [](QOpenGLFunctions_3_3_Core* gapi, const QImage& image) -> GLuint
+		{
+			GLuint textureId;
+			gapi->glGenTextures(1, &textureId);
+			gapi->glBindTexture(GL_TEXTURE_2D, textureId);
+			gapi->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.constBits());
+
+			gapi->glGenerateMipmap(GL_TEXTURE_2D);
+			gapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			gapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			gapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			gapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			gapi->glBindTexture(GL_TEXTURE_2D, 0);
+
+			return textureId;
+		};
+
+		{
+			QImage missingTextureImage = QImage(":/bmedit/mtl_missing_texture.png").convertToFormat(QImage::Format_RGBA8888, Qt::AutoColor);
+
+			auto& missingTexture = m_resources->m_textures.emplace_back();
+			missingTexture.texture = uploadQImageToGPU(glFunctions, missingTextureImage);
+			missingTexture.width = missingTextureImage.width();
+			missingTexture.height = missingTextureImage.height();
+
+			m_resources->m_iGLMissingTexture = missingTexture.texture;
+		}
+
+		{
+			QImage unsupportedMaterialTextureImage = QImage(":/bmedit/mtl_unsupported.png").convertToFormat(QImage::Format_RGBA8888, Qt::AutoColor);
+
+			auto& unsupportedMaterial = m_resources->m_textures.emplace_back();
+			unsupportedMaterial.texture = uploadQImageToGPU(glFunctions, unsupportedMaterialTextureImage);
+			unsupportedMaterial.width = unsupportedMaterialTextureImage.width();
+			unsupportedMaterial.height = unsupportedMaterialTextureImage.height();
+
+			m_resources->m_iGLUnsupportedMaterialTexture = unsupportedMaterial.texture;
+		}
+
+		// It's done
 		qDebug() << "All textures (" << m_pLevel->getSceneTextures()->entries.size() << ") are loaded and ready to be used";
 		m_eState = ELevelState::LS_LOAD_GEOMETRY;
 		repaint(); // call to force jump into next state
@@ -831,7 +878,7 @@ namespace widgets
 					else if (parentName == "Bad")
 					{
 						// Use 'bad' debug texture
-						glMesh.glTextureId = m_resources->m_iGLDebugTexture;
+						glMesh.glTextureId = m_resources->m_iGLUnsupportedMaterialTexture;
 					}
 					else
 					{
@@ -891,7 +938,7 @@ namespace widgets
 									if (!bTextureFound)
 									{
 										// Use error texture
-										glMesh.glTextureId = m_resources->m_iGLDebugTexture;
+										glMesh.glTextureId = m_resources->m_iGLMissingTexture;
 									}
 
 									// But mark us as 'found'
@@ -903,11 +950,11 @@ namespace widgets
 							}
 						}
 
-						if (matInstance.getBinders().empty())
-						{
-							// use debug texture
-							glMesh.glTextureId = m_resources->m_iGLDebugTexture;
-						}
+						// For debug only
+//						if (glMesh.glTextureId == GLResources::kInvalidResource)
+//						{
+//							glMesh.glTextureId = m_resources->m_iGLMissingTexture;
+//						}
 					}
 				}
 				else if (mesh.textureId > 0)
@@ -938,104 +985,23 @@ namespace widgets
 	{
 		LEVEL_SAFE_CHECK()
 
-		// TODO: In future we will use shaders from FS, but now I need to debug this stuff easier
-		static constexpr const char* kTexturedVertexShader = R"(
-#version 330 core
+		// Load shaders from resources
+		QFile coloredEntityVertexShader(":/bmedit/mtl_colored_gl33.vsh");
+		QFile coloredEntityFragmentShader(":/bmedit/mtl_colored_gl33.fsh");
+		QFile texturedEntityVertexShader(":/bmedit/mtl_textured_gl33.vsh");
+		QFile texturedEntityFragmentShader(":/bmedit/mtl_textured_gl33.fsh");
 
-// Layout
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aUV;
-
-// Common
-struct Camera
-{
-    mat4  proj;
-    mat4  view;
-	ivec2 resolution;
-};
-
-struct Transform
-{
-    mat4 model;
-};
-
-// Uniforms
-uniform Camera i_uCamera;
-uniform Transform i_uTransform;
-
-// Out
-out vec2 g_TexCoord;
-
-void main()
-{
-    gl_Position = i_uCamera.proj * i_uCamera.view * i_uTransform.model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
-    g_TexCoord = aUV;
-}
-)";
-
-		static constexpr const char* kTexturedFragmentShader = R"(
-#version 330 core
-
-uniform sampler2D i_ActiveTexture;
-in vec2 g_TexCoord;
-
-// Out
-out vec4 o_FragColor;
-
-void main()
-{
-    o_FragColor = texture(i_ActiveTexture, g_TexCoord);
-}
-)";
-
-		static constexpr const char* kGizmoVertexShader = R"(
-#version 330 core
-
-// Layout
-layout (location = 0) in vec3 aPos;
-
-// Common
-struct Camera
-{
-    mat4  proj;
-    mat4  view;
-	ivec2 resolution;
-};
-
-struct Transform
-{
-    mat4 model;
-};
-
-// Uniforms
-uniform Camera i_uCamera;
-uniform Transform i_uTransform;
-
-void main()
-{
-    gl_Position = i_uCamera.proj * i_uCamera.view * i_uTransform.model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
-}
-)";
-
-		static constexpr const char* kGizmoFragmentShader = R"(
-#version 330 core
-
-uniform vec4 i_Color;
-
-// Out
-out vec4 o_FragColor;
-
-void main()
-{
-    o_FragColor = i_Color;
-}
-)";
+		coloredEntityVertexShader.open(QIODevice::ReadOnly);
+		coloredEntityFragmentShader.open(QIODevice::ReadOnly);
+		texturedEntityVertexShader.open(QIODevice::ReadOnly);
+		texturedEntityFragmentShader.open(QIODevice::ReadOnly);
 
 		// Compile shaders
 		std::string compileError;
 		{
 			GLResources::Shader texturedShader;
-			if (!texturedShader.compile(glFunctions, kTexturedVertexShader, kTexturedFragmentShader, compileError))
+
+			if (!texturedShader.compile(glFunctions, texturedEntityVertexShader.readAll().toStdString(), texturedEntityFragmentShader.readAll().toStdString(), compileError))
 			{
 				m_pLevel = nullptr;
 				m_eState = ELevelState::LS_NONE;
@@ -1050,7 +1016,7 @@ void main()
 
 		{
 			GLResources::Shader gizmoShader;
-			if (!gizmoShader.compile(glFunctions, kGizmoVertexShader, kGizmoFragmentShader, compileError))
+			if (!gizmoShader.compile(glFunctions, coloredEntityVertexShader.readAll().toStdString(), texturedEntityFragmentShader.readAll().toStdString(), compileError))
 			{
 				m_pLevel = nullptr;
 				m_eState = ELevelState::LS_NONE;
@@ -1167,11 +1133,37 @@ void main()
 		if (primId != 0)
 		{
 			// Extract matrix from properties
-			const glm::mat4 transformMatrix = glm::mat4(glm::transpose(mMatrix));
-			const glm::mat4 translateMatrix = glm::translate(glm::mat4(1.f), vPosition);
+			glm::mat4 mTransform = glm::mat4(1.f);
 
-			// Am I right here?
-			const glm::mat4 modelMatrix = translateMatrix * transformMatrix;
+			/**
+			 * Convert from DX9 to OpenGL
+			 *
+			 *        | m00 m10 m20 |
+			 * mSrc = | m01 m11 m21 |
+			 *        | m02 m12 m22 |
+			 *
+			 *        | m02 m01 m00 |
+			 * mDst = | m12 m11 m21 |
+			 *        | m22 m21 m20 |
+			 *
+			 * TODO: Need to find how to fix X flipping of map (or missrotating, idk)
+			 */
+			mTransform[0][0] = mMatrix[0][2];
+			mTransform[1][0] = mMatrix[0][1];
+			mTransform[2][0] = mMatrix[0][0];
+
+			mTransform[0][1] = mMatrix[1][2];
+			mTransform[1][1] = mMatrix[1][1];
+			mTransform[2][1] = mMatrix[2][1];
+
+			mTransform[0][2] = mMatrix[2][2];
+			mTransform[1][2] = mMatrix[2][1];
+			mTransform[2][2] = mMatrix[2][0];
+
+			mTransform[3][3] = 1.f;
+
+			glm::mat4 mTranslate = glm::translate(glm::mat4(1.f), vPosition);
+			glm::mat4 mModelMatrix = mTranslate * mTransform;
 
 			// RenderGod
 			if (m_resources->m_modelsCache.contains(primId))
@@ -1196,7 +1188,7 @@ void main()
 					texturedShader.bind(glFunctions);
 
 					// 2. Submit uniforms
-					texturedShader.setUniform(glFunctions, "i_uTransform.model", modelMatrix);
+					texturedShader.setUniform(glFunctions, "i_uTransform.model", mModelMatrix);
 					texturedShader.setUniform(glFunctions, "i_uCamera.proj", m_matProjection);
 					texturedShader.setUniform(glFunctions, "i_uCamera.view", m_camera.getViewMatrix());
 					texturedShader.setUniform(glFunctions, "i_uCamera.resolution", viewResolution);
