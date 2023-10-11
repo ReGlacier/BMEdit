@@ -7,6 +7,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/glm.hpp>
 #include <memory>
+#include <list>
 #include <QString>
 #include <QMouseEvent>
 #include <QKeyEvent>
@@ -78,12 +79,29 @@ namespace widgets
 
 	private:
 		void updateProjectionMatrix(int w, int h);
-		void doRenderScene(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doLoadTextures(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doLoadGeometry(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doCompileShaders(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doResetCameraState(QOpenGLFunctions_3_3_Core* glFunctions);
-		void doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject* geom, bool bIgnoreVisibility = false);
+
+		/**
+		 * @brief Entry which will be rendered in render loop
+		 */
+		struct RenderEntry
+		{
+			const gamelib::scene::SceneObject* pGeom { nullptr };
+			glm::mat4 mModelMatrix { 1.f };
+			glm::vec3 vPosition { .0f };
+			uint32_t iPrimId { 0u };
+		};
+
+		using RenderList = std::list<RenderEntry>;
+
+		void doCollectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, RenderList& renderList, bool bIgnoreVisibility);
+		void doVisitGeomToCollectIntoRenderList(const gamelib::scene::SceneObject* pRootGeom, RenderList& renderList, bool bIgnoreVisibility);
+		void doPerformDrawOfRenderList(QOpenGLFunctions_3_3_Core* glFunctions, const RenderList& renderList, const render::Camera& camera);
+
+		void invalidateRenderList();
 
 	private:
 		// Data
@@ -122,6 +140,8 @@ namespace widgets
 
 		EViewMode m_eViewMode { EViewMode::VM_WORLD_VIEW };
 		gamelib::scene::SceneObject* m_pSceneObjectToView {};
+
+		RenderList m_renderList {};
 
 		struct GLResources;
 		std::unique_ptr<GLResources> m_resources;

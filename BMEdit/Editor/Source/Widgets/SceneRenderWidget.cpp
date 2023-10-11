@@ -19,6 +19,8 @@
 #include <Render/Texture.h>
 #include <Render/Shader.h>
 #include <Render/Model.h>
+
+#include <algorithm>
 #include <optional>
 
 
@@ -128,6 +130,11 @@ namespace widgets
 		funcs->glEnable(GL_BLEND);
 		funcs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+		if (m_bDirtyProj)
+		{
+			updateProjectionMatrix(QWidget::width(), QWidget::height());
+		}
+
 		// NOTE: Before render anything we need to look at material and check MATRenderState.
 		//       If it's applied we need to setup OpenGL into correct state to make perfect rendering
 		switch (m_eState)
@@ -163,17 +170,33 @@ namespace widgets
 			break;
 			case ELevelState::LS_READY:
 		    {
+			    gamelib::scene::SceneObject* pRoot = nullptr;
+			    bool bIgnoreVisibility = false;
+
 			    if (m_eViewMode == EViewMode::VM_WORLD_VIEW)
 			    {
-					doRenderScene(funcs);
+				    pRoot = m_pLevel->getSceneObjects()[0].get();
 				}
 			    else if (m_eViewMode == EViewMode::VM_GEOM_PREVIEW)
 			    {
 				    if (m_pSceneObjectToView)
 				    {
-						// Render object & ignore Invisible flag
-						doRenderGeom(funcs, m_pSceneObjectToView, true);
+						bIgnoreVisibility = true;
+						pRoot = m_pSceneObjectToView;
 					}
+			    }
+
+			    if (!pRoot)
+				    return;
+
+			    if (m_renderList.empty())
+			    {
+				    doCollectRenderList(m_camera, pRoot, m_renderList, bIgnoreVisibility);
+			    }
+
+			    if (!m_renderList.empty())
+			    {
+				    doPerformDrawOfRenderList(funcs, m_renderList, m_camera);
 			    }
 		    }
 		    break;
@@ -185,8 +208,11 @@ namespace widgets
 		Q_UNUSED(w);
 		Q_UNUSED(h);
 
-		// Will recalc on next frame
-		m_bDirtyProj = true;
+		// Update projection
+		updateProjectionMatrix(w, h);
+
+		// Because our list of visible objects could be changed here
+		invalidateRenderList();
 	}
 
 	void SceneRenderWidget::keyPressEvent(QKeyEvent* event)
@@ -223,7 +249,10 @@ namespace widgets
 			}
 
 			if (bMoved)
+			{
+				invalidateRenderList();
 				repaint();
+			}
 		}
 
 		QOpenGLWidget::keyPressEvent(event);
@@ -248,14 +277,18 @@ namespace widgets
 				return;
 			}
 
-			float xoffset = xpos - m_mouseLastPosition.x();
-			float yoffset = m_mouseLastPosition.y() - ypos;
+			float xOffset = static_cast<float>(xpos - m_mouseLastPosition.x());
+			float yOffset = static_cast<float>(m_mouseLastPosition.y() - ypos);
 
 			m_mouseLastPosition = event->pos();
 
 			// Update camera
-			qDebug() << "Mouse moved (" << xoffset << ";" << yoffset << ")";
-			m_camera.processMouseMovement(xoffset, yoffset);
+			const float kMinMovement = 0.001f;
+			if (std::fabsf(xOffset - kMinMovement) > std::numeric_limits<float>::epsilon() || std::fabsf(yOffset - kMinMovement) > std::numeric_limits<float>::epsilon())
+			{
+				invalidateRenderList();
+				m_camera.processMouseMovement(xOffset, yOffset);
+			}
 		}
 
 		repaint();
@@ -288,6 +321,7 @@ namespace widgets
 			m_eState = ELevelState::LS_NONE;
 			m_pLevel = pLevel;
 			m_bFirstMouseQuery = true;
+			invalidateRenderList();
 			resetViewMode();
 			resetRenderMode();
 		}
@@ -300,6 +334,7 @@ namespace widgets
 			m_eState = ELevelState::LS_NONE;
 			m_pLevel = nullptr;
 			m_bFirstMouseQuery = true;
+			invalidateRenderList();
 			resetViewMode();
 			resetRenderMode();
 			repaint();
@@ -310,10 +345,11 @@ namespace widgets
 	{
 		assert(sceneObject != nullptr);
 
-		if (sceneObject)
+		if (sceneObject != m_pSceneObjectToView)
 		{
 			m_eViewMode = EViewMode::VM_GEOM_PREVIEW;
 			m_pSceneObjectToView = sceneObject;
+			invalidateRenderList();
 			repaint();
 		}
 	}
@@ -322,6 +358,7 @@ namespace widgets
 	{
 		m_eViewMode = EViewMode::VM_WORLD_VIEW;
 		m_pSceneObjectToView = nullptr;
+		invalidateRenderList();
 		repaint();
 	}
 
@@ -786,53 +823,20 @@ namespace widgets
 		repaint(); // call to force jump into next state
 	}
 
-	void SceneRenderWidget::doRenderScene(QOpenGLFunctions_3_3_Core* glFunctions)
+	void SceneRenderWidget::doCollectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, RenderList& renderList, bool bIgnoreVisibility)
 	{
-		LEVEL_SAFE_CHECK()
+		doVisitGeomToCollectIntoRenderList(pRootGeom, renderList, bIgnoreVisibility);
 
-		// Update projection
-		if (m_bDirtyProj)
-		{
-			updateProjectionMatrix(QWidget::width(), QWidget::height());
-		}
+		renderList.sort([&camera](const RenderEntry& a, const RenderEntry& b) -> bool {
+			const float fADistanceToCamera = glm::length(camera.Position - a.vPosition);
+			const float fBDistanceToCamera = glm::length(camera.Position - b.vPosition);
 
-		// First of all we need to find ZBackdrop and render scene from this geom
-		m_pLevel->forEachObjectOfType("ZBackdrop", [this, glFunctions](const gamelib::scene::SceneObject::Ptr& sceneObject) -> bool {
-			doRenderGeom(glFunctions, sceneObject.get());
-
-			// Render only 1 ZBackdrop
-			return false;
+			return fADistanceToCamera > fBDistanceToCamera;
 		});
-
-		// Then we need to find our 'current room'
-		// How to find current room? Idk, let's find all 'rooms'?
-		std::vector<gamelib::scene::SceneObject::Ptr> roomsToRender;
-		roomsToRender.reserve(16);
-
-		m_pLevel->forEachObjectOfTypeWithInheritance("ZROOM", [&roomsToRender](const gamelib::scene::SceneObject::Ptr& sceneObject) -> bool {
-			if (sceneObject->getName() != "ROOT" && sceneObject->getType()->getName() != "ZBackdrop")
-			{
-				// Save room
-				roomsToRender.emplace_back(sceneObject);
-			}
-
-			// Render every room
-			return true;
-		});
-
-		// Ok, we have rooms to draw, let's draw 'em all
-		for (const auto& room : roomsToRender)
-		{
-			doRenderGeom(glFunctions, room.get());
-		}
 	}
 
-	void SceneRenderWidget::doRenderGeom(QOpenGLFunctions_3_3_Core* glFunctions, const gamelib::scene::SceneObject* geom, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
+	void SceneRenderWidget::doVisitGeomToCollectIntoRenderList(const gamelib::scene::SceneObject* geom, RenderList& renderList, bool bIgnoreVisibility)
 	{
-		// Save "scene" resolution
-		const glm::ivec2 viewResolution { QWidget::width(), QWidget::height() };
-
-		// Take params
 		const auto primId     = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
@@ -845,7 +849,7 @@ namespace widgets
 		// TODO: Check for culling here (object visible or not)
 
 		// Check that object could be rendered by any way
-		if (primId != 0)
+		if (primId != 0 && m_resources->m_modelsCache.contains(primId))
 		{
 			// Extract matrix from properties
 			glm::mat4 mTransform = glm::mat4(1.f);
@@ -878,35 +882,56 @@ namespace widgets
 			glm::mat4 mTranslate = glm::translate(glm::mat4(1.f), vPosition);
 			glm::mat4 mModelMatrix = mTranslate * mTransform;
 
-			// RenderGod
-			if (m_resources->m_modelsCache.contains(primId))
+			// Store into render list
+			RenderEntry& entry = renderList.emplace_back();
+			entry.vPosition = vPosition;
+			entry.mModelMatrix = mModelMatrix;
+			entry.pGeom = geom;
+			entry.iPrimId = primId;
+		}
+
+		// Visit others
+		for (const auto& child : geom->getChildren())
+		{
+			if (auto g = child.lock())
 			{
-				const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
+				doVisitGeomToCollectIntoRenderList(g.get(), renderList, bIgnoreVisibility);
+			}
+		}
+	}
 
-				// Render bounding box (every time?)
-#if 0
-				if (model.boundingBoxMesh.has_value())
-				{
-					Shader& gizmoShader = m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
-					gizmoShader.bind(glFunctions);
+	void SceneRenderWidget::doPerformDrawOfRenderList(QOpenGLFunctions_3_3_Core* glFunctions, const RenderList& renderList, const render::Camera& camera)
+	{
+		glm::ivec2 viewResolution { QWidget::width(), QWidget::height() };
 
-					gizmoShader.setUniform(glFunctions, ShaderConstants::kModelTransform, mModelMatrix);
-					gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
-					gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getViewMatrix());
-					gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
-					gizmoShader.setUniform(glFunctions, ShaderConstants::kColor, glm::vec4(0.f, 0.f, 1.f, 1.f));
+		for (const auto& entry : renderList)
+		{
+			const Model& model = m_resources->m_models[m_resources->m_modelsCache[entry.iPrimId]];
 
-					model.boundingBoxMesh.value().render(glFunctions, RenderTopology::RT_LINES);
+			// Render bounding box
+			if (model.boundingBoxMesh.has_value())
+			{
+				Shader& gizmoShader = m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
+				gizmoShader.bind(glFunctions);
 
-					gizmoShader.unbind(glFunctions);
-				}
-#endif
+				gizmoShader.setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mModelMatrix);
+				gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
+				gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraView, camera.getViewMatrix());
+				gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
+				gizmoShader.setUniform(glFunctions, ShaderConstants::kColor, glm::vec4(0.f, 0.f, 1.f, 1.f));
 
-				// Render all meshes
+				model.boundingBoxMesh.value().render(glFunctions, RenderTopology::RT_LINES);
+
+				gizmoShader.unbind(glFunctions);
+			}
+
+			// Render all meshes
+			if (m_resources->m_modelsCache.contains(entry.iPrimId))
+			{
 				for (const auto& mesh : model.meshes)
 				{
 					// Render single mesh
-					// 0. Check that we able to draw it
+					// 0. Check that we've able to draw it
 					if (mesh.glTextureId == kInvalidResource)
 					{
 						// Draw "error" bounding box
@@ -920,7 +945,7 @@ namespace widgets
 					texturedShader.bind(glFunctions);
 
 					// 2. Submit uniforms
-					texturedShader.setUniform(glFunctions, ShaderConstants::kModelTransform, mModelMatrix);
+					texturedShader.setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mModelMatrix);
 					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
 					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getViewMatrix());
 					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
@@ -951,16 +976,11 @@ namespace widgets
 					texturedShader.unbind(glFunctions);
 				}
 			}
-			// otherwise draw red bbox!
 		}
+	}
 
-		// Draw children
-		for (const auto& childRef : geom->getChildren())
-		{
-			if (auto child = childRef.lock())
-			{
-				doRenderGeom(glFunctions, child.get());
-			}
-		}
+	void SceneRenderWidget::invalidateRenderList()
+	{
+		m_renderList.clear();
 	}
 }
