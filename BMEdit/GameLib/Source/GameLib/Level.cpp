@@ -13,6 +13,24 @@
 
 namespace gamelib
 {
+	glm::vec3 LevelRooms::RoomGroup::worldToRoom(const glm::vec3& vWorld) const
+	{
+		return {
+			(vWorld.x - header.vWorldOrigin.x) * header.fWorldScale + 32768.0f,
+			(vWorld.y - header.vWorldOrigin.y) * header.fWorldScale + 32768.0f,
+			(vWorld.z - header.vWorldOrigin.z) * header.fWorldScale + 32768.0f
+		};
+	}
+
+	glm::vec3 LevelRooms::RoomGroup::roomToWorld(const glm::vec3& vRoom) const
+	{
+		return {
+		    (vRoom.x - 32768.0f) / header.fWorldScale + header.vWorldOrigin.x,
+		    (vRoom.y - 32768.0f) / header.fWorldScale + header.vWorldOrigin.y,
+		    (vRoom.z - 32768.0f) / header.fWorldScale + header.vWorldOrigin.z
+		};
+	}
+
 	Level::Level(std::unique_ptr<io::IOLevelAssetsProvider> &&levelAssetsProvider)
 		: m_assetProvider(std::move(levelAssetsProvider))
 	{
@@ -46,6 +64,11 @@ namespace gamelib
 		}
 
 		if (!loadLevelMaterials())
+		{
+			return false;
+		}
+
+		if (!loadLevelRooms())
 		{
 			return false;
 		}
@@ -345,6 +368,63 @@ namespace gamelib
 		m_levelMaterials.header = reader.getHeader();
 		m_levelMaterials.materialClasses = std::move(reader.takeClasses());
 		m_levelMaterials.materialInstances = std::move(reader.takeInstances());
+
+		return true;
+	}
+
+	bool Level::loadLevelRooms()
+	{
+		// Read outside rooms
+		{
+			int64_t rmcFileSize = 0;
+			auto rmcFileBuffer = m_assetProvider->getAsset(gamelib::io::AssetKind::ROOM_TREE_OUTSIDE, rmcFileSize);
+
+			if (!rmcFileBuffer || !rmcFileSize)
+			{
+				return false;
+			}
+
+			oct::OCTReader rmcReader {};
+			const bool bParseResult = rmcReader.parse(rmcFileBuffer.get(), rmcFileSize);
+
+			if (!bParseResult)
+			{
+				return false;
+			}
+
+			m_levelRooms.outside.header = rmcReader.getHeader();
+			m_levelRooms.outside.nodes = std::move(rmcReader.takeNodes());
+			m_levelRooms.outside.objects = std::move(rmcReader.takeObjects());
+			m_levelRooms.outside.ubs = std::move(rmcReader.takeUBS());
+		}
+
+		// Read inside rooms
+		{
+			int64_t rmcFileSize = 0;
+			auto rmcFileBuffer = m_assetProvider->getAsset(gamelib::io::AssetKind::ROOM_TREE_INSIDE, rmcFileSize);
+
+			if (!rmcFileBuffer || !rmcFileSize)
+			{
+				return false;
+			}
+
+			oct::OCTReader rmcReader {};
+			const bool bParseResult = rmcReader.parse(rmcFileBuffer.get(), rmcFileSize);
+
+			if (!bParseResult)
+			{
+				return false;
+			}
+
+			m_levelRooms.inside.header = rmcReader.getHeader();
+			m_levelRooms.inside.nodes = std::move(rmcReader.takeNodes());
+			m_levelRooms.inside.objects = std::move(rmcReader.takeObjects());
+			m_levelRooms.inside.ubs = std::move(rmcReader.takeUBS());
+		}
+
+		// Read collisions
+		{
+		}
 
 		return true;
 	}

@@ -582,10 +582,12 @@ namespace widgets
 	{
 		if (m_pLevel != nullptr)
 		{
+			m_eState = ELevelState::LS_NONE;
 			m_pLevel = nullptr;
 			m_bFirstMouseQuery = true;
 			resetViewMode();
 			resetRenderMode();
+			repaint();
 		}
 	}
 

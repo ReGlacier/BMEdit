@@ -7,6 +7,7 @@
 #include <GameLib/TEX/TEX.h>
 #include <GameLib/PRM/PRM.h>
 #include <GameLib/MAT/MAT.h>
+#include <GameLib/OCT/OCT.h>
 
 #include <functional>
 #include <memory>
@@ -50,6 +51,23 @@ namespace gamelib
 		std::vector<mat::MATInstance> materialInstances;
 	};
 
+	struct LevelRooms
+	{
+		struct RoomGroup
+		{
+			oct::OCTHeader header {};
+			std::vector<oct::OCTNode> nodes{};
+			std::vector<oct::OCTObject> objects{};
+			std::vector<oct::OCTUnknownBlock> ubs{};
+
+			[[nodiscard]] glm::vec3 worldToRoom(const glm::vec3& vWorld) const;
+			[[nodiscard]] glm::vec3 roomToWorld(const glm::vec3& vTree) const;
+		};
+
+		RoomGroup outside {};
+		RoomGroup inside {};
+	};
+
 	class Level
 	{
 	public:
@@ -81,6 +99,7 @@ namespace gamelib
 		bool loadLevelPrimitives();
 		bool loadLevelTextures();
 		bool loadLevelMaterials();
+		bool loadLevelRooms();
 
 	private:
 		// Core
@@ -93,6 +112,7 @@ namespace gamelib
 		LevelTextures m_levelTextures;
 		LevelGeometry m_levelGeometry;
 		LevelMaterials m_levelMaterials;
+		LevelRooms m_levelRooms;
 
 		// Managed objects
 		std::vector<scene::SceneObject::Ptr> m_sceneObjects {};
