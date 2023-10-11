@@ -367,6 +367,33 @@ namespace widgets
 		setWorldViewMode();
 	}
 
+	void SceneRenderWidget::setSelectedObject(gamelib::scene::SceneObject* sceneObject)
+	{
+		if (!m_pLevel)
+			return;
+
+		if (m_pSelectedSceneObject != sceneObject && sceneObject != nullptr)
+		{
+			m_pSelectedSceneObject = sceneObject;
+			invalidateRenderList();
+			repaint();
+		}
+	}
+
+	void SceneRenderWidget::resetSelectedObject()
+	{
+		if (m_pSelectedSceneObject != nullptr)
+		{
+			m_pSelectedSceneObject = nullptr;
+
+			if (m_pLevel)
+			{
+				invalidateRenderList();
+				repaint();
+			}
+		}
+	}
+
 	RenderModeFlags SceneRenderWidget::getRenderMode() const
 	{
 		return m_renderMode;
@@ -909,7 +936,7 @@ namespace widgets
 			const Model& model = m_resources->m_models[m_resources->m_modelsCache[entry.iPrimId]];
 
 			// Render bounding box
-			if (model.boundingBoxMesh.has_value())
+			if (model.boundingBoxMesh.has_value() && entry.pGeom == m_pSelectedSceneObject)
 			{
 				Shader& gizmoShader = m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
 				gizmoShader.bind(glFunctions);

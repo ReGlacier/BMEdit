@@ -329,6 +329,8 @@ void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* 
 	ui->sceneObjectTypeCombo->setEnabled(true);
 	ui->sceneObjectTypeCombo->setCurrentText(QString::fromStdString(selectedSceneObject->getType()->getName()));
 
+	ui->sceneGLView->setSelectedObject(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
+
 	m_sceneObjectPropertiesModel->setGeom(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
 
 	ui->geomControllers->setGeom(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
@@ -337,6 +339,8 @@ void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* 
 
 void BMEditMainWindow::onDeselectedSceneObject()
 {
+	ui->sceneGLView->resetSelectedObject();
+
 	if (!m_sceneObjectPropertiesModel)
 	{
 		return;

@@ -53,6 +53,9 @@ namespace widgets
 		void setWorldViewMode();
 		void resetViewMode();
 
+		void setSelectedObject(gamelib::scene::SceneObject* sceneObject);
+		void resetSelectedObject();
+
 		[[nodiscard]] RenderModeFlags getRenderMode() const;
 		void setRenderMode(RenderModeFlags renderMode);
 		void resetRenderMode();
@@ -140,6 +143,7 @@ namespace widgets
 
 		EViewMode m_eViewMode { EViewMode::VM_WORLD_VIEW };
 		gamelib::scene::SceneObject* m_pSceneObjectToView {};
+		gamelib::scene::SceneObject* m_pSelectedSceneObject { nullptr };
 
 		RenderList m_renderList {};
 
