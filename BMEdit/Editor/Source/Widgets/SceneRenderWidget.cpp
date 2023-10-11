@@ -12,301 +12,22 @@
 #include <GameLib/TEX/TEXEntry.h>
 #include <GameLib/PRP/PRPMathTypes.h>
 #include <GameLib/BoundingBox.h>
+
+#include <Render/ShaderConstants.h>
+#include <Render/GlacierVertex.h>
+#include <Render/GLResource.h>
+#include <Render/Texture.h>
+#include <Render/Shader.h>
+#include <Render/Model.h>
 #include <optional>
 
 
 namespace widgets
 {
+	using namespace render;
+
 	struct SceneRenderWidget::GLResources
 	{
-		static constexpr GLuint kInvalidResource = 0xFDEADC0D;
-
-		struct Mesh
-		{
-			GLuint vao { kInvalidResource };
-			GLuint vbo { kInvalidResource };
-			GLuint ibo { kInvalidResource };
-			GLuint glTextureId { kInvalidResource }; /// Render OpenGL texture resource handle
-
-			uint16_t materialId { 0 }; /// Id of material from Glacier mesh (just copy)
-
-			int trianglesCount { 0 };
-
-			void discard(QOpenGLFunctions_3_3_Core* gapi)
-			{
-				if (vao != kInvalidResource)
-				{
-					gapi->glDeleteVertexArrays(1, &vao);
-					vao = kInvalidResource;
-				}
-
-				if (vbo != kInvalidResource)
-				{
-					gapi->glDeleteBuffers(1, &vbo);
-					vbo = kInvalidResource;
-				}
-
-				if (ibo != kInvalidResource)
-				{
-					gapi->glDeleteBuffers(1, &ibo);
-					ibo = kInvalidResource;
-				}
-			}
-		};
-
-		struct Model
-		{
-			std::vector<Mesh> meshes {};
-			gamelib::BoundingBox boundingBox {};
-			[[maybe_unused]] uint32_t chunkId {0u};
-
-			void discardAll(QOpenGLFunctions_3_3_Core* gapi)
-			{
-				for (auto& mesh : meshes)
-				{
-					mesh.discard(gapi);
-				}
-
-				meshes.clear();
-			}
-		};
-
-		struct Texture
-		{
-			uint16_t width { 0 };
-			uint16_t height { 0 };
-			GLuint texture { kInvalidResource };
-			std::optional<std::uint32_t> index {}; /// Index of texture from TEX container
-			std::optional<std::string> texPath {}; /// [Optional] Path to texture in TEX container (path may not be defined in TEX!)
-
-			void discard(QOpenGLFunctions_3_3_Core* gapi)
-			{
-				width = height = 0;
-
-				if (texture != kInvalidResource)
-				{
-					gapi->glDeleteTextures(1, &texture);
-				}
-			}
-		};
-
-		struct Shader
-		{
-			GLuint vertexProgramId   { kInvalidResource };
-			GLuint fragmentProgramId { kInvalidResource };
-			GLuint programId { kInvalidResource };
-
-			Shader() = default;
-
-			void discard(QOpenGLFunctions_3_3_Core* gapi)
-			{
-				if (vertexProgramId != kInvalidResource)
-				{
-					gapi->glDeleteShader(vertexProgramId);
-					vertexProgramId = kInvalidResource;
-				}
-
-				if (fragmentProgramId != kInvalidResource)
-				{
-					gapi->glDeleteShader(fragmentProgramId);
-					fragmentProgramId = kInvalidResource;
-				}
-
-				if (programId != kInvalidResource)
-				{
-					gapi->glDeleteShader(programId);
-					programId = kInvalidResource;
-				}
-			}
-
-			void bind(QOpenGLFunctions_3_3_Core* gapi)
-			{
-				if (programId != kInvalidResource)
-				{
-					gapi->glUseProgram(programId);
-				}
-			}
-
-			void unbind(QOpenGLFunctions_3_3_Core* gapi)
-			{
-				gapi->glUseProgram(0);
-			}
-
-			bool compile(QOpenGLFunctions_3_3_Core* gapi, const std::string& vertexProgram, const std::string& fragmentProgram, std::string& error)
-			{
-				// Allocate root program
-				programId = gapi->glCreateProgram();
-				vertexProgramId = gapi->glCreateShader(GL_VERTEX_SHADER);
-				fragmentProgramId = gapi->glCreateShader(GL_FRAGMENT_SHADER);
-
-				// Compile vertex program
-				if (!compileUnit(gapi, vertexProgramId, GL_VERTEX_SHADER, vertexProgram, error))
-				{
-					qDebug() << "Failed to compile vertex shader program";
-					assert(false && "Failed to compile vertex shader program");
-					return false;
-				}
-
-				gapi->glAttachShader(programId, vertexProgramId);
-
-				// Compile fragment program
-				if (!compileUnit(gapi, fragmentProgramId, GL_FRAGMENT_SHADER, fragmentProgram, error))
-				{
-					qDebug() << "Failed to compile vertex shader program";
-					assert(false && "Failed to compile fragment shader program");
-					return false;
-				}
-
-				gapi->glAttachShader(programId, fragmentProgramId);
-
-				// Linking
-				gapi->glLinkProgram(programId);
-
-				// Check linking status
-				GLint linkingIsOK = GL_FALSE;
-
-				gapi->glGetProgramiv(programId, GL_LINK_STATUS, &linkingIsOK);
-				if (linkingIsOK == GL_FALSE)
-				{
-					constexpr int kCompileLogSize = 512;
-
-					char linkLog[kCompileLogSize] = { 0 };
-					GLint length { 0 };
-
-					gapi->glGetProgramInfoLog(programId, kCompileLogSize, &length, &linkLog[0]);
-
-					error = std::string(&linkLog[0], length);
-					qDebug() << "Failed to link shader program: " << QString::fromStdString(error);
-
-					assert(false);
-					return false;
-				}
-
-				// Done
-				return true;
-			}
-
-			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, float s)
-			{
-				GLint location = resolveLocation(gapi, id);
-				if (location == -1)
-					return;
-
-				gapi->glUniform1f(location, s);
-			}
-
-			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, std::int32_t s)
-			{
-				GLint location = resolveLocation(gapi, id);
-				if (location == -1)
-					return;
-
-				gapi->glUniform1i(location, s);
-			}
-
-			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, const glm::vec2& v)
-			{
-				GLint location = resolveLocation(gapi, id);
-				if (location == -1)
-					return;
-
-				gapi->glUniform2fv(location, 1, glm::value_ptr(v));
-			}
-
-			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, const glm::ivec2& v)
-			{
-				GLint location = resolveLocation(gapi, id);
-				if (location == -1)
-					return;
-
-				gapi->glUniform2iv(location, 1, glm::value_ptr(v));
-			}
-
-			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, const glm::vec3& v)
-			{
-				GLint location = resolveLocation(gapi, id);
-				if (location == -1)
-					return;
-
-				gapi->glUniform3fv(location, 1, glm::value_ptr(v));
-			}
-
-			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, const glm::vec4& v)
-			{
-				GLint location = resolveLocation(gapi, id);
-				if (location == -1)
-					return;
-
-				gapi->glUniform4fv(location, 1, glm::value_ptr(v));
-			}
-
-			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, const glm::mat3& v)
-			{
-				GLint location = resolveLocation(gapi, id);
-				if (location == -1)
-					return;
-
-				gapi->glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(v));
-			}
-
-			void setUniform(QOpenGLFunctions_3_3_Core* gapi, const std::string& id, const glm::mat4& v)
-			{
-				GLint location = resolveLocation(gapi, id);
-				if (location == -1)
-					return;
-
-				gapi->glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(v));
-			}
-
-			GLint resolveLocation(QOpenGLFunctions_3_3_Core* gapi, const std::string& id) const
-			{
-				if (auto it = m_locationsCache.find(id); it == m_locationsCache.end())
-				{
-					GLint result = gapi->glGetUniformLocation(programId, id.c_str());
-					m_locationsCache[id] = result;
-					return result;
-				}
-				else
-				{
-					return it->second;
-				}
-			}
-
-		private:
-			bool compileUnit(QOpenGLFunctions_3_3_Core* gapi, GLuint unitId, GLenum unitType, const std::string& unitSource, std::string& error)
-			{
-				const GLchar* glSrc = reinterpret_cast<const GLchar*>(unitSource.c_str());
-				const GLint glLen = static_cast<int>(unitSource.length());
-
-				gapi->glShaderSource(unitId, 1, &glSrc, &glLen);
-				gapi->glCompileShader(unitId);
-
-				GLint isCompiled = 0;
-				gapi->glGetShaderiv(unitId, GL_COMPILE_STATUS, &isCompiled);
-
-				if (isCompiled == GL_FALSE)
-				{
-					constexpr int kCompileLogSize = 512;
-
-					char compileLog[kCompileLogSize] = { 0 };
-					GLint length { 0 };
-
-					gapi->glGetShaderInfoLog(unitId, kCompileLogSize, &length, &compileLog[0]);
-
-					error = std::string(&compileLog[0], length);
-					qDebug() << "Failed to compile shader program: " << QString::fromStdString(error);
-
-					assert(false && "Failed to compile unit!");
-					return false;
-				}
-
-				return true;
-			}
-
-		private:
-			mutable std::map<std::string, GLint> m_locationsCache;
-		};
-
 		std::vector<Texture> m_textures {};
 		std::vector<Shader> m_shaders {};
 		std::vector<Model> m_models {};
@@ -346,7 +67,7 @@ namespace widgets
 			{
 				for (auto& model : m_models)
 				{
-					model.discardAll(gapi);
+					model.discard(gapi);
 				}
 
 				m_models.clear();
@@ -367,12 +88,6 @@ namespace widgets
 		{
 			return !m_textures.empty() || !m_shaders.empty() || !m_models.empty();
 		}
-	};
-
-	struct GlacierVertex
-	{
-		glm::vec3 vPos {};
-		glm::vec2 vUV {};
 	};
 
 	SceneRenderWidget::SceneRenderWidget(QWidget *parent, Qt::WindowFlags f) : QOpenGLWidget(parent, f)
@@ -488,22 +203,22 @@ namespace widgets
 
 			if (event->key() == Qt::Key_W)
 			{
-				m_camera.processKeyboard(renderer::Camera_Movement::FORWARD, kBaseDt, kSpeedUp);
+				m_camera.processKeyboard(render::Camera_Movement::FORWARD, kBaseDt, kSpeedUp);
 				bMoved = true;
 			}
 			else if (event->key() == Qt::Key_S)
 			{
-				m_camera.processKeyboard(renderer::Camera_Movement::BACKWARD, kBaseDt, kSpeedUp);
+				m_camera.processKeyboard(render::Camera_Movement::BACKWARD, kBaseDt, kSpeedUp);
 				bMoved = true;
 			}
 			else if (event->key() == Qt::Key_A)
 			{
-				m_camera.processKeyboard(renderer::Camera_Movement::LEFT, kBaseDt, kSpeedUp);
+				m_camera.processKeyboard(render::Camera_Movement::LEFT, kBaseDt, kSpeedUp);
 				bMoved = true;
 			}
 			else if (event->key() == Qt::Key_D)
 			{
-				m_camera.processKeyboard(renderer::Camera_Movement::RIGHT, kBaseDt, kSpeedUp);
+				m_camera.processKeyboard(render::Camera_Movement::RIGHT, kBaseDt, kSpeedUp);
 				bMoved = true;
 			}
 
@@ -676,7 +391,7 @@ namespace widgets
 			}
 
 			// Ok, texture is ok - load it
-			GLResources::Texture newTexture;
+			Texture newTexture;
 
 			std::unique_ptr<std::uint8_t[]> decompressedMemBlk = editor::TextureProcessor::decompressRGBA(texture, newTexture.width, newTexture.height, 0); //
 			if (!decompressedMemBlk)
@@ -778,7 +493,7 @@ namespace widgets
 				continue;
 			}
 
-			GLResources::Model& glModel = m_resources->m_models.emplace_back();
+			Model& glModel = m_resources->m_models.emplace_back();
 			glModel.chunkId = model.chunk;
 			glModel.boundingBox = gamelib::BoundingBox(model.boundingBox.vMin, model.boundingBox.vMax);
 
@@ -827,41 +542,15 @@ namespace widgets
 				}
 
 				// And upload it to GPU
-				GLResources::Mesh& glMesh = glModel.meshes.emplace_back();
+				Mesh& glMesh = glModel.meshes.emplace_back();
 				glMesh.trianglesCount = mesh.trianglesCount;
 
-				// Allocate VAO, VBO & IBO stuff
-				glFunctions->glGenVertexArrays(1, &glMesh.vao);
-				glFunctions->glGenBuffers(1, &glMesh.vbo);
-				if (!indices.empty())
+				if (!glMesh.setup(glFunctions, GlacierVertex::g_FormatDescription, vertices, indices, false))
 				{
-					glFunctions->glGenBuffers(1, &glMesh.ibo);
+					qWarning() << "Failed to upload mesh #" << meshIdx << " of model at chunk " << model.chunk << ". Reason: failed to upload resource to GPU!";
+					++meshIdx;
+					continue;
 				}
-
-				// Attach VAO
-				glFunctions->glBindVertexArray(glMesh.vao);
-				glFunctions->glBindBuffer(GL_ARRAY_BUFFER, glMesh.vbo);
-
-				// Upload vertices
-				glFunctions->glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GlacierVertex), &vertices[0], GL_STATIC_DRAW);
-
-				// Upload indices
-				if (!indices.empty())
-				{
-					glFunctions->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glMesh.ibo);
-					glFunctions->glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(std::uint16_t), &indices[0], GL_STATIC_DRAW);
-				}
-
-				// Setup vertex format
-				const GLintptr vertexCoordinateOffset = 0 * sizeof(float);
-				const GLintptr UVCoordinateOffset = 3 * sizeof(float);
-				const GLsizei stride = 5 * sizeof(float);
-
-				glFunctions->glEnableVertexAttribArray(0);
-				glFunctions->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const GLvoid*)vertexCoordinateOffset);
-
-				glFunctions->glEnableVertexAttribArray(1);
-				glFunctions->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (const GLvoid*)UVCoordinateOffset);
 
 				// Precache color texture
 				glMesh.materialId = mesh.material_id;
@@ -877,7 +566,7 @@ namespace widgets
 					if (const auto& parentName = matInstance.getParentName(); parentName == "StaticShadow" || parentName == "StaticShadowTextureShadow" || matInstance.getName().find("AlwaysInShadow") != std::string::npos)
 					{
 						// Shadows - do not use texturing (and don't show for now)
-						glMesh.glTextureId = GLResources::kInvalidResource;
+						glMesh.glTextureId = kInvalidResource;
 					}
 					else if (parentName == "Bad")
 					{
@@ -955,7 +644,7 @@ namespace widgets
 						}
 
 						// For debug only
-//						if (glMesh.glTextureId == GLResources::kInvalidResource)
+//						if (glMesh.glTextureId == kInvalidResource)
 //						{
 //							glMesh.glTextureId = m_resources->m_iGLMissingTexture;
 //						}
@@ -1032,7 +721,7 @@ namespace widgets
 		// Compile shaders
 		std::string compileError;
 		{
-			GLResources::Shader texturedShader;
+			Shader texturedShader;
 
 			if (!texturedShader.compile(glFunctions, texturedEntityVertexShaderSource, texturedEntityFragmentShaderSource, compileError))
 			{
@@ -1048,7 +737,7 @@ namespace widgets
 		}
 
 		{
-			GLResources::Shader gizmoShader;
+			Shader gizmoShader;
 			if (!gizmoShader.compile(glFunctions, coloredEntityVertexShaderSource, coloredEntityFragmentShaderSource, compileError))
 			{
 				m_pLevel = nullptr;
@@ -1189,14 +878,14 @@ namespace widgets
 			// RenderGod
 			if (m_resources->m_modelsCache.contains(primId))
 			{
-				const GLResources::Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
+				const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
 
 				// Render all meshes
 				for (const auto& mesh : model.meshes)
 				{
 					// Render single mesh
 					// 0. Check that we able to draw it
-					if (mesh.glTextureId == GLResources::kInvalidResource)
+					if (mesh.glTextureId == kInvalidResource)
 					{
 						// Draw "error" bounding box
 						// And continue
@@ -1204,48 +893,33 @@ namespace widgets
 					}
 
 					// 1. Activate default shader
-					GLResources::Shader& texturedShader = m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
+					Shader& texturedShader = m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
 
 					texturedShader.bind(glFunctions);
 
 					// 2. Submit uniforms
-					texturedShader.setUniform(glFunctions, "i_uTransform.model", mModelMatrix);
-					texturedShader.setUniform(glFunctions, "i_uCamera.proj", m_matProjection);
-					texturedShader.setUniform(glFunctions, "i_uCamera.view", m_camera.getViewMatrix());
-					texturedShader.setUniform(glFunctions, "i_uCamera.resolution", viewResolution);
+					texturedShader.setUniform(glFunctions, ShaderConstants::kModelTransform, mModelMatrix);
+					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
+					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getViewMatrix());
+					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
 
 					// 3. Bind texture
-					if (mesh.glTextureId != GLResources::kInvalidResource)
+					if (mesh.glTextureId != kInvalidResource)
 					{
 						glFunctions->glBindTexture(GL_TEXTURE_2D, mesh.glTextureId);
 					}
 
-					// 3. Activate VAO
-					glFunctions->glBindVertexArray(mesh.vao);
-
-					auto doSubmitGPUCommands = [glFunctions, mesh]() {
-						if (mesh.ibo != GLResources::kInvalidResource)
-						{
-							// Draw indexed
-							glFunctions->glDrawElements(GL_TRIANGLES, (mesh.trianglesCount * 3), GL_UNSIGNED_SHORT, nullptr);
-						}
-						else
-						{
-							// Draw elements
-							glFunctions->glDrawArrays(GL_TRIANGLES, 0, mesh.trianglesCount);
-						}
-					};
-
+					// 3. Render mesh
 					if (m_renderMode & RenderMode::RM_TEXTURE)
 					{
 						// normal draw
-						doSubmitGPUCommands();
+						mesh.render(glFunctions);
 					}
 
 					if (m_renderMode & RenderMode::RM_WIREFRAME)
 					{
 						glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-						doSubmitGPUCommands();
+						mesh.render(glFunctions);
 						// reset back
 						glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 					}
@@ -1254,7 +928,7 @@ namespace widgets
 
 					// 6. Unbind texture and shader (expected to switch between materials, but not now)
 					glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
-					m_resources->m_shaders[0].unbind(glFunctions);
+					texturedShader.unbind(glFunctions);
 				}
 			}
 			// otherwise draw red bbox!

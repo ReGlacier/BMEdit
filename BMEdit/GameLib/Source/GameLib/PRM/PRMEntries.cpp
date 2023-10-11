@@ -164,7 +164,6 @@ namespace gamelib::prm
 							    // Read UVs
 							    glm::vec2& uv = mesh.uvs.emplace_back();
 							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
-							    uv.y = 1.f - uv.y;
 						    }
 					    }
 					    break;
@@ -182,7 +181,6 @@ namespace gamelib::prm
 							    // Read UVs
 							    glm::vec2& uv = mesh.uvs.emplace_back();
 							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
-							    uv.y = 1.f - uv.y;
 
 							    // Another seek
 							    // TODO: Fix this!
@@ -200,7 +198,6 @@ namespace gamelib::prm
 
 						    glm::vec2& uv = mesh.uvs.emplace_back();
 						    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
-						    uv.y = 1.f - uv.y;
 
 						    // TODO: Fix this
 						    ZBioHelpers::seekBy(&vertexReader, 0x8);
