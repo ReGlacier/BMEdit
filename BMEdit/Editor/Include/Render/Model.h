@@ -5,6 +5,7 @@
 #include <Render/RenderTopology.h>
 #include <GameLib/BoundingBox.h>
 #include <Render/GLResource.h>
+#include <optional>
 #include <cstdint>
 #include <vector>
 
@@ -133,9 +134,12 @@ namespace render
 	struct Model
 	{
 		std::vector<Mesh> meshes {};
+		std::optional<Mesh> boundingBoxMesh {};  // mesh with bounding box
 		gamelib::BoundingBox boundingBox {};
 		[[maybe_unused]] uint32_t chunkId {0u};
 
 		void discard(QOpenGLFunctions_3_3_Core* gapi);
+
+		bool setupBoundingBox(QOpenGLFunctions_3_3_Core* gapi);
 	};
 }

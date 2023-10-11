@@ -497,6 +497,9 @@ namespace widgets
 			glModel.chunkId = model.chunk;
 			glModel.boundingBox = gamelib::BoundingBox(model.boundingBox.vMin, model.boundingBox.vMax);
 
+			// And create mesh for bounding box
+			glModel.setupBoundingBox(glFunctions);
+
 			// Store cache
 			m_resources->m_modelsCache[model.chunk] = m_resources->m_models.size() - 1;
 
@@ -880,6 +883,25 @@ namespace widgets
 			{
 				const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
 
+				// Render bounding box (every time?)
+#if 0
+				if (model.boundingBoxMesh.has_value())
+				{
+					Shader& gizmoShader = m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
+					gizmoShader.bind(glFunctions);
+
+					gizmoShader.setUniform(glFunctions, ShaderConstants::kModelTransform, mModelMatrix);
+					gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
+					gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getViewMatrix());
+					gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
+					gizmoShader.setUniform(glFunctions, ShaderConstants::kColor, glm::vec4(0.f, 0.f, 1.f, 1.f));
+
+					model.boundingBoxMesh.value().render(glFunctions, RenderTopology::RT_LINES);
+
+					gizmoShader.unbind(glFunctions);
+				}
+#endif
+
 				// Render all meshes
 				for (const auto& mesh : model.meshes)
 				{
@@ -909,7 +931,7 @@ namespace widgets
 						glFunctions->glBindTexture(GL_TEXTURE_2D, mesh.glTextureId);
 					}
 
-					// 3. Render mesh
+					// 4. Render mesh
 					if (m_renderMode & RenderMode::RM_TEXTURE)
 					{
 						// normal draw
@@ -924,9 +946,7 @@ namespace widgets
 						glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 					}
 
-					// 5. Draw bounding box
-
-					// 6. Unbind texture and shader (expected to switch between materials, but not now)
+					// 5. Unbind texture and shader (expected to switch between materials, but not now)
 					glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
 					texturedShader.unbind(glFunctions);
 				}

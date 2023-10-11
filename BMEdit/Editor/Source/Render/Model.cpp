@@ -1,3 +1,4 @@
+#include <Render/GlacierVertex.h>
 #include <Render/Model.h>
 
 
@@ -115,12 +116,45 @@ namespace render
 
 	void Model::discard(QOpenGLFunctions_3_3_Core *gapi)
 	{
+		if (boundingBoxMesh.has_value())
+		{
+			boundingBoxMesh.value().discard(gapi);
+			boundingBoxMesh = std::nullopt;
+		}
+
 		for (auto& mesh : meshes)
 		{
 			mesh.discard(gapi);
 		}
 
 		meshes.clear();
+	}
+
+	bool Model::setupBoundingBox(QOpenGLFunctions_3_3_Core *gapi)
+	{
+		VertexFormatDescription vertexFormat{};
+		vertexFormat.addField(0, VertexDescriptionEntryType::VDE_Vec3, false);
+
+		const glm::vec3& vMin = boundingBox.min;
+		const glm::vec3& vMax = boundingBox.max;
+
+		std::vector<SimpleVertex> vertices {
+		    glm::vec3{vMin.x, vMin.y, vMin.z}, glm::vec3{vMin.x, vMin.y, vMax.z},
+		    glm::vec3{vMin.x, vMax.y, vMin.z}, glm::vec3{vMin.x, vMax.y, vMax.z},
+		    glm::vec3{vMax.x, vMin.y, vMin.z}, glm::vec3{vMax.x, vMin.y, vMax.z},
+		    glm::vec3{vMax.x, vMax.y, vMin.z}, glm::vec3{vMax.x, vMax.y, vMax.z}
+		};
+
+		std::vector<uint16_t> indices {
+		    0, 1, 1, 3, 3, 2, 2, 0,
+		    4, 5, 5, 7, 7, 6, 6, 4,
+		    0, 4, 1, 5, 2, 6, 3, 7
+		};
+
+		Mesh& mesh = boundingBoxMesh.emplace();
+		mesh.glTextureId = 0u;
+		mesh.materialId = 0u;
+		return mesh.setup(gapi, vertexFormat, vertices, indices, false);
 	}
 
 	void Mesh::render(QOpenGLFunctions_3_3_Core* gapi, render::RenderTopology topology) const
