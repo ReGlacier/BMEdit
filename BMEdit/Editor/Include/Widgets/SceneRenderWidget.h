@@ -73,8 +73,10 @@ namespace widgets
 	public slots:
 		void onRedrawRequested();
 
+		// Use when object properties changed and his 'world transform' could be changed.
+		void onObjectMoved(gamelib::scene::SceneObject* sceneObject);
+
 	protected:
-		void initializeGL() override;
 		void paintGL() override;
 		void resizeGL(int w, int h) override;
 

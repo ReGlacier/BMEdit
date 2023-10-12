@@ -153,4 +153,29 @@ namespace gamelib::scene
 
 		return mModelMatrix;
 	}
+
+	glm::vec3 SceneObject::getPosition() const
+	{
+		return getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
+	}
+
+	glm::mat3 SceneObject::getOriginalTransform() const
+	{
+		return getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
+	}
+
+	glm::mat4 SceneObject::getWorldTransform() const
+	{
+		const SceneObject* current = this;
+		glm::mat4 mWorldMatrix = glm::mat4(1.f);
+
+		while (current)
+		{
+			mWorldMatrix = mWorldMatrix * current->getLocalTransform();
+
+			current = current->getParent().expired() ? nullptr : current->getParent().lock().get();
+		}
+
+		return mWorldMatrix;
+	}
 }

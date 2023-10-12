@@ -64,6 +64,25 @@ namespace gamelib::scene
 		 */
 		[[nodiscard]] glm::mat4 getLocalTransform() const;
 
+		/**
+		 * @return Position object from ZGEOM or (0;0;0)
+		 */
+		[[nodiscard]] glm::vec3 getPosition() const;
+
+		/**
+		 * @note Unlike getLocalTransform this matrix created for DX9 renderer. Do not use this matrix without preparation!
+		 * @note If object does not contains Matrix object this method will return identity matrix for OpenGL (specific of glm). To avoid of bugs use hasProperty before!
+		 * @return Matrix object from ZGEOM or identity matrix
+		 */
+		[[nodiscard]] glm::mat3 getOriginalTransform() const;
+
+		/**
+		 * @brief Calculate world transform of object
+		 * @note This method iterates over all parents and multiply all matrices into one combined matrix. It may take a while so use external caches (because SceneObject does not make any caches itself)
+		 * @return World model matrix of object
+		 */
+		[[nodiscard]] glm::mat4 getWorldTransform() const;
+
 	private:
 		std::string m_name {}; ///< Name of geom
 		uint32_t m_typeId { 0u }; ///< Type ID of geom

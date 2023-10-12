@@ -518,6 +518,11 @@ void BMEditMainWindow::onLevelAssetsLoadFailed(const QString& reason)
 	QMessageBox::critical(this, QString("Scene render failed :("), QString("An error occurred while loading scene assets:\n%1").arg(reason));
 }
 
+void BMEditMainWindow::onSceneObjectPropertyChanged(const gamelib::scene::SceneObject* geom)
+{
+	ui->sceneGLView->onObjectMoved(const_cast<gamelib::scene::SceneObject*>(geom));
+}
+
 void BMEditMainWindow::loadTypesDataBase()
 {
 	m_operationProgress->setValue(OperationToProgress::DISCOVER_TYPES_DATABASE);
@@ -668,6 +673,8 @@ void BMEditMainWindow::initProperties()
 	ui->propertiesView->setItemDelegateForColumn(1, m_typePropertyItemDelegate);
 	ui->propertiesView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->propertiesView->verticalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+
+	connect(m_sceneObjectPropertiesModel, &models::SceneObjectPropertiesModel::objectPropertiesChanged, this, &BMEditMainWindow::onSceneObjectPropertyChanged);
 }
 
 void BMEditMainWindow::initSceneProperties()

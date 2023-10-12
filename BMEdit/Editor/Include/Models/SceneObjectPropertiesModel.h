@@ -23,6 +23,9 @@ namespace models
 		void resetLevel();
 		void resetGeom();
 
+	signals:
+		void objectPropertiesChanged(const gamelib::scene::SceneObject*);
+
 	private slots:
 		void onValueChanged();
 

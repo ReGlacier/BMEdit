@@ -42,8 +42,11 @@ namespace gamelib::prm
 
 		if (mesh.lod & (uint8_t)1 == (uint8_t)1)
 		{
-			// Seed another 3 bytes?
-			ZBioHelpers::seekBy(binaryReader, 0x3);
+			// Read mesh variation index
+			mesh.variationId = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+
+			// Seed another 2 bytes?
+			ZBioHelpers::seekBy(binaryReader, 0x2);
 
 			// Read material id
 			mesh.material_id = binaryReader->read<uint16_t, ZBio::Endianness::LE>();

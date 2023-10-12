@@ -59,6 +59,7 @@ namespace gamelib::prm
 		uint8_t unkD = 0;
 		uint8_t lod = 0;
 		uint16_t material_id = 0;
+		uint8_t variationId = 0;
 		int32_t diffuse_id = 0;
 		int32_t normal_id = 0;
 		int32_t specular_id = 0;

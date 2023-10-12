@@ -20,6 +20,7 @@
 #include <Render/Shader.h>
 #include <Render/Model.h>
 
+#include <unordered_map>
 #include <algorithm>
 #include <optional>
 
@@ -34,6 +35,7 @@ namespace widgets
 		std::vector<Shader> m_shaders {};
 		std::vector<Model> m_models {};
 		std::unordered_map<uint32_t, size_t> m_modelsCache {};  /// primitive index to model index in m_models
+		std::unordered_map<gamelib::scene::SceneObject*, glm::mat4> m_modelTransformCache {}; /// transformations cache
 		GLuint m_iGLDebugTexture { 0 };
 		GLuint m_iGLMissingTexture { 0 };
 		GLuint m_iGLUnsupportedMaterialTexture { 0 };
@@ -104,12 +106,6 @@ namespace widgets
 
 	SceneRenderWidget::~SceneRenderWidget() noexcept = default;
 
-	void SceneRenderWidget::initializeGL()
-	{
-		// Create resource holder
-		m_resources = std::make_unique<GLResources>();
-	}
-
 	void SceneRenderWidget::paintGL()
 	{
 		auto funcs = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_3_Core>(QOpenGLContext::currentContext());
@@ -142,6 +138,11 @@ namespace widgets
 			case ELevelState::LS_NONE:
 			{
 				if (m_pLevel) {
+					// Create base for resources
+					assert(m_resources == nullptr && "Leaked resources");
+					m_resources = std::make_unique<GLResources>();
+
+				    // Run process
 				    m_eState = ELevelState::LS_LOAD_TEXTURES;
 			    } else if (m_resources && m_resources->hasResources()) {
 				    m_resources->discard(funcs);
@@ -318,6 +319,7 @@ namespace widgets
 	{
 		if (m_pLevel != pLevel)
 		{
+			m_resources = nullptr;
 			m_eState = ELevelState::LS_NONE;
 			m_pLevel = pLevel;
 			m_bFirstMouseQuery = true;
@@ -331,6 +333,7 @@ namespace widgets
 	{
 		if (m_pLevel != nullptr)
 		{
+			m_resources = nullptr;
 			m_eState = ELevelState::LS_NONE;
 			m_pLevel = nullptr;
 			m_bFirstMouseQuery = true;
@@ -424,6 +427,15 @@ namespace widgets
 	{
 		if (m_pLevel)
 			repaint();
+	}
+
+	void SceneRenderWidget::onObjectMoved(gamelib::scene::SceneObject* sceneObject)
+	{
+		if (!sceneObject || !m_pLevel || !m_resources)
+			return;
+
+		m_resources->m_modelTransformCache[sceneObject] = sceneObject->getWorldTransform();
+		repaint();
 	}
 
 #define LEVEL_SAFE_CHECK() \
@@ -611,6 +623,7 @@ namespace widgets
 				// And upload it to GPU
 				Mesh& glMesh = glModel.meshes.emplace_back();
 				glMesh.trianglesCount = mesh.trianglesCount;
+				glMesh.variationId = mesh.variationId;
 
 				if (!glMesh.setup(glFunctions, GlacierVertex::g_FormatDescription, vertices, indices, false))
 				{
@@ -897,12 +910,22 @@ namespace widgets
 		// Check that object could be rendered by any way
 		if (primId != 0 && m_resources->m_modelsCache.contains(primId))
 		{
-			glm::mat4 mModelMatrix = geom->getLocalTransform();
+			glm::mat4 mWorldTransform = glm::mat4(1.f);
+
+			if (auto it = m_resources->m_modelTransformCache.find(const_cast<gamelib::scene::SceneObject*>(geom)); it != m_resources->m_modelTransformCache.end())
+			{
+				mWorldTransform = it->second;
+			}
+			else
+			{
+				mWorldTransform = geom->getWorldTransform();
+				m_resources->m_modelTransformCache[const_cast<gamelib::scene::SceneObject*>(geom)] = mWorldTransform;
+			}
 
 			// Store into render list
 			RenderEntry& entry = renderList.emplace_back();
 			entry.vPosition = vPosition;
-			entry.mModelMatrix = mModelMatrix;
+			entry.mModelMatrix = mWorldTransform;
 			entry.pGeom = geom;
 			entry.iPrimId = primId;
 
@@ -959,6 +982,16 @@ namespace widgets
 						// Draw "error" bounding box
 						// And continue
 						continue;
+					}
+
+					// Filter mesh by 'variation id'
+					if (const auto& properties = entry.pGeom->getProperties(); properties.hasProperty("MeshVariantId"))
+					{
+						const auto requiredVariationId = properties.getObject<std::int32_t>("MeshVariantId", 0);
+						if (requiredVariationId != mesh.variationId)
+						{
+							continue;
+						}
 					}
 
 					// 1. Activate default shader
