@@ -1,17 +1,20 @@
 #pragma once
 
 #include <QOpenGLWidget>
+#include <QMouseEvent>
+#include <QKeyEvent>
+#include <QString>
+
 #include <GameLib/BoundingBox.h>
 #include <GameLib/Level.h>
 #include <Render/Camera.h>
+
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/glm.hpp>
+
 #include <memory>
 #include <list>
-#include <QString>
-#include <QMouseEvent>
-#include <QKeyEvent>
 
 
 namespace renderer

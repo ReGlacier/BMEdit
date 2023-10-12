@@ -190,17 +190,20 @@ namespace gamelib::prm
 					    break;
 						case VertexFormat::VF_34:
 					    {
-						    glm::vec3& vertex = mesh.vertices.emplace_back();
-						    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
+						    for (uint32_t j = 0; j < vertexCount; j++)
+						    {
+							    glm::vec3& vertex = mesh.vertices.emplace_back();
+							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
 
-						    // TODO: Fix this!
-						    ZBioHelpers::seekBy(&vertexReader, 0x18);
+							    // TODO: Fix this!
+							    ZBioHelpers::seekBy(&vertexReader, 0x18);
 
-						    glm::vec2& uv = mesh.uvs.emplace_back();
-						    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
+							    glm::vec2& uv = mesh.uvs.emplace_back();
+							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
 
-						    // TODO: Fix this
-						    ZBioHelpers::seekBy(&vertexReader, 0x8);
+							    // TODO: Fix this
+							    ZBioHelpers::seekBy(&vertexReader, 0x8);
+						    }
 					    }
 					    break;
 					    default:

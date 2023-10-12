@@ -854,7 +854,7 @@ namespace widgets
 			}
 
 			m_camera.setPosition(vCameraPosition);
-			qDebug() << "Move camera to object " << player->getName() << " at (" << vCameraPosition.x << ';' << vCameraPosition.y << ';' <<  vCameraPosition.z << ")";
+			qDebug() << "Move camera to object " << QString::fromStdString(player->getName()) << " at (" << vCameraPosition.x << ';' << vCameraPosition.y << ';' <<  vCameraPosition.z << ")";
 		}
 		else
 		{
