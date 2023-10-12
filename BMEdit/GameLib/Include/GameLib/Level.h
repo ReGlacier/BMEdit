@@ -88,6 +88,8 @@ namespace gamelib
 
 		[[nodiscard]] const std::vector<scene::SceneObject::Ptr>& getSceneObjects() const;
 
+		[[nodiscard]] scene::SceneObject::Ptr getSceneObjectByGEOMREF(const std::string& path) const;
+
 		void dumpAsset(io::AssetKind assetKind, std::vector<uint8_t> &outBuffer) const;
 
 		void forEachObjectOfType(const std::string& objectTypeName, const std::function<bool(const scene::SceneObject::Ptr&)>& pred) const;

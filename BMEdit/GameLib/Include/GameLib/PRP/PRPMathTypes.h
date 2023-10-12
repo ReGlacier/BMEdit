@@ -92,7 +92,8 @@ namespace gamelib
 		{
 			if (instructions.size() == 1)
 			{
-				return instructions[0].getOperand().get<std::string>();
+				const std::string& v = instructions[0].getOperand().get<const std::string&>();
+				return v;
 			}
 
 			assert(false && "Bad object");

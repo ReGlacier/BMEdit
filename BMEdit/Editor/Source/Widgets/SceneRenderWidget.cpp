@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <GameLib/TEX/TEXEntry.h>
+#include <GameLib/PRP/PRPObjectExtractor.h>
 #include <GameLib/PRP/PRPMathTypes.h>
 #include <GameLib/BoundingBox.h>
 
@@ -853,7 +854,7 @@ namespace widgets
 		{
 			// Ok, level contains player. Let's take his room and move camera to player
 			const auto iPrimId = player->getProperties().getObject<std::int32_t>("PrimId", 0u);
-			const auto vPlayerPosition = player->getParent().lock()->getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
+			const auto vPlayerPosition = player->getParent().lock()->getPosition();
 			glm::vec3 vCameraPosition = vPlayerPosition;
 
 			// In theory, we need to put camera around player, not in player. So we need to have bounding box of player to correct camera position
@@ -897,13 +898,42 @@ namespace widgets
 
 	void SceneRenderWidget::doVisitGeomToCollectIntoRenderList(const gamelib::scene::SceneObject* geom, RenderList& renderList, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
 	{
-		const auto primId     = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
-		const auto vPosition  = geom->getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
+		const auto vPosition  = geom->getPosition();
+		auto primId = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
 
 		// Don't draw invisible things
 		if (bInvisible && !bIgnoreVisibility)
 			return;
+
+		// NOTE: Need to refactor this place and move it into separated area
+		if (geom->isInheritedOf("ZItem"))
+		{
+			 //ZItems has no PrimId. Instead of this they are refs to another geom by path
+			auto rItemTemplatePath = geom->getProperties().getObject<std::string>("rItemTemplate");
+			const auto pItemTemplate = m_pLevel->getSceneObjectByGEOMREF(rItemTemplatePath);
+
+			if (pItemTemplate)
+			{
+				gamelib::scene::SceneObject::Ptr pItem = nullptr;
+
+				// Item found by path. That's cool! But this is not an item, for item need to ask Ground... object inside
+				for (const auto& childRef : pItemTemplate->getChildren())
+				{
+					if (auto child = childRef.lock(); child && child->getName().starts_with("Ground"))
+					{
+						pItem = child;
+						break;
+					}
+				}
+
+				if (pItem)
+				{
+					// Nice! Now we ready to replace primId
+					primId = pItem->getProperties().getObject<std::int32_t>("PrimId");
+				}
+			}
+		}
 
 		// TODO: Check for culling here (object visible or not)
 

@@ -10,6 +10,10 @@
 #include <GameLib/TypeComplex.h>
 #include <GameLib/Type.h>
 
+#include <sstream>
+#include <string>
+#include <vector>
+
 
 namespace gamelib
 {
@@ -143,6 +147,45 @@ namespace gamelib
 	const std::vector<scene::SceneObject::Ptr> &Level::getSceneObjects() const
 	{
 		return m_sceneObjects;
+	}
+
+	[[nodiscard]] scene::SceneObject::Ptr Level::getSceneObjectByGEOMREF(const std::string& path) const
+	{
+		std::stringstream pathStream { path };
+		std::string segment;
+		std::vector<std::string> dividedPath {};
+
+		while(std::getline(pathStream, segment, '\\'))
+		{
+			dividedPath.push_back(segment);
+		}
+
+		scene::SceneObject::Ptr object = m_sceneObjects[0];
+
+		for (const auto& pathBlock : dividedPath)
+		{
+			if (pathBlock == "ROOT")
+				continue;
+
+			bool bFound = false;
+
+			for (const auto& childrenRef : object->getChildren())
+			{
+				if (auto child = childrenRef.lock(); child && child->getName() == pathBlock)
+				{
+					bFound = true;
+					object = child;
+					break;
+				}
+			}
+
+			if (!bFound)
+			{
+				return nullptr;
+			}
+		}
+
+		return object;
 	}
 
 	void Level::dumpAsset(io::AssetKind assetKind, std::vector<uint8_t> &outBuffer) const

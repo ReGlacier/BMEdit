@@ -1,5 +1,7 @@
 #include <GameLib/Scene/SceneObject.h>
+#include <GameLib/PRP/PRPObjectExtractor.h>
 #include <GameLib/PRP/PRPMathTypes.h>
+#include <GameLib/TypeComplex.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -115,32 +117,41 @@ namespace gamelib::scene
 		return m_children;
 	}
 
+	bool SceneObject::isInheritedOf(const std::string& baseType) const
+	{
+		const auto* type = getType();
+
+		if (!type) return false;
+
+		while (type)
+		{
+			if (type->getName() == baseType)
+				return true;
+
+			if (type->getKind() != TypeKind::COMPLEX)
+				return false;
+
+			type = static_cast<const TypeComplex*>(type)->getParent(); // NOLINT(*-pro-type-static-cast-downcast)
+		}
+
+		return false;
+	}
+
 	glm::mat4 SceneObject::getLocalTransform() const
 	{
-		const auto vPosition  = getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
-		const auto mMatrix    = getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
+		const auto vPosition  = getPosition();
+		const auto mMatrix    = getOriginalTransform();
 
 		// Extract matrix from properties
 		glm::mat4 mTransform = glm::mat4(1.f);
 
-		/**
-		 * Convert from DX9 to OpenGL
-		 *
-		 *        | m00 m10 m20 |
-		 * mSrc = | m01 m11 m21 |
-		 *        | m02 m12 m22 |
-		 *
-		 *        | m02 m01 m00 |
-		 * mDst = | m12 m11 m21 |
-		 *        | m22 m21 m20 |
-		 */
 		mTransform[0][0] = mMatrix[0][2];
 		mTransform[1][0] = mMatrix[0][1];
 		mTransform[2][0] = mMatrix[0][0];
 
 		mTransform[0][1] = mMatrix[1][2];
 		mTransform[1][1] = mMatrix[1][1];
-		mTransform[2][1] = mMatrix[2][1];
+		mTransform[2][1] = mMatrix[1][0];
 
 		mTransform[0][2] = mMatrix[2][2];
 		mTransform[1][2] = mMatrix[2][1];

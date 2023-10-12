@@ -58,6 +58,12 @@ namespace gamelib::scene
 		[[nodiscard]] std::vector<SceneObject::Ref> &getChildren();
 
 		/**
+		 * @param baseType
+		 * @return return true if game object inherited of baseType
+		 */
+		[[nodiscard]] bool isInheritedOf(const std::string& baseType) const;
+
+		/**
 		 * @brief Calculate transform matrix for OpenGL and other render API buddies
 		 * @note This function calculates matrix at runtime. So, it's not huge operation but avoid of frequency calling of this function, please.
 		 * @return model matrix (scale, rotation and translate operations applied)
