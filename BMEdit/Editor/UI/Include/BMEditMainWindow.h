@@ -83,6 +83,7 @@ public slots:
 	void onLevelAssetsLoaded();
 	void onLevelAssetsLoadFailed(const QString& reason);
 	void onSceneObjectPropertyChanged(const gamelib::scene::SceneObject* geom);
+	void onTextureChanged(uint32_t textureIndex);
 
 private:
     // UI

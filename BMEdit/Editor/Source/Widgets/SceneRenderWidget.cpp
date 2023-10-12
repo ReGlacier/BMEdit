@@ -1,5 +1,4 @@
 #include <Widgets/SceneRenderWidget.h>
-#include <Editor/TextureProcessor.h>
 #include <QOpenGLVersionFunctionsFactory>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLContext>
@@ -22,6 +21,7 @@
 #include <Render/Model.h>
 
 #include <unordered_map>
+#include <unordered_set>
 #include <algorithm>
 #include <optional>
 
@@ -37,6 +37,7 @@ namespace widgets
 		std::vector<Model> m_models {};
 		std::unordered_map<uint32_t, size_t> m_modelsCache {};  /// primitive index to model index in m_models
 		std::unordered_map<gamelib::scene::SceneObject*, glm::mat4> m_modelTransformCache {}; /// transformations cache
+		std::unordered_set<uint32_t> m_invalidatedTextures; /// Set of textures who need to be reloaded on next frame
 		GLuint m_iGLDebugTexture { 0 };
 		GLuint m_iGLMissingTexture { 0 };
 		GLuint m_iGLUnsupportedMaterialTexture { 0 };
@@ -116,7 +117,8 @@ namespace widgets
 		}
 
 		// Begin frame
-		funcs->glViewport(0, 0, QWidget::width(), QWidget::height());
+		const auto vp = getViewportSize();
+		funcs->glViewport(0, 0, vp.x, vp.y);
 		funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		funcs->glClearColor(0.15f, 0.2f, 0.45f, 1.0f);
 
@@ -129,7 +131,7 @@ namespace widgets
 
 		if (m_bDirtyProj)
 		{
-			updateProjectionMatrix(QWidget::width(), QWidget::height());
+			updateProjectionMatrix(vp.x, vp.y);
 		}
 
 		// NOTE: Before render anything we need to look at material and check MATRenderState.
@@ -172,6 +174,10 @@ namespace widgets
 			break;
 			case ELevelState::LS_READY:
 		    {
+			    // Prepare invalidated stuff
+			    doPrepareInvalidatedResources(funcs);
+
+			    // Render scene
 			    gamelib::scene::SceneObject* pRoot = nullptr;
 			    bool bIgnoreVisibility = false;
 
@@ -424,6 +430,14 @@ namespace widgets
 		repaint();
 	}
 
+	void SceneRenderWidget::reloadTexture(uint32_t textureIndex)
+	{
+		if (!m_pLevel)
+			return;
+
+		m_resources->m_invalidatedTextures.insert(textureIndex);
+	}
+
 	void SceneRenderWidget::onRedrawRequested()
 	{
 		if (m_pLevel)
@@ -468,32 +482,14 @@ namespace widgets
 			}
 
 			// Ok, texture is ok - load it
-			Texture newTexture;
+			Texture newTexture {};
 
-			std::unique_ptr<std::uint8_t[]> decompressedMemBlk = editor::TextureProcessor::decompressRGBA(texture, newTexture.width, newTexture.height, 0); //
-			if (!decompressedMemBlk)
+			if (!newTexture.setup(glFunctions, texture))
 			{
 				m_resources->m_textures.emplace_back();
-				qWarning() << "Failed to decompress texture #" << texture.m_index << " to RGBA sequence";
+				qWarning() << "Failed to load texture #" << texture.m_index << ". Reason: setup failed";
 				continue;
 			}
-
-			// Store texture index from TEX container
-			newTexture.index = std::make_optional(texture.m_index);
-			newTexture.texPath = texture.m_fileName;  // just copy file name from tex (if it defined!)
-
-			// Create GL resource
-			glFunctions->glGenTextures(1, &newTexture.texture);
-			glFunctions->glBindTexture(GL_TEXTURE_2D, newTexture.texture);
-			glFunctions->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, newTexture.width, newTexture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, decompressedMemBlk.get());
-
-			glFunctions->glGenerateMipmap(GL_TEXTURE_2D);
-			glFunctions->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glFunctions->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glFunctions->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			glFunctions->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-			glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
 
 			// Precache debug texture if it's not precached yet
 			static constexpr const char* kGlacierMissingTex = "_Glacier/Missing_01";
@@ -884,6 +880,51 @@ namespace widgets
 		repaint(); // call to force jump into next state
 	}
 
+	void SceneRenderWidget::doPrepareInvalidatedResources(QOpenGLFunctions_3_3_Core* glFunctions)
+	{
+		LEVEL_SAFE_CHECK()
+
+		if (!m_resources->m_invalidatedTextures.empty())
+		{
+			for (auto& texture : m_resources->m_textures)
+			{
+				if (texture.index.has_value() && m_resources->m_invalidatedTextures.contains(texture.index.value()))
+				{
+					const uint32_t textureIndex = texture.index.value();
+
+					// Unload texture
+					texture.discard(glFunctions);
+
+					// Load texture (need to find actual entry in global textures pool... bruh)
+					const auto& allTextures = m_pLevel->getSceneTextures()->entries;
+					auto it = std::find_if(allTextures.begin(), allTextures.end(), [textureIndex](const gamelib::tex::TEXEntry& ent) -> bool {
+						return ent.m_index == textureIndex;
+					});
+
+					if (it != allTextures.end())
+					{
+						if (texture.setup(glFunctions, *it))
+						{
+							qDebug() << "Texture #" << textureIndex << " reloaded!";
+						}
+						else
+						{
+							qWarning() << "Failed to update texture #" << textureIndex;
+						}
+					}
+
+					// Validated
+					m_resources->m_invalidatedTextures.erase(textureIndex);
+				}
+			}
+		}
+	}
+
+	glm::ivec2 SceneRenderWidget::getViewportSize() const
+	{
+		return { QWidget::width(), QWidget::height() };
+	}
+
 	void SceneRenderWidget::doCollectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, RenderList& renderList, bool bIgnoreVisibility)
 	{
 		doVisitGeomToCollectIntoRenderList(pRootGeom, renderList, bIgnoreVisibility);
@@ -977,7 +1018,7 @@ namespace widgets
 
 	void SceneRenderWidget::doPerformDrawOfRenderList(QOpenGLFunctions_3_3_Core* glFunctions, const RenderList& renderList, const render::Camera& camera)
 	{
-		glm::ivec2 viewResolution { QWidget::width(), QWidget::height() };
+		glm::ivec2 viewResolution = getViewportSize();
 
 		for (const auto& entry : renderList)
 		{

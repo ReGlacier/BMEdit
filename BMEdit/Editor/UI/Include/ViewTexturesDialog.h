@@ -31,6 +31,9 @@ public:
 
 	void setTexturesSource(models::SceneTexturesModel *model);
 
+signals:
+	void textureChanged(uint32_t textureIndex);
+
 protected:
 	void showEvent(QShowEvent *event) override;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QOpenGLFunctions_3_3_Core>
+#include <GameLib/TEX/TEXEntry.h>
 #include <Render/GLResource.h>
 #include <optional>
 #include <cstdint>
@@ -18,6 +19,8 @@ namespace render
 		std::optional<std::string> texPath {}; /// [Optional] Path to texture in TEX container (path may not be defined in TEX!)
 
 		Texture();
+
+		bool setup(QOpenGLFunctions_3_3_Core* gapi, const gamelib::tex::TEXEntry& gTex);
 
 		void discard(QOpenGLFunctions_3_3_Core* gapi);
 

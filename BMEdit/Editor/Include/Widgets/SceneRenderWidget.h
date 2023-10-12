@@ -10,17 +10,13 @@
 #include <Render/Camera.h>
 
 #include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/glm.hpp>
 
 #include <memory>
 #include <list>
 
-
-namespace renderer
-{
-
-}
 
 class QOpenGLFunctions_3_3_Core;
 
@@ -66,6 +62,8 @@ namespace widgets
 
 		void moveCameraTo(const glm::vec3& position);
 
+		void reloadTexture(uint32_t textureIndex);
+
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
@@ -92,6 +90,8 @@ namespace widgets
 		void doLoadGeometry(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doCompileShaders(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doResetCameraState(QOpenGLFunctions_3_3_Core* glFunctions);
+		void doPrepareInvalidatedResources(QOpenGLFunctions_3_3_Core* glFunctions);
+		[[nodiscard]] glm::ivec2 getViewportSize() const;
 
 		/**
 		 * @brief Entry which will be rendered in render loop

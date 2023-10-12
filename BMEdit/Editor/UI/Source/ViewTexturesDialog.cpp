@@ -313,6 +313,9 @@ void ViewTexturesDialog::onTextureToImportSpecified()
 	resetPreview();
 	setPreview(textureIndex, std::nullopt);
 	resetAvailableMIPs(textureIndex);
+
+	// Notify everybody about changes
+	emit textureChanged(textureREF.textureIndex);
 }
 
 void ViewTexturesDialog::setPreview(uint32_t textureIndex, const std::optional<int>& mipLevel)

@@ -523,6 +523,11 @@ void BMEditMainWindow::onSceneObjectPropertyChanged(const gamelib::scene::SceneO
 	ui->sceneGLView->onObjectMoved(const_cast<gamelib::scene::SceneObject*>(geom));
 }
 
+void BMEditMainWindow::onTextureChanged(uint32_t textureIndex)
+{
+	ui->sceneGLView->reloadTexture(textureIndex);
+}
+
 void BMEditMainWindow::loadTypesDataBase()
 {
 	m_operationProgress->setValue(OperationToProgress::DISCOVER_TYPES_DATABASE);
@@ -706,4 +711,6 @@ void BMEditMainWindow::initViewTexturesDialog()
 	m_sceneTexturesModel.reset(new models::SceneTexturesModel(this));
 	m_viewTexturesDialog.setModal(true);
 	m_viewTexturesDialog.setTexturesSource(m_sceneTexturesModel.get());
+
+	connect(&m_viewTexturesDialog, &ViewTexturesDialog::textureChanged, this, &BMEditMainWindow::onTextureChanged);
 }
