@@ -1,4 +1,8 @@
 #include <GameLib/Scene/SceneObject.h>
+#include <GameLib/PRP/PRPMathTypes.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include <utility>
 
@@ -109,5 +113,44 @@ namespace gamelib::scene
 	std::vector<SceneObject::Ref> &SceneObject::getChildren()
 	{
 		return m_children;
+	}
+
+	glm::mat4 SceneObject::getLocalTransform() const
+	{
+		const auto vPosition  = getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
+		const auto mMatrix    = getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
+
+		// Extract matrix from properties
+		glm::mat4 mTransform = glm::mat4(1.f);
+
+		/**
+		 * Convert from DX9 to OpenGL
+		 *
+		 *        | m00 m10 m20 |
+		 * mSrc = | m01 m11 m21 |
+		 *        | m02 m12 m22 |
+		 *
+		 *        | m02 m01 m00 |
+		 * mDst = | m12 m11 m21 |
+		 *        | m22 m21 m20 |
+		 */
+		mTransform[0][0] = mMatrix[0][2];
+		mTransform[1][0] = mMatrix[0][1];
+		mTransform[2][0] = mMatrix[0][0];
+
+		mTransform[0][1] = mMatrix[1][2];
+		mTransform[1][1] = mMatrix[1][1];
+		mTransform[2][1] = mMatrix[2][1];
+
+		mTransform[0][2] = mMatrix[2][2];
+		mTransform[1][2] = mMatrix[2][1];
+		mTransform[2][2] = mMatrix[2][0];
+
+		mTransform[3][3] = 1.f;
+
+		glm::mat4 mTranslate = glm::translate(glm::mat4(1.f), vPosition);
+		glm::mat4 mModelMatrix = mTranslate * mTransform;
+
+		return mModelMatrix;
 	}
 }

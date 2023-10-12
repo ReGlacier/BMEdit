@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QOpenGLWidget>
+#include <GameLib/BoundingBox.h>
 #include <GameLib/Level.h>
 #include <Render/Camera.h>
 #include <glm/vec3.hpp>
@@ -93,6 +94,7 @@ namespace widgets
 		struct RenderEntry
 		{
 			const gamelib::scene::SceneObject* pGeom { nullptr };
+			gamelib::BoundingBox sBoundingBox {};
 			glm::mat4 mModelMatrix { 1.f };
 			glm::vec3 vPosition { .0f };
 			uint32_t iPrimId { 0u };

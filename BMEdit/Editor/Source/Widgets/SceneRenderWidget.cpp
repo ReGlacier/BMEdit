@@ -119,6 +119,7 @@ namespace widgets
 		}
 
 		// Begin frame
+		funcs->glViewport(0, 0, QWidget::width(), QWidget::height());
 		funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		funcs->glClearColor(0.15f, 0.2f, 0.45f, 1.0f);
 
@@ -266,8 +267,8 @@ namespace widgets
 	{
 		if (m_pLevel)
 		{
-			float xpos = event->pos().x();
-			float ypos = event->pos().y();
+			float xpos = static_cast<float>(event->pos().x());
+			float ypos = static_cast<float>(event->pos().y());
 
 			if (m_bFirstMouseQuery)
 			{
@@ -826,23 +827,43 @@ namespace widgets
 	{
 		LEVEL_SAFE_CHECK()
 
-		// Take scene and find first camera (ZCAMERA instance I guess)
-		glm::vec3 cameraPosition { .0f };
+		// ----------------------------------------------------------
+		// Ok, first of all let's try to find where located ZPlayer of ZHitman3 object
+		gamelib::scene::SceneObject::Ptr player = nullptr;
 
-		for (const auto& sceneObject : m_pLevel->getSceneObjects())
+		m_pLevel->forEachObjectOfType("ZHitman3", [&player](const gamelib::scene::SceneObject::Ptr& sceneObject) -> bool {
+			player = sceneObject;
+			return true;
+		});
+
+		if (player)
 		{
-			// Need to fix this code. Most 'ZCAMERA' objects refs to 2D scene view, need to find another better way to find 'start' camera.
-			// At least we can try to find ZPlayer/ZHitman3 object to put camera near to player
-			if (sceneObject->getType()->getName() == "ZCAMERA")
+			// Ok, level contains player. Let's take his room and move camera to player
+			const auto iPrimId = player->getProperties().getObject<std::int32_t>("PrimId", 0u);
+			const auto vPlayerPosition = player->getParent().lock()->getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
+			glm::vec3 vCameraPosition = vPlayerPosition;
+
+			// In theory, we need to put camera around player, not in player. So we need to have bounding box of player to correct camera position
+			if (iPrimId != 0 && m_resources->m_modelsCache.contains(iPrimId))
 			{
-				// Nice, camera found!
-				cameraPosition = sceneObject->getProperties().getObject<glm::vec3>("Position", glm::vec3(.0f));
-				break;
+				const auto& sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
+				glm::vec3 vCenter = sBoundingBox.getCenter();
+				vCenter.y += 1.5f * vCenter.y;
+
+				vCameraPosition += vCenter;
 			}
+
+			m_camera.setPosition(vCameraPosition);
+			qDebug() << "Move camera to object " << player->getName() << " at (" << vCameraPosition.x << ';' << vCameraPosition.y << ';' <<  vCameraPosition.z << ")";
+		}
+		else
+		{
+			// Bad for us, player not found. Need to put camera somewhere else
+			qDebug() << "No player on scene. Camera moved to (0;0;0)";
+			m_camera.setPosition(glm::vec3(0.f));
 		}
 
-		m_camera.setPosition(cameraPosition); // TODO: Need teleport camera to player and put under player's head
-
+		// ----------------------------------------------------------
 		emit resourcesReady();
 
 		m_eState = ELevelState::LS_READY; // Done!
@@ -861,12 +882,11 @@ namespace widgets
 		});
 	}
 
-	void SceneRenderWidget::doVisitGeomToCollectIntoRenderList(const gamelib::scene::SceneObject* geom, RenderList& renderList, bool bIgnoreVisibility)
+	void SceneRenderWidget::doVisitGeomToCollectIntoRenderList(const gamelib::scene::SceneObject* geom, RenderList& renderList, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
 	{
 		const auto primId     = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getProperties().getObject<glm::vec3>("Position", glm::vec3(0.f));
-		const auto mMatrix    = geom->getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
 
 		// Don't draw invisible things
 		if (bInvisible && !bIgnoreVisibility)
@@ -877,36 +897,7 @@ namespace widgets
 		// Check that object could be rendered by any way
 		if (primId != 0 && m_resources->m_modelsCache.contains(primId))
 		{
-			// Extract matrix from properties
-			glm::mat4 mTransform = glm::mat4(1.f);
-
-			/**
-			 * Convert from DX9 to OpenGL
-			 *
-			 *        | m00 m10 m20 |
-			 * mSrc = | m01 m11 m21 |
-			 *        | m02 m12 m22 |
-			 *
-			 *        | m02 m01 m00 |
-			 * mDst = | m12 m11 m21 |
-			 *        | m22 m21 m20 |
-			 */
-			mTransform[0][0] = mMatrix[0][2];
-			mTransform[1][0] = mMatrix[0][1];
-			mTransform[2][0] = mMatrix[0][0];
-
-			mTransform[0][1] = mMatrix[1][2];
-			mTransform[1][1] = mMatrix[1][1];
-			mTransform[2][1] = mMatrix[2][1];
-
-			mTransform[0][2] = mMatrix[2][2];
-			mTransform[1][2] = mMatrix[2][1];
-			mTransform[2][2] = mMatrix[2][0];
-
-			mTransform[3][3] = 1.f;
-
-			glm::mat4 mTranslate = glm::translate(glm::mat4(1.f), vPosition);
-			glm::mat4 mModelMatrix = mTranslate * mTransform;
+			glm::mat4 mModelMatrix = geom->getLocalTransform();
 
 			// Store into render list
 			RenderEntry& entry = renderList.emplace_back();
@@ -914,6 +905,11 @@ namespace widgets
 			entry.mModelMatrix = mModelMatrix;
 			entry.pGeom = geom;
 			entry.iPrimId = primId;
+
+			// Store bounding box
+			const Model& model = m_resources->m_models[m_resources->m_modelsCache[entry.iPrimId]];
+			entry.sBoundingBox.min = model.boundingBox.min;
+			entry.sBoundingBox.max = model.boundingBox.max;
 		}
 
 		// Visit others

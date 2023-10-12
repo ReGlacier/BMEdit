@@ -10,6 +10,7 @@
 #include <GameLib/PRP/PRPInstruction.h>
 #include <GameLib/Span.h>
 #include <GameLib/Type.h>
+#include <glm/mat4x4.hpp>
 #include <map>
 
 
@@ -55,6 +56,13 @@ namespace gamelib::scene
 		[[nodiscard]] const SceneObject::Ref &getParent() const;
 		[[nodiscard]] const std::vector<SceneObject::Ref> &getChildren() const;
 		[[nodiscard]] std::vector<SceneObject::Ref> &getChildren();
+
+		/**
+		 * @brief Calculate transform matrix for OpenGL and other render API buddies
+		 * @note This function calculates matrix at runtime. So, it's not huge operation but avoid of frequency calling of this function, please.
+		 * @return model matrix (scale, rotation and translate operations applied)
+		 */
+		[[nodiscard]] glm::mat4 getLocalTransform() const;
 
 	private:
 		std::string m_name {}; ///< Name of geom
