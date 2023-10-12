@@ -124,7 +124,6 @@ namespace widgets
 
 		// Z-Buffer testing
 		funcs->glEnable(GL_DEPTH_TEST);
-		funcs->glDepthFunc(GL_LESS);
 
 		// Blending
 		funcs->glEnable(GL_BLEND);
