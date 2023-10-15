@@ -44,24 +44,27 @@ namespace gamelib::oct
 		}
 
 		// Because previously totalObjects was index, not a count
-		++totalObjects;
-
-		// Read objects
-		// Seek to begin
-		octReader.seek(m_header.objectsOffset);
-		m_objects.resize(totalObjects);
-
-		for (int i = 0; i < totalObjects; i++)
+		if (totalObjects > 0)
 		{
-			OCTObject::deserialize(m_objects[i], &octReader);
-		}
+			++totalObjects;
 
-		// And last block...
-		m_unknownBlocks.resize(totalObjects);
+			// Read objects
+			// Seek to begin
+			octReader.seek(m_header.objectsOffset);
+			m_objects.resize(totalObjects);
 
-		for (int i = 0; i < totalObjects; i++)
-		{
-			OCTUnknownBlock::deserialize(m_unknownBlocks[i], &octReader);
+			for (int i = 0; i < totalObjects; i++)
+			{
+				OCTObject::deserialize(m_objects[i], &octReader);
+			}
+
+			// And last block...
+			m_unknownBlocks.resize(totalObjects);
+
+			for (int i = 0; i < totalObjects; i++)
+			{
+				OCTUnknownBlock::deserialize(m_unknownBlocks[i], &octReader);
+			}
 		}
 
 		return true;
