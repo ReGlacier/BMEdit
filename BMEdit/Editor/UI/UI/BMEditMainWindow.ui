@@ -299,55 +299,6 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="materialInfo">
-        <attribute name="title">
-         <string>Material</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_7">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_7">
-           <item>
-            <widget class="QLabel" name="label_4">
-             <property name="text">
-              <string>Material ID: </string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="materialIdLabel">
-             <property name="text">
-              <string>N/A</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
-           <item>
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Material Name:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="materialNameLabel">
-             <property name="text">
-              <string>N/A</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
       </widget>
      </item>
     </layout>

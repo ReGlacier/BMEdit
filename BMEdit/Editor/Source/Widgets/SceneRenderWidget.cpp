@@ -1047,6 +1047,102 @@ namespace widgets
 				for (const auto& mesh : model.meshes)
 				{
 					// Render single mesh
+					if (mesh.materialId == 0)
+						continue;
+
+					const auto& instances = m_pLevel->getLevelMaterials()->materialInstances;
+					const auto& classes = m_pLevel->getLevelMaterials()->materialClasses;
+					const auto& matInstance = instances[mesh.materialId - 1];
+
+					if (matInstance.getBinders().empty())
+					{
+						// Unable to render mesh. Skip
+						continue;
+					}
+
+					const auto& defaultBinder = matInstance.getBinders()[0];
+					if (defaultBinder.renderStates.empty())
+					{
+						// Unable to render mesh. Skip
+						continue;
+					}
+
+					const gamelib::mat::MATRenderState& renderState = defaultBinder.renderStates[0];
+
+					/**
+					 * @copyright chatGPT 3.5
+					 */
+					auto applyRenderState = [](QOpenGLFunctions_3_3_Core* gapi, const gamelib::mat::MATRenderState& renderState)
+					{
+						// Enable or disable blending
+						if (renderState.isBlendEnabled()) {
+							gapi->glEnable(GL_BLEND);
+						} else {
+							gapi->glDisable(GL_BLEND);
+						}
+
+						// Set blend mode based on your enum values
+						switch (renderState.getBlendMode())
+						{
+						case gamelib::mat::MATBlendMode::BM_TRANS:
+							gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+							break;
+						case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
+							gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+							break;
+						case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
+							gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+							break;
+						case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
+							gapi->glBlendFunc(GL_ONE, GL_ONE);
+							break;
+						case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
+							gapi->glBlendFunc(GL_ONE, GL_ONE);
+							break;
+						case gamelib::mat::MATBlendMode::BM_ADD:
+							gapi->glBlendFunc(GL_ONE, GL_ONE);
+							break;
+						default:
+							// Do nothing
+							break;
+						}
+
+						// Enable or disable alpha testing
+						if (renderState.isAlphaTestEnabled()) {
+							gapi->glEnable(GL_ALPHA_TEST);
+						} else {
+							gapi->glDisable(GL_ALPHA_TEST);
+						}
+
+						// Enable or disable fog
+						if (renderState.isFogEnabled()) {
+							gapi->glEnable(GL_FOG);
+						} else {
+							gapi->glDisable(GL_FOG);
+						}
+
+						// Enable or disable depth offset (Z bias)
+						if (renderState.hasZBias()) {
+							gapi->glEnable(GL_POLYGON_OFFSET_FILL);
+							gapi->glPolygonOffset(1.0f, renderState.getZOffset());
+						} else {
+							gapi->glDisable(GL_POLYGON_OFFSET_FILL);
+						}
+
+						// Set cull mode based on your enum values
+						switch (renderState.getCullMode())
+						{
+                            case gamelib::mat::MATCullMode::CM_OneSided:
+                                gapi->glCullFace(GL_BACK);
+							break;
+                            case gamelib::mat::MATCullMode::CM_DontCare:
+						    case gamelib::mat::MATCullMode::CM_TwoSided:
+							    // please complete
+							    gapi->glDisable(GL_CULL_FACE);
+							    break;
+						}
+					};
+
 					// 0. Check that we've able to draw it
 					if (mesh.glTextureId == kInvalidResource)
 					{
@@ -1065,6 +1161,9 @@ namespace widgets
 						}
 					}
 
+					// Enable render state
+					applyRenderState(glFunctions, renderState);
+
 					// 1. Activate default shader
 					Shader& texturedShader = m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
 
@@ -1079,7 +1178,11 @@ namespace widgets
 					// 3. Bind texture
 					if (mesh.glTextureId != kInvalidResource)
 					{
+						glFunctions->glActiveTexture(GL_TEXTURE0 + 0);
 						glFunctions->glBindTexture(GL_TEXTURE_2D, mesh.glTextureId);
+
+						// Use texture
+						texturedShader.setUniform(glFunctions, "i_uMaterial.mapDiffuse", 0);
 					}
 
 					// 4. Render mesh

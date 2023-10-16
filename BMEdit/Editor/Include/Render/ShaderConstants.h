@@ -10,5 +10,6 @@ namespace render
 		static constexpr const char* kCameraView = "i_uCamera.view";
 		static constexpr const char* kCameraResolution = "i_uCamera.resolution";
 		static constexpr const char* kColor = "i_Color";
+		static constexpr const char* kMaterial = "i_uMaterial";
 	};
 }
