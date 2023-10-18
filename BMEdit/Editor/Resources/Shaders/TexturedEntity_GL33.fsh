@@ -13,7 +13,7 @@ struct Material
     vec4 gm_vZBiasOffset;
     vec4 v4Opacity;
     vec4 v4Bias;
-    float fAlphaREF;
+    int alphaREF;
 
     // Textures
     sampler2D mapDiffuse;

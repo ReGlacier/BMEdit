@@ -5,6 +5,8 @@
 #include <QKeyEvent>
 #include <QString>
 
+#include <Render/RenderEntry.h>
+
 #include <GameLib/BoundingBox.h>
 #include <GameLib/Level.h>
 #include <Render/Camera.h>
@@ -26,11 +28,15 @@ namespace widgets
 
 	enum RenderMode : RenderModeFlags
 	{
-		RM_TEXTURE = 1 << 0,
-		RM_WIREFRAME = 1 << 1,
+		RM_TEXTURE = 1 << 0,   ///< Render objects with textures
+		RM_WIREFRAME = 1 << 1, ///< Render object in wireframe mode
 
-		RM_ALL = RM_TEXTURE | RM_WIREFRAME,
-		RM_DEFAULT = RM_TEXTURE
+		RM_NON_ALPHA_OBJECTS = 1 << 3, ///< Render only non transparent objects
+		RM_ALPHA_OBJECTS = 1 << 4, ///< Render only transparent objects
+
+		// Common
+		RM_ALL = RM_TEXTURE | RM_WIREFRAME | RM_NON_ALPHA_OBJECTS | RM_ALPHA_OBJECTS,  ///< Render anything
+		RM_DEFAULT = RM_TEXTURE | RM_NON_ALPHA_OBJECTS | RM_ALPHA_OBJECTS,  ///< Render in texture mode with alpha/non-alpha objects
 	};
 
 	class SceneRenderWidget : public QOpenGLWidget
@@ -93,23 +99,9 @@ namespace widgets
 		void doPrepareInvalidatedResources(QOpenGLFunctions_3_3_Core* glFunctions);
 		[[nodiscard]] glm::ivec2 getViewportSize() const;
 
-		/**
-		 * @brief Entry which will be rendered in render loop
-		 */
-		struct RenderEntry
-		{
-			const gamelib::scene::SceneObject* pGeom { nullptr };
-			gamelib::BoundingBox sBoundingBox {};
-			glm::mat4 mModelMatrix { 1.f };
-			glm::vec3 vPosition { .0f };
-			uint32_t iPrimId { 0u };
-		};
-
-		using RenderList = std::list<RenderEntry>;
-
-		void doCollectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, RenderList& renderList, bool bIgnoreVisibility);
-		void doVisitGeomToCollectIntoRenderList(const gamelib::scene::SceneObject* pRootGeom, RenderList& renderList, bool bIgnoreVisibility);
-		void doPerformDrawOfRenderList(QOpenGLFunctions_3_3_Core* glFunctions, const RenderList& renderList, const render::Camera& camera);
+		void collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, bool bIgnoreVisibility);
+		void collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, bool bIgnoreVisibility);
+		void performRender(QOpenGLFunctions_3_3_Core* glFunctions, const render::RenderEntriesList& entries, const render::Camera& camera, const std::function<bool(const render::RenderEntry&)>& filter);
 
 		void invalidateRenderList();
 
@@ -152,7 +144,7 @@ namespace widgets
 		gamelib::scene::SceneObject* m_pSceneObjectToView {};
 		gamelib::scene::SceneObject* m_pSelectedSceneObject { nullptr };
 
-		RenderList m_renderList {};
+		render::RenderEntriesList m_renderList {};
 
 		struct GLResources;
 		std::unique_ptr<GLResources> m_resources;

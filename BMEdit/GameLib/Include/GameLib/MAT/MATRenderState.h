@@ -16,6 +16,8 @@ namespace gamelib::mat
 	class MATRenderState
 	{
 	public:
+		MATRenderState() = default;
+
 		MATRenderState(std::string name,
 		               bool bEnabled, bool bBlendEnabled, bool bAlphaTest, bool bFogEnabled, bool bZBias,
 		               float fOpacity, float fZOffset,

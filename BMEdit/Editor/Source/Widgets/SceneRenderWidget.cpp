@@ -199,12 +199,25 @@ namespace widgets
 
 			    if (m_renderList.empty())
 			    {
-				    doCollectRenderList(m_camera, pRoot, m_renderList, bIgnoreVisibility);
+				    collectRenderList(m_camera, pRoot, m_renderList, bIgnoreVisibility);
 			    }
 
 			    if (!m_renderList.empty())
 			    {
-				    doPerformDrawOfRenderList(funcs, m_renderList, m_camera);
+				    auto onlyNonAlpha = [](const render::RenderEntry& entry) -> bool { return !entry.material.renderState.isAlphaTestEnabled(); };
+				    auto onlyAlpha = [](const render::RenderEntry& entry) -> bool { return entry.material.renderState.isAlphaTestEnabled(); };
+
+				    // 2 pass rendering: first render only non-alpha objects
+				    if (m_renderMode & RenderMode::RM_NON_ALPHA_OBJECTS)
+				    {
+					    performRender(funcs, m_renderList, m_camera, onlyNonAlpha);
+				    }
+
+				    // then render only alpha objects
+				    if (m_renderMode & RenderMode::RM_ALPHA_OBJECTS)
+				    {
+					    performRender(funcs, m_renderList, m_camera, onlyAlpha);
+				    }
 			    }
 		    }
 		    break;
@@ -213,8 +226,8 @@ namespace widgets
 
 	void SceneRenderWidget::resizeGL(int w, int h)
 	{
-		Q_UNUSED(w);
-		Q_UNUSED(h);
+		Q_UNUSED(w)
+		Q_UNUSED(h)
 
 		// Update projection
 		updateProjectionMatrix(w, h);
@@ -450,6 +463,7 @@ namespace widgets
 			return;
 
 		m_resources->m_modelTransformCache[sceneObject] = sceneObject->getWorldTransform();
+		invalidateRenderList();  //TODO: Need invalidate only object, not whole list!
 		repaint();
 	}
 
@@ -925,11 +939,13 @@ namespace widgets
 		return { QWidget::width(), QWidget::height() };
 	}
 
-	void SceneRenderWidget::doCollectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, RenderList& renderList, bool bIgnoreVisibility)
+	void SceneRenderWidget::collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, bool bIgnoreVisibility)
 	{
-		doVisitGeomToCollectIntoRenderList(pRootGeom, renderList, bIgnoreVisibility);
+		collectRenderEntriesIntoRenderList(pRootGeom, entries, bIgnoreVisibility);
 
-		renderList.sort([&camera](const RenderEntry& a, const RenderEntry& b) -> bool {
+		// Post sorting
+		entries.sort([&camera](const render::RenderEntry& a, const render::RenderEntry& b) -> bool {
+			// Check distance to camera
 			const float fADistanceToCamera = glm::length(camera.Position - a.vPosition);
 			const float fBDistanceToCamera = glm::length(camera.Position - b.vPosition);
 
@@ -937,20 +953,27 @@ namespace widgets
 		});
 	}
 
-	void SceneRenderWidget::doVisitGeomToCollectIntoRenderList(const gamelib::scene::SceneObject* geom, RenderList& renderList, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
+	void SceneRenderWidget::collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* geom, render::RenderEntriesList& entries, bool bIgnoreVisibility)
 	{
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getPosition();
 		auto primId = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
+
+		if (const auto& n = geom->getType()->getName(); n == "ZSHADOWMESHOBJ" || n == "ZBOUND" || n == "ZLIGHT" || n == "ZENVIRONMENT" || n == "ZOMNILIGHT" || n == "ZSPOTLIGHT" || n == "ZSPOTLIGHTSQUARE")
+		{
+			// Do not draw us & our children
+			return;
+		}
 
 		// Don't draw invisible things
 		if (bInvisible && !bIgnoreVisibility)
 			return;
 
 		// NOTE: Need to refactor this place and move it into separated area
+		// TODO: Move this hack into another place!
 		if (geom->isInheritedOf("ZItem"))
 		{
-			 //ZItems has no PrimId. Instead of this they are refs to another geom by path
+			//ZItems has no PrimId. Instead of this they are refs to another geom by path
 			auto rItemTemplatePath = geom->getProperties().getObject<std::string>("rItemTemplate");
 			const auto pItemTemplate = m_pLevel->getSceneObjectByGEOMREF(rItemTemplatePath);
 
@@ -993,17 +1016,146 @@ namespace widgets
 				m_resources->m_modelTransformCache[const_cast<gamelib::scene::SceneObject*>(geom)] = mWorldTransform;
 			}
 
-			// Store into render list
-			RenderEntry& entry = renderList.emplace_back();
-			entry.vPosition = vPosition;
-			entry.mModelMatrix = mWorldTransform;
-			entry.pGeom = geom;
-			entry.iPrimId = primId;
+			// Get model
+			const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
 
-			// Store bounding box
-			const Model& model = m_resources->m_models[m_resources->m_modelsCache[entry.iPrimId]];
-			entry.sBoundingBox.min = model.boundingBox.min;
-			entry.sBoundingBox.max = model.boundingBox.max;
+			// Add bounding box to render list
+			if (geom == m_pSelectedSceneObject && model.boundingBoxMesh.has_value())
+			{
+				// Need to add mesh
+				render::RenderEntry& boundingBoxEntry = entries.emplace_back();
+
+				// Render params
+				boundingBoxEntry.iPrimitiveId = 0;
+				boundingBoxEntry.iMeshIndex = 0;
+				boundingBoxEntry.iTrianglesNr = 0;
+				boundingBoxEntry.renderTopology = render::RenderTopology::RT_LINES;
+
+				// World params
+				boundingBoxEntry.vPosition = vPosition;
+				boundingBoxEntry.mWorldTransform = mWorldTransform;
+				boundingBoxEntry.mLocalOriginalTransform = geom->getOriginalTransform();
+				boundingBoxEntry.pMesh = const_cast<render::Mesh*>(&model.boundingBoxMesh.value());
+
+				// Material
+				render::RenderEntry::Material& material = boundingBoxEntry.material;
+				material.vDiffuseColor = glm::vec4(0.f, 0.f, 1.f, 1.f);
+				material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
+			}
+
+			// Add each 'mesh' into render list
+			for (int iMeshIdx = 0; iMeshIdx < model.meshes.size(); iMeshIdx++)
+			{
+				const auto& mesh = model.meshes[iMeshIdx];
+
+				if (mesh.materialId == 0)
+					continue; // Unable to render (ZWINPIC!)
+
+				// Filter by 'MeshVariantId'
+				const auto requiredVariationId = geom->getProperties().getObject<std::int32_t>("MeshVariantId", 0);
+				if (requiredVariationId != mesh.variationId)
+				{
+					continue;
+				}
+
+				// And store entry to renderer
+				render::RenderEntry renderEntry = {};
+
+				// Render params
+				renderEntry.iPrimitiveId = primId;
+				renderEntry.iMeshIndex = iMeshIdx;
+				renderEntry.iTrianglesNr = mesh.trianglesCount;
+				renderEntry.renderTopology = render::RenderTopology::RT_TRIANGLES;
+
+				// World params
+				renderEntry.vPosition = vPosition;
+				renderEntry.mWorldTransform = mWorldTransform;
+				renderEntry.mLocalOriginalTransform = geom->getOriginalTransform();
+				renderEntry.pMesh = const_cast<render::Mesh*>(&mesh);
+
+				// Material
+				render::RenderEntry::Material& material = renderEntry.material;
+
+				const auto& instances = m_pLevel->getLevelMaterials()->materialInstances;
+				const auto& matInstance = instances[mesh.materialId - 1];
+
+				// Store parameters
+				material.id = mesh.materialId;
+				material.sInstanceMatName = matInstance.getName();
+				material.sBaseMatClass = matInstance.getParentName();
+
+				if (!matInstance.getBinders().empty())
+				{
+					const auto& binder = matInstance.getBinders()[0]; // NOTE: In future I'll rewrite this place, but for now it's enough
+
+					// Store parameters
+					// TODO: Need collect all parameters here
+
+					// Store render state
+					if (!binder.renderStates.empty())
+					{
+						// TODO: In future we need to learn how to use multiple render states (if there are able to be 'multiple')
+						material.renderState = binder.renderStates[0];
+					}
+
+					// Resolve & store textures
+					std::fill(material.textures.begin(), material.textures.end(), kInvalidResource);
+
+					for (const auto& texture : binder.textures)
+					{
+						if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_NOTHING)
+							continue; // No texture at all
+
+						if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID_AND_PATH)
+						{
+							assert(false && "Idk how to handle this");
+							continue;
+						}
+
+						const auto& kind = texture.getName();
+
+						int textureSlotId = render::TextureSlotId::kMaxTextureSlot;
+
+#define MATCH_TEXTURE_KIND(mode, modeName) if (kind == modeName) { textureSlotId = mode; }
+						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapDiffuse,           "mapDiffuse")
+						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapSpecularMask,      "mapSpecularMask")
+						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapEnvironment,       "mapEnvironment")
+						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapReflectionMask,    "mapReflectionMask")
+						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapReflectionFallOff, "mapReflectionFallOff")
+						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapIllumination,      "mapIllumination")
+						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapTranslucency,      "mapTranslucency")
+#undef MATCH_TEXTURE_KIND
+
+						if (textureSlotId == render::TextureSlotId::kMaxTextureSlot)
+							continue;
+
+						// Now we need to find texture instance and associate it
+						for (const auto& g1tex : m_resources->m_textures)
+						{
+							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID && g1tex.index.has_value() && g1tex.index.value() == texture.getTextureId())
+							{
+								  material.textures[textureSlotId] = g1tex.texture;
+								  break;
+							}
+
+							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH && g1tex.texPath.has_value() && g1tex.texPath.value() == texture.getTexturePath())
+							{
+								  material.textures[textureSlotId] = g1tex.texture;
+								  break;
+							}
+						}
+					}
+				}
+
+				// Store shader
+				material.pShader = &m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
+
+				// Push or not?
+				if (!std::all_of(material.textures.begin(), material.textures.end(), [](const auto& v) -> bool { return v == kInvalidResource; }))
+				{
+					entries.emplace_back(renderEntry);
+				}
+			}
 		}
 
 		// Visit others
@@ -1011,200 +1163,155 @@ namespace widgets
 		{
 			if (auto g = child.lock())
 			{
-				doVisitGeomToCollectIntoRenderList(g.get(), renderList, bIgnoreVisibility);
+				collectRenderEntriesIntoRenderList(g.get(), entries, bIgnoreVisibility);
 			}
 		}
 	}
 
-	void SceneRenderWidget::doPerformDrawOfRenderList(QOpenGLFunctions_3_3_Core* glFunctions, const RenderList& renderList, const render::Camera& camera)
+	void SceneRenderWidget::performRender(QOpenGLFunctions_3_3_Core* glFunctions, const render::RenderEntriesList& entries, const render::Camera& camera, const std::function<bool(const render::RenderEntry&)>& filter)
 	{
 		glm::ivec2 viewResolution = getViewportSize();
 
-		for (const auto& entry : renderList)
+		auto applyRenderState = [](QOpenGLFunctions_3_3_Core* gapi, const gamelib::mat::MATRenderState& renderState)
 		{
-			const Model& model = m_resources->m_models[m_resources->m_modelsCache[entry.iPrimId]];
-
-			// Render bounding box
-			if (model.boundingBoxMesh.has_value() && entry.pGeom == m_pSelectedSceneObject)
-			{
-				Shader& gizmoShader = m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
-				gizmoShader.bind(glFunctions);
-
-				gizmoShader.setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mModelMatrix);
-				gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
-				gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraView, camera.getViewMatrix());
-				gizmoShader.setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
-				gizmoShader.setUniform(glFunctions, ShaderConstants::kColor, glm::vec4(0.f, 0.f, 1.f, 1.f));
-
-				model.boundingBoxMesh.value().render(glFunctions, RenderTopology::RT_LINES);
-
-				gizmoShader.unbind(glFunctions);
+			// Enable or disable blending
+			if (renderState.isBlendEnabled()) {
+				gapi->glEnable(GL_BLEND);
+			} else {
+				gapi->glDisable(GL_BLEND);
 			}
 
-			// Render all meshes
-			if (m_resources->m_modelsCache.contains(entry.iPrimId))
+			// Set blend mode based on your enum values
+			switch (renderState.getBlendMode())
 			{
-				for (const auto& mesh : model.meshes)
-				{
-					// Render single mesh
-					if (mesh.materialId == 0)
-						continue;
-
-					const auto& instances = m_pLevel->getLevelMaterials()->materialInstances;
-					const auto& classes = m_pLevel->getLevelMaterials()->materialClasses;
-					const auto& matInstance = instances[mesh.materialId - 1];
-
-					if (matInstance.getBinders().empty())
-					{
-						// Unable to render mesh. Skip
-						continue;
-					}
-
-					const auto& defaultBinder = matInstance.getBinders()[0];
-					if (defaultBinder.renderStates.empty())
-					{
-						// Unable to render mesh. Skip
-						continue;
-					}
-
-					const gamelib::mat::MATRenderState& renderState = defaultBinder.renderStates[0];
-
-					/**
-					 * @copyright chatGPT 3.5
-					 */
-					auto applyRenderState = [](QOpenGLFunctions_3_3_Core* gapi, const gamelib::mat::MATRenderState& renderState)
-					{
-						// Enable or disable blending
-						if (renderState.isBlendEnabled()) {
-							gapi->glEnable(GL_BLEND);
-						} else {
-							gapi->glDisable(GL_BLEND);
-						}
-
-						// Set blend mode based on your enum values
-						switch (renderState.getBlendMode())
-						{
-						case gamelib::mat::MATBlendMode::BM_TRANS:
-							gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-							break;
-						case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
-							gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-							break;
-						case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
-							gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-							break;
-						case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
-							gapi->glBlendFunc(GL_ONE, GL_ONE);
-							break;
-						case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
-							gapi->glBlendFunc(GL_ONE, GL_ONE);
-							break;
-						case gamelib::mat::MATBlendMode::BM_ADD:
-							gapi->glBlendFunc(GL_ONE, GL_ONE);
-							break;
-						default:
-							// Do nothing
-							break;
-						}
-
-						// Enable or disable alpha testing
-						if (renderState.isAlphaTestEnabled()) {
-							gapi->glEnable(GL_ALPHA_TEST);
-						} else {
-							gapi->glDisable(GL_ALPHA_TEST);
-						}
-
-						// Enable or disable fog
-						if (renderState.isFogEnabled()) {
-							gapi->glEnable(GL_FOG);
-						} else {
-							gapi->glDisable(GL_FOG);
-						}
-
-						// Enable or disable depth offset (Z bias)
-						if (renderState.hasZBias()) {
-							gapi->glEnable(GL_POLYGON_OFFSET_FILL);
-							gapi->glPolygonOffset(1.0f, renderState.getZOffset());
-						} else {
-							gapi->glDisable(GL_POLYGON_OFFSET_FILL);
-						}
-
-						// Set cull mode based on your enum values
-						switch (renderState.getCullMode())
-						{
-                            case gamelib::mat::MATCullMode::CM_OneSided:
-                                gapi->glCullFace(GL_BACK);
-							break;
-                            case gamelib::mat::MATCullMode::CM_DontCare:
-						    case gamelib::mat::MATCullMode::CM_TwoSided:
-							    // please complete
-							    gapi->glDisable(GL_CULL_FACE);
-							    break;
-						}
-					};
-
-					// 0. Check that we've able to draw it
-					if (mesh.glTextureId == kInvalidResource)
-					{
-						// Draw "error" bounding box
-						// And continue
-						continue;
-					}
-
-					// Filter mesh by 'variation id'
-					if (const auto& properties = entry.pGeom->getProperties(); properties.hasProperty("MeshVariantId"))
-					{
-						const auto requiredVariationId = properties.getObject<std::int32_t>("MeshVariantId", 0);
-						if (requiredVariationId != mesh.variationId)
-						{
-							continue;
-						}
-					}
-
-					// Enable render state
-					applyRenderState(glFunctions, renderState);
-
-					// 1. Activate default shader
-					Shader& texturedShader = m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
-
-					texturedShader.bind(glFunctions);
-
-					// 2. Submit uniforms
-					texturedShader.setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mModelMatrix);
-					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
-					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getViewMatrix());
-					texturedShader.setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
-
-					// 3. Bind texture
-					if (mesh.glTextureId != kInvalidResource)
-					{
-						glFunctions->glActiveTexture(GL_TEXTURE0 + 0);
-						glFunctions->glBindTexture(GL_TEXTURE_2D, mesh.glTextureId);
-
-						// Use texture
-						texturedShader.setUniform(glFunctions, "i_uMaterial.mapDiffuse", 0);
-					}
-
-					// 4. Render mesh
-					if (m_renderMode & RenderMode::RM_TEXTURE)
-					{
-						// normal draw
-						mesh.render(glFunctions);
-					}
-
-					if (m_renderMode & RenderMode::RM_WIREFRAME)
-					{
-						glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-						mesh.render(glFunctions);
-						// reset back
-						glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-					}
-
-					// 5. Unbind texture and shader (expected to switch between materials, but not now)
-					glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
-					texturedShader.unbind(glFunctions);
-				}
+			case gamelib::mat::MATBlendMode::BM_TRANS:
+				gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				break;
+			case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
+				gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				break;
+			case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
+				gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+				break;
+			case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
+				gapi->glBlendFunc(GL_ONE, GL_ONE);
+				break;
+			case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
+				gapi->glBlendFunc(GL_ONE, GL_ONE);
+				break;
+			case gamelib::mat::MATBlendMode::BM_ADD:
+				gapi->glBlendFunc(GL_ONE, GL_ONE);
+				break;
+			default:
+				// Do nothing
+				break;
 			}
+
+			// Enable or disable alpha testing
+			if (renderState.isAlphaTestEnabled()) {
+				gapi->glEnable(GL_ALPHA_TEST);
+			} else {
+				gapi->glDisable(GL_ALPHA_TEST);
+			}
+
+			// Enable or disable fog
+			if (renderState.isFogEnabled()) {
+				gapi->glEnable(GL_FOG);
+			} else {
+				gapi->glDisable(GL_FOG);
+			}
+
+			// Enable or disable depth offset (Z bias)
+			if (renderState.hasZBias()) {
+				gapi->glEnable(GL_POLYGON_OFFSET_FILL);
+				gapi->glPolygonOffset(1.0f, renderState.getZOffset());
+			} else {
+				gapi->glDisable(GL_POLYGON_OFFSET_FILL);
+			}
+
+			// Set cull mode based on your enum values
+			switch (renderState.getCullMode())
+			{
+			case gamelib::mat::MATCullMode::CM_OneSided:
+				gapi->glCullFace(GL_BACK);
+				break;
+			case gamelib::mat::MATCullMode::CM_DontCare:
+			case gamelib::mat::MATCullMode::CM_TwoSided:
+				// please complete
+				gapi->glDisable(GL_CULL_FACE);
+				break;
+			}
+		};
+
+		static constexpr std::array<std::string_view, render::TextureSlotId::kMaxTextureSlot> g_aTextureKindToLocation {
+		    "i_uMaterial.mapDiffuse",
+		    "i_uMaterial.mapSpecularMask",
+		    "i_uMaterial.mapEnvironment",
+		    "i_uMaterial.mapReflectionMask",
+		    "i_uMaterial.mapReflectionFallOff",
+		    "i_uMaterial.mapIllumination",
+		    "i_uMaterial.mapTranslucency"
+		};
+
+		for (const auto& entry : entries)
+		{
+			if (!filter(entry))
+				continue; // skipped by filter
+
+			// Switch render state
+			applyRenderState(glFunctions, entry.material.renderState);
+
+			// Activate material & setup parameters
+			render::Shader* shader = entry.material.pShader;
+			shader->bind(glFunctions);
+
+			// Setup parameters (common)
+			shader->setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mWorldTransform);
+			shader->setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
+			shader->setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getViewMatrix());
+			shader->setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
+
+			// TODO: Need to move into constants
+			shader->setUniform(glFunctions, "i_uMaterial.v4DiffuseColor", entry.material.vDiffuseColor);
+			shader->setUniform(glFunctions, "i_uMaterial.gm_vZBiasOffset", entry.material.gm_vZBiasOffset);
+			shader->setUniform(glFunctions, "i_uMaterial.v4Opacity", entry.material.v4Opacity);
+			shader->setUniform(glFunctions, "i_uMaterial.v4Bias", entry.material.v4Bias);
+			shader->setUniform(glFunctions, "i_uMaterial.alphaREF", std::clamp(entry.material.iAlphaREF, 0, 255));
+
+			// Bind textures
+			for (int slotIdx = render::TextureSlotId::kMapDiffuse; slotIdx < render::TextureSlotId::kMaxTextureSlot; slotIdx++)
+			{
+				const auto& glTexture = entry.material.textures[slotIdx];
+
+				if (glTexture == kInvalidResource)
+					continue;
+
+				glFunctions->glActiveTexture(GL_TEXTURE0 + slotIdx);
+				glFunctions->glBindTexture(GL_TEXTURE_2D, glTexture);
+				shader->setUniform(glFunctions, std::string(g_aTextureKindToLocation[slotIdx]), slotIdx);
+			}
+
+			if (m_renderMode & RenderMode::RM_TEXTURE)
+			{
+				entry.pMesh->render(glFunctions, entry.renderTopology);
+			}
+
+			if (m_renderMode & RenderMode::RM_WIREFRAME)
+			{
+				glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				entry.pMesh->render(glFunctions, entry.renderTopology);
+				glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+
+			// Release stuff
+			for (int slotIdx = render::TextureSlotId::kMapDiffuse; slotIdx < render::TextureSlotId::kMaxTextureSlot; slotIdx++)
+			{
+				glFunctions->glActiveTexture(GL_TEXTURE0 + slotIdx);
+				glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
+			}
+
+			// And it's done
+			shader->unbind(glFunctions);
 		}
 	}
 
