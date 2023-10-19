@@ -37,6 +37,8 @@ namespace widgets
 		std::vector<Model> m_models {};
 		std::unordered_map<uint32_t, size_t> m_modelsCache {};  /// primitive index to model index in m_models
 		std::unordered_map<gamelib::scene::SceneObject*, glm::mat4> m_modelTransformCache {}; /// transformations cache
+		std::unordered_map<std::string, GLuint> m_textureNameToGL {}; /// name of texture to it's OpenGL resource id
+		std::unordered_map<uint32_t, GLuint> m_textureIndexToGL {}; /// index of texture to it's OpenGL resource id
 		std::unordered_set<uint32_t> m_invalidatedTextures; /// Set of textures who need to be reloaded on next frame
 		GLuint m_iGLDebugTexture { 0 };
 		GLuint m_iGLMissingTexture { 0 };
@@ -81,6 +83,10 @@ namespace widgets
 
 			// Empty cache
 			m_modelsCache.clear();
+			m_modelTransformCache.clear();
+			m_textureNameToGL.clear();
+			m_textureIndexToGL.clear();
+			m_invalidatedTextures.clear();
 
 			// Release refs
 			m_iGLDebugTexture = 0u;
@@ -514,6 +520,17 @@ namespace widgets
 				m_resources->m_iGLDebugTexture = newTexture.texture;
 			}
 
+			// Update cache
+			if (newTexture.texPath.has_value())
+			{
+				m_resources->m_textureNameToGL[newTexture.texPath.value()] = newTexture.texture;
+			}
+
+			if (newTexture.index.has_value())
+			{
+				m_resources->m_textureIndexToGL[newTexture.index.value()] = newTexture.texture;
+			}
+
 			// Save texture
 			m_resources->m_textures.emplace_back(newTexture);
 		}
@@ -917,8 +934,28 @@ namespace widgets
 
 					if (it != allTextures.end())
 					{
+						// Erase cache
+						if (it->m_fileName.has_value())
+						{
+							m_resources->m_textureNameToGL.erase(it->m_fileName.value());
+						}
+						m_resources->m_textureIndexToGL.erase(it->m_index);
+
+						// Reload
 						if (texture.setup(glFunctions, *it))
 						{
+							// Update cache
+							if (texture.texPath.has_value())
+							{
+								m_resources->m_textureNameToGL[texture.texPath.value()] = texture.texture;
+							}
+
+							if (texture.index.has_value())
+							{
+								m_resources->m_textureIndexToGL[texture.index.value()] = texture.texture;
+							}
+
+							// Done
 							qDebug() << "Texture #" << textureIndex << " reloaded!";
 						}
 						else
@@ -1130,18 +1167,23 @@ namespace widgets
 							continue;
 
 						// Now we need to find texture instance and associate it
-						for (const auto& g1tex : m_resources->m_textures)
+						if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID)
 						{
-							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID && g1tex.index.has_value() && g1tex.index.value() == texture.getTextureId())
+							// Lookup in cache by texture id
+							if (auto it = m_resources->m_textureIndexToGL.find(texture.getTextureId()); it != m_resources->m_textureIndexToGL.end())
 							{
-								  material.textures[textureSlotId] = g1tex.texture;
-								  break;
+								material.textures[textureSlotId] = it->second;
+								break;
 							}
+						}
 
-							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH && g1tex.texPath.has_value() && g1tex.texPath.value() == texture.getTexturePath())
+						if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH)
+						{
+							// Lookup in cache by texture path
+							if (auto it = m_resources->m_textureNameToGL.find(texture.getTexturePath()); it != m_resources->m_textureNameToGL.end())
 							{
-								  material.textures[textureSlotId] = g1tex.texture;
-								  break;
+								material.textures[textureSlotId] = it->second;
+								break;
 							}
 						}
 					}
