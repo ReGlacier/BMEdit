@@ -3,6 +3,7 @@
 #include <GameLib/PRP/PRPMathTypes.h>
 #include <GameLib/TypeComplex.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
@@ -142,27 +143,31 @@ namespace gamelib::scene
 		const auto vPosition  = getPosition();
 		const auto mMatrix    = getOriginalTransform();
 
-		// Extract matrix from properties
-		glm::mat4 mTransform = glm::mat4(1.f);
+		glm::mat4 mResult = glm::mat4(1.f);
+		glm::mat3 mMatrixT = glm::transpose(mMatrix);
 
-		mTransform[0][0] = mMatrix[0][2];
-		mTransform[1][0] = mMatrix[0][1];
-		mTransform[2][0] = mMatrix[0][0];
+		const float* pSrcMatrix = glm::value_ptr(mMatrix);
+		float* pDstMatrix = glm::value_ptr(mResult);
 
-		mTransform[0][1] = mMatrix[1][2];
-		mTransform[1][1] = mMatrix[1][1];
-		mTransform[2][1] = mMatrix[1][0];
+		// Result of reverse engineering of sub_489740 (void __cdecl Transform3x3To4x4Matrix(Mat4x4 *pDstMtx, Mat3x3 *pSrcMtx, Vec3F *pVPosition))
+		pDstMatrix[0] = pSrcMatrix[6];
+		pDstMatrix[1] = pSrcMatrix[7];
+		pDstMatrix[2] = pSrcMatrix[8];
+		pDstMatrix[3] = 0.0f;
+		pDstMatrix[4] = pSrcMatrix[3];
+		pDstMatrix[5] = pSrcMatrix[4];
+		pDstMatrix[6] = pSrcMatrix[5];
+		pDstMatrix[7] = 0.0f;
+		pDstMatrix[8] = pSrcMatrix[0];
+		pDstMatrix[9] = pSrcMatrix[1];
+		pDstMatrix[10] = pSrcMatrix[2];
+		pDstMatrix[11] = 0.0f;
+		pDstMatrix[12] = vPosition.x;
+		pDstMatrix[13] = vPosition.y;
+		pDstMatrix[14] = vPosition.z;
+		pDstMatrix[15] = 1.0f;
 
-		mTransform[0][2] = mMatrix[2][2];
-		mTransform[1][2] = mMatrix[2][1];
-		mTransform[2][2] = mMatrix[2][0];
-
-		mTransform[3][3] = 1.f;
-
-		glm::mat4 mTranslate = glm::translate(glm::mat4(1.f), vPosition);
-		glm::mat4 mModelMatrix = mTranslate * mTransform;
-
-		return mModelMatrix;
+		return mResult;
 	}
 
 	glm::vec3 SceneObject::getPosition() const
