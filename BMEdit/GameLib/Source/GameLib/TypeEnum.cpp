@@ -1,5 +1,6 @@
 #include <GameLib/TypeEnum.h>
 #include <stdexcept>
+#include <algorithm>
 
 
 namespace gamelib
