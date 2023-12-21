@@ -27,6 +27,8 @@ namespace models
 		void setGeom(gamelib::scene::SceneObject *sceneObject);
 		void resetGeom();
 
+		void updateControllersList();
+
 	private:
 		[[nodiscard]] bool isReady() const;
 

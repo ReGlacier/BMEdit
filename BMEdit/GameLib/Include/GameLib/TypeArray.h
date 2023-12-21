@@ -20,6 +20,7 @@ namespace gamelib
 
 		[[nodiscard]] VerificationResult verify(const Span<prp::PRPInstruction>& instructions) const override;
 		[[nodiscard]] Type::DataMappingResult map(const Span<prp::PRPInstruction> &instructions) const override;
+		[[nodiscard]] Value makeDefaultPropertiesPack() const override;
 	private:
 		prp::PRPOpCode m_entryType { prp::PRPOpCode::ERR_UNKNOWN };
 		uint32_t m_requiredCapacity { 0u };

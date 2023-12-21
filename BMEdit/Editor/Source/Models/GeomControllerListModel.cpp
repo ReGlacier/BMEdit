@@ -34,7 +34,10 @@ namespace models
 		}
 
 		if (role == Qt::DisplayRole) {
-			return QString::fromStdString(m_sceneObject->getControllers().at(index.row()).name);
+			if (const auto& controllers = m_sceneObject->getControllers(); controllers.size() > index.row())
+			{
+				return QString::fromStdString(controllers.at(index.row()).name);
+			}
 		}
 
 		return {};
@@ -95,6 +98,17 @@ namespace models
 
 		beginResetModel();
 		m_sceneObject = nullptr;
+		endResetModel();
+	}
+
+	void GeomControllerListModel::updateControllersList()
+	{
+		if (!m_sceneObject) {
+			return;
+		}
+
+		beginResetModel();
+		// Geom unchanged)
 		endResetModel();
 	}
 

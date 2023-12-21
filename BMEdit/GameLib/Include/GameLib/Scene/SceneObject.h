@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include <functional>
 #include <string>
 #include <memory>
 #include <vector>
@@ -88,6 +89,22 @@ namespace gamelib::scene
 		 * @return World model matrix of object
 		 */
 		[[nodiscard]] glm::mat4 getWorldTransform() const;
+
+		enum class EVisitResult
+		{
+			VR_CONTINUE, // Continue iterations inside
+			VR_STOP_ALL, // Stop all iterations, finish visitor
+			VR_NEXT      // Go to next node on this level, do not go inside
+		};
+
+		/**
+		 * @brief Visit scene tree from this object deep inside
+		 * @param pred - predicate func
+		 */
+		void visitChildren(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const;
+
+	private:
+		EVisitResult internalVisitChildObjects(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const;
 
 	private:
 		std::string m_name {}; ///< Name of geom

@@ -68,6 +68,11 @@ namespace gamelib::prp
 		template <> const std::string& get() const { return str; }
 		template <> const RawData& get() const { return raw; }
 		template <> const StringArray& get() const { return stringArray; }
+
+		/**
+		 * Initialised (isSet = true) empty operand.
+		 */
+		static const PRPOperandVal kInitedOperandValue;
 	};
 
 	class PRPInstruction

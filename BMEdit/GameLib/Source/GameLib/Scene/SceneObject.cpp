@@ -194,4 +194,39 @@ namespace gamelib::scene
 
 		return mWorldMatrix;
 	}
+
+	void SceneObject::visitChildren(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const
+	{
+		if (!pred)
+			return;
+
+		internalVisitChildObjects(pred);
+	}
+
+	SceneObject::EVisitResult SceneObject::internalVisitChildObjects(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr &)>& pred) const
+	{
+		for (const auto rChild : getChildren())
+		{
+			if (auto pChild = rChild.lock())
+			{
+				const auto predRes = pred(pChild);
+
+				switch (predRes)
+				{
+					case EVisitResult::VR_CONTINUE:
+					{
+						auto predResInner = pChild->internalVisitChildObjects(pred);
+						if (predResInner == EVisitResult::VR_STOP_ALL)
+							return predResInner;
+					}
+					break;
+
+					case EVisitResult::VR_STOP_ALL: return EVisitResult::VR_STOP_ALL;
+					case EVisitResult::VR_NEXT: continue;
+				}
+			}
+		}
+
+		return EVisitResult::VR_CONTINUE;
+	}
 }

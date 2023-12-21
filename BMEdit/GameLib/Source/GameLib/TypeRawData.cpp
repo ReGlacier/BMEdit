@@ -61,4 +61,11 @@ namespace gamelib
 		std::vector<PRPInstruction> data { instructions[0], instructions[1] };
 		return Type::DataMappingResult (Value(this, std::move(data)), instructions.slice(2, instructions.size() - 2));
 	}
+
+	Value TypeRawData::makeDefaultPropertiesPack() const
+	{
+		// Produce an empty Container opcode
+		constexpr int32_t kEmptyContainerSize = 0;
+		return Value(this, { PRPInstruction(PRPOpCode::Container, PRPOperandVal(kEmptyContainerSize)) });
+	}
 }

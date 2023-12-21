@@ -2,6 +2,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/glm.hpp>
@@ -120,6 +121,19 @@ namespace render
 				Zoom = 1.0f;
 			if (Zoom > 45.0f)
 				Zoom = 45.0f;
+		}
+
+		// return true if object represented by vMin & vMax is visible
+		[[nodiscard]] bool canSeeObject(const glm::vec3& vMin, const glm::vec3& vMax, const glm::mat4& mProj) const
+		{
+			return true;
+			/*
+			 * // still buggy shit
+			const bool bCenter = glm::dot(Front, Position - ((vMax - vMin) * .5f)) > .0f;
+			const bool bMin = glm::dot(Front, Position - vMin) > .0f;
+			const bool bMax = glm::dot(Front, Position - vMax) > .0f;
+			return bCenter || bMin || bMax;
+		    */
 		}
 
 	private:

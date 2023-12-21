@@ -22,12 +22,19 @@
 
 #include <unordered_map>
 #include <unordered_set>
+#include <string_view>
 #include <algorithm>
 #include <optional>
+#include <set>
 
 
 namespace widgets
 {
+	// Here stored geom names (common) where editor should avoid any rendering (it's too expensive and unnecessary for us)
+	static const std::set<std::string_view> g_bannedObjectIds {
+	    "AdditionalResources", "AllLevels/mainsceneincludes.zip", "AllLevels/equipment.zip"
+	};
+
 	using namespace render;
 
 	struct SceneRenderWidget::GLResources
@@ -777,6 +784,9 @@ namespace widgets
 			}
 		}
 
+		// Then load rooms cache
+		buildRoomCache();
+
 		qDebug() << "All models (" << m_pLevel->getLevelGeometry()->primitives.models.size() << ") are loaded & ready to use!";
 		m_eState = ELevelState::LS_COMPILE_SHADERS;
 		repaint(); // call to force jump into next state
@@ -880,7 +890,7 @@ namespace widgets
 		if (player)
 		{
 			// Ok, level contains player. Let's take his room and move camera to player
-			const auto iPrimId = player->getProperties().getObject<std::int32_t>("PrimId", 0u);
+			const auto iPrimId = player->getProperties().getObject<std::int32_t>("PrimId", 0);
 			const auto vPlayerPosition = player->getParent().lock()->getPosition();
 			glm::vec3 vCameraPosition = vPlayerPosition;
 
@@ -978,7 +988,54 @@ namespace widgets
 
 	void SceneRenderWidget::collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, bool bIgnoreVisibility)
 	{
-		collectRenderEntriesIntoRenderList(pRootGeom, entries, bIgnoreVisibility);
+		if (m_pLevel->getSceneObjects().empty())
+			return;
+
+		if (pRootGeom != m_pLevel->getSceneObjects()[0].get() || m_rooms.empty() /* on some levels m_rooms cache could be not presented! */)
+		{
+			// Render from specific node
+			collectRenderEntriesIntoRenderList(pRootGeom, entries, bIgnoreVisibility);
+		}
+		else
+		{
+			std::list<RoomDef> acceptedRooms {};
+
+			// Render static
+			for (const auto& sRoomDef : m_rooms)
+			{
+				if (sRoomDef.vBoundingBox.contains(m_camera.Position) || m_camera.canSeeObject(sRoomDef.vBoundingBox.min, sRoomDef.vBoundingBox.max, m_matProjection))
+				{
+					if (auto pRoom = sRoomDef.rRoom.lock())
+					{
+						collectRenderEntriesIntoRenderList(pRoom.get(), entries, bIgnoreVisibility);
+					}
+
+					acceptedRooms.emplace_back(sRoomDef);
+				}
+			}
+
+			// Render dynamic
+			const auto& vObjects = m_pLevel->getSceneObjects();
+			auto it = std::find_if(vObjects.begin(), vObjects.end(), [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
+				return pObject && pObject->getName().ends_with("_CHARACTERS.zip");
+			});
+
+			if (it != vObjects.end())
+			{
+				// Add this 'ROOM' as another thing to visit
+				const gamelib::scene::SceneObject* pDynRoot = it->get();
+
+				using R = gamelib::scene::SceneObject::EVisitResult;
+				pDynRoot->visitChildren([&entries, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+					if (pObject->getName().ends_with("_LOCATIONS.zip"))
+						return R::VR_NEXT;
+
+					// Collect everything inside
+					collectRenderEntriesIntoRenderList(pObject.get(), entries, false);
+					return R::VR_NEXT;
+				});
+			}
+		}
 
 		// Post sorting
 		entries.sort([&camera](const render::RenderEntry& a, const render::RenderEntry& b) -> bool {
@@ -990,11 +1047,13 @@ namespace widgets
 		});
 	}
 
-	void SceneRenderWidget::collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* geom, render::RenderEntriesList& entries, bool bIgnoreVisibility)
+	void SceneRenderWidget::collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* geom, render::RenderEntriesList& entries, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
 	{
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getPosition();
 		auto primId = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
+
+		// Calculate object world space bounding box and check that this bbox is visible by out camera
 
 		if (const auto& n = geom->getType()->getName(); n == "ZSHADOWMESHOBJ" || n == "ZBOUND" || n == "ZLIGHT" || n == "ZENVIRONMENT" || n == "ZOMNILIGHT" || n == "ZSPOTLIGHT" || n == "ZSPOTLIGHTSQUARE")
 		{
@@ -1006,6 +1065,13 @@ namespace widgets
 		if (bInvisible && !bIgnoreVisibility)
 			return;
 
+		if (g_bannedObjectIds.contains(std::string_view{geom->getName()}))
+			return;
+
+		// Check that our 'object' is not a collision box
+		if (auto parent = geom->getParent().lock(); parent && parent->getType()->getName() == "ZROOM" && parent->getName() == geom->getName())
+			return; // Do not render collision meshes
+		
 		// NOTE: Need to refactor this place and move it into separated area
 		// TODO: Move this hack into another place!
 		if (geom->isInheritedOf("ZItem"))
@@ -1036,8 +1102,6 @@ namespace widgets
 			}
 		}
 
-		// TODO: Check for culling here (object visible or not)
-
 		// Check that object could be rendered by any way
 		if (primId != 0 && m_resources->m_modelsCache.contains(primId))
 		{
@@ -1056,146 +1120,142 @@ namespace widgets
 			// Get model
 			const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
 
-			// Add bounding box to render list
-			if (geom == m_pSelectedSceneObject && model.boundingBoxMesh.has_value())
-			{
-				// Need to add mesh
-				render::RenderEntry& boundingBoxEntry = entries.emplace_back();
+			glm::vec4 vModelBboxMin { model.boundingBox.min, 1.0f };
+			glm::vec4 vModelBboxMax { model.boundingBox.max, 1.0f };
 
-				// Render params
-				boundingBoxEntry.iPrimitiveId = 0;
-				boundingBoxEntry.iMeshIndex = 0;
-				boundingBoxEntry.iTrianglesNr = 0;
-				boundingBoxEntry.renderTopology = render::RenderTopology::RT_LINES;
+			vModelBboxMin = vModelBboxMin * mWorldTransform;
+			vModelBboxMax = vModelBboxMax * mWorldTransform;
 
-				// World params
-				boundingBoxEntry.vPosition = vPosition;
-				boundingBoxEntry.mWorldTransform = mWorldTransform;
-				boundingBoxEntry.mLocalOriginalTransform = geom->getOriginalTransform();
-				boundingBoxEntry.pMesh = const_cast<render::Mesh*>(&model.boundingBoxMesh.value());
+			if (m_camera.canSeeObject(glm::vec3(vModelBboxMin), glm::vec3(vModelBboxMax), m_matProjection)) {
+				// Add bounding box to render list
+				if (geom == m_pSelectedSceneObject && model.boundingBoxMesh.has_value()) {
+					// Need to add mesh
+					render::RenderEntry &boundingBoxEntry = entries.emplace_back();
 
-				// Material
-				render::RenderEntry::Material& material = boundingBoxEntry.material;
-				material.vDiffuseColor = glm::vec4(0.f, 0.f, 1.f, 1.f);
-				material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
-			}
+					// Render params
+					boundingBoxEntry.iPrimitiveId = 0;
+					boundingBoxEntry.iMeshIndex = 0;
+					boundingBoxEntry.iTrianglesNr = 0;
+					boundingBoxEntry.renderTopology = render::RenderTopology::RT_LINES;
 
-			// Add each 'mesh' into render list
-			for (int iMeshIdx = 0; iMeshIdx < model.meshes.size(); iMeshIdx++)
-			{
-				const auto& mesh = model.meshes[iMeshIdx];
+					// World params
+					boundingBoxEntry.vPosition = vPosition;
+					boundingBoxEntry.mWorldTransform = mWorldTransform;
+					boundingBoxEntry.mLocalOriginalTransform = geom->getOriginalTransform();
+					boundingBoxEntry.pMesh = const_cast<render::Mesh *>(&model.boundingBoxMesh.value());
 
-				if (mesh.materialId == 0)
-					continue; // Unable to render (ZWINPIC!)
-
-				// Filter by 'MeshVariantId'
-				const auto requiredVariationId = geom->getProperties().getObject<std::int32_t>("MeshVariantId", 0);
-				if (requiredVariationId != mesh.variationId)
-				{
-					continue;
+					// Material
+					render::RenderEntry::Material &material = boundingBoxEntry.material;
+					material.vDiffuseColor = glm::vec4(0.f, 0.f, 1.f, 1.f);
+					material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
 				}
 
-				// And store entry to renderer
-				render::RenderEntry renderEntry = {};
+				// Add each 'mesh' into render list
+				for (int iMeshIdx = 0; iMeshIdx < model.meshes.size(); iMeshIdx++) {
+					const auto &mesh = model.meshes[iMeshIdx];
 
-				// Render params
-				renderEntry.iPrimitiveId = primId;
-				renderEntry.iMeshIndex = iMeshIdx;
-				renderEntry.iTrianglesNr = mesh.trianglesCount;
-				renderEntry.renderTopology = render::RenderTopology::RT_TRIANGLES;
+					if (mesh.materialId == 0)
+						continue;// Unable to render (ZWINPIC!)
 
-				// World params
-				renderEntry.vPosition = vPosition;
-				renderEntry.mWorldTransform = mWorldTransform;
-				renderEntry.mLocalOriginalTransform = geom->getOriginalTransform();
-				renderEntry.pMesh = const_cast<render::Mesh*>(&mesh);
+					// Filter by 'MeshVariantId'
+					const auto requiredVariationId = geom->getProperties().getObject<std::int32_t>("MeshVariantId", 0);
+					if (requiredVariationId != mesh.variationId) {
+						continue;
+					}
 
-				// Material
-				render::RenderEntry::Material& material = renderEntry.material;
+					// And store entry to renderer
+					render::RenderEntry renderEntry = {};
 
-				const auto& instances = m_pLevel->getLevelMaterials()->materialInstances;
-				const auto& matInstance = instances[mesh.materialId - 1];
+					// Render params
+					renderEntry.iPrimitiveId = primId;
+					renderEntry.iMeshIndex = iMeshIdx;
+					renderEntry.iTrianglesNr = mesh.trianglesCount;
+					renderEntry.renderTopology = render::RenderTopology::RT_TRIANGLES;
 
-				// Store parameters
-				material.id = mesh.materialId;
-				material.sInstanceMatName = matInstance.getName();
-				material.sBaseMatClass = matInstance.getParentName();
+					// World params
+					renderEntry.vPosition = vPosition;
+					renderEntry.mWorldTransform = mWorldTransform;
+					renderEntry.mLocalOriginalTransform = geom->getOriginalTransform();
+					renderEntry.pMesh = const_cast<render::Mesh *>(&mesh);
 
-				if (!matInstance.getBinders().empty())
-				{
-					const auto& binder = matInstance.getBinders()[0]; // NOTE: In future I'll rewrite this place, but for now it's enough
+					// Material
+					render::RenderEntry::Material &material = renderEntry.material;
+
+					const auto &instances = m_pLevel->getLevelMaterials()->materialInstances;
+					const auto &matInstance = instances[mesh.materialId - 1];
 
 					// Store parameters
-					// TODO: Need collect all parameters here
+					material.id = mesh.materialId;
+					material.sInstanceMatName = matInstance.getName();
+					material.sBaseMatClass = matInstance.getParentName();
 
-					// Store render state
-					if (!binder.renderStates.empty())
-					{
-						// TODO: In future we need to learn how to use multiple render states (if there are able to be 'multiple')
-						material.renderState = binder.renderStates[0];
-					}
+					if (!matInstance.getBinders().empty()) {
+						const auto &binder = matInstance.getBinders()[0];// NOTE: In future I'll rewrite this place, but for now it's enough
 
-					// Resolve & store textures
-					std::fill(material.textures.begin(), material.textures.end(), kInvalidResource);
+						// Store parameters
+						// TODO: Need collect all parameters here
 
-					for (const auto& texture : binder.textures)
-					{
-						if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_NOTHING)
-							continue; // No texture at all
-
-						if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID_AND_PATH)
-						{
-							assert(false && "Idk how to handle this");
-							continue;
+						// Store render state
+						if (!binder.renderStates.empty()) {
+							// TODO: In future we need to learn how to use multiple render states (if there are able to be 'multiple')
+							material.renderState = binder.renderStates[0];
 						}
 
-						const auto& kind = texture.getName();
+						// Resolve & store textures
+						std::fill(material.textures.begin(), material.textures.end(), kInvalidResource);
 
-						int textureSlotId = render::TextureSlotId::kMaxTextureSlot;
+						for (const auto &texture : binder.textures) {
+							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_NOTHING)
+								continue;// No texture at all
+
+							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID_AND_PATH) {
+								assert(false && "Idk how to handle this");
+								continue;
+							}
+
+							const auto &kind = texture.getName();
+
+							int textureSlotId = render::TextureSlotId::kMaxTextureSlot;
 
 #define MATCH_TEXTURE_KIND(mode, modeName) if (kind == modeName) { textureSlotId = mode; }
-						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapDiffuse,           "mapDiffuse")
-						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapSpecularMask,      "mapSpecularMask")
-						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapEnvironment,       "mapEnvironment")
-						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapReflectionMask,    "mapReflectionMask")
-						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapReflectionFallOff, "mapReflectionFallOff")
-						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapIllumination,      "mapIllumination")
-						MATCH_TEXTURE_KIND(render::TextureSlotId::kMapTranslucency,      "mapTranslucency")
+							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapDiffuse, "mapDiffuse")
+							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapSpecularMask, "mapSpecularMask")
+							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapEnvironment, "mapEnvironment")
+							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapReflectionMask, "mapReflectionMask")
+							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapReflectionFallOff, "mapReflectionFallOff")
+							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapIllumination, "mapIllumination")
+							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapTranslucency, "mapTranslucency")
 #undef MATCH_TEXTURE_KIND
 
-						if (textureSlotId == render::TextureSlotId::kMaxTextureSlot)
-							continue;
+							if (textureSlotId == render::TextureSlotId::kMaxTextureSlot)
+								continue;
 
-						// Now we need to find texture instance and associate it
-						if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID)
-						{
-							// Lookup in cache by texture id
-							if (auto it = m_resources->m_textureIndexToGL.find(texture.getTextureId()); it != m_resources->m_textureIndexToGL.end())
-							{
-								material.textures[textureSlotId] = it->second;
-								break;
+							// Now we need to find texture instance and associate it
+							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID) {
+								// Lookup in cache by texture id
+								if (auto it = m_resources->m_textureIndexToGL.find(texture.getTextureId()); it != m_resources->m_textureIndexToGL.end()) {
+									material.textures[textureSlotId] = it->second;
+									break;
+								}
 							}
-						}
 
-						if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH)
-						{
-							// Lookup in cache by texture path
-							if (auto it = m_resources->m_textureNameToGL.find(texture.getTexturePath()); it != m_resources->m_textureNameToGL.end())
-							{
-								material.textures[textureSlotId] = it->second;
-								break;
+							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH) {
+								// Lookup in cache by texture path
+								if (auto it = m_resources->m_textureNameToGL.find(texture.getTexturePath()); it != m_resources->m_textureNameToGL.end()) {
+									material.textures[textureSlotId] = it->second;
+									break;
+								}
 							}
 						}
 					}
-				}
 
-				// Store shader
-				material.pShader = &m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
+					// Store shader
+					material.pShader = &m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
 
-				// Push or not?
-				if (!std::all_of(material.textures.begin(), material.textures.end(), [](const auto& v) -> bool { return v == kInvalidResource; }))
-				{
-					entries.emplace_back(renderEntry);
+					// Push or not?
+					if (!std::all_of(material.textures.begin(), material.textures.end(), [](const auto &v) -> bool { return v == kInvalidResource; })) {
+						entries.emplace_back(renderEntry);
+					}
 				}
 			}
 		}
@@ -1240,9 +1300,11 @@ namespace widgets
 				break;
 			case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
 				gapi->glBlendFunc(GL_ONE, GL_ONE);
+				gapi->glEnable(GL_ALPHA_TEST);
 				break;
 			case gamelib::mat::MATBlendMode::BM_ADD:
 				gapi->glBlendFunc(GL_ONE, GL_ONE);
+				gapi->glEnable(GL_ALPHA_TEST);
 				break;
 			default:
 				// Do nothing
@@ -1360,5 +1422,147 @@ namespace widgets
 	void SceneRenderWidget::invalidateRenderList()
 	{
 		m_renderList.clear();
+	}
+
+	void SceneRenderWidget::computeRoomBoundingBox(RoomDef& d)
+	{
+		using R = gamelib::scene::SceneObject::EVisitResult;
+
+		if (auto pRoom = d.rRoom.lock())
+		{
+			// First of all we need try to lookup for 'CollisionMesh'. It has same name to room and be an STDOBJ
+			const auto& children = pRoom->getChildren();
+			gamelib::scene::SceneObject* pCollisionMesh = nullptr;
+			pRoom->visitChildren([&pCollisionMesh, sTargetName = pRoom->getName()](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+				if (pObject->getName() == sTargetName && pObject->getType()->getName() == "ZSTDOBJ")
+				{
+					pCollisionMesh = pObject.get();
+					return R::VR_STOP_ALL;
+				}
+
+				return R::VR_NEXT; // Do not go deeper
+			});
+
+			if (pCollisionMesh)
+			{
+				auto iPrimId = pCollisionMesh->getProperties().getObject<std::int32_t>("PrimId", 0);
+				if (iPrimId != 0)
+				{
+					// Nice, collision mesh was found! Just use it as source for bbox of ZROOM
+					auto sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
+
+					glm::vec4 vMin { sBoundingBox.min, 1.0f };
+					glm::vec4 vMax { sBoundingBox.max, 1.0f };
+					glm::mat4 mWorldTransform = pCollisionMesh->getWorldTransform();
+
+					vMin = vMin * mWorldTransform;
+					vMax = vMax * mWorldTransform;
+
+					d.vBoundingBox = gamelib::BoundingBox(glm::vec3(vMin), glm::vec3(vMax));
+					return;
+				}
+			}
+
+			bool bBboxInited = false;
+
+			pRoom->visitChildren([&](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+				if (!pObject)
+					return R::VR_NEXT;
+
+				auto iPrimId = pObject->getProperties().getObject<std::int32_t>("PrimId", 0);
+				if (!iPrimId)
+					return R::VR_CONTINUE; // Go deeper
+
+				// Find prim cache
+				if (m_resources->m_modelsCache.contains(iPrimId))
+				{
+					auto sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
+
+					glm::vec4 vMin { sBoundingBox.min, 1.0f };
+					glm::vec4 vMax { sBoundingBox.max, 1.0f };
+					glm::mat4 mWorldTransform = pObject->getWorldTransform();
+
+					vMin = vMin * mWorldTransform;
+					vMax = vMax * mWorldTransform;
+
+					gamelib::BoundingBox vWorldBoundingBox = { glm::vec3(vMin.x, vMin.y, vMin.z), glm::vec3(vMax.x, vMax.y, vMax.z) };
+
+					if (!bBboxInited)
+					{
+						bBboxInited = true;
+						d.vBoundingBox = vWorldBoundingBox;
+					}
+					else
+					{
+						d.vBoundingBox.expand(vWorldBoundingBox);
+					}
+
+					// Optimisation: we've assumed that when we have an object with bbox we will use top bbox instead of compute sub-bboxes
+					return R::VR_NEXT;
+				}
+
+				return R::VR_CONTINUE;
+			});
+		}
+	}
+
+	void SceneRenderWidget::buildRoomCache()
+	{
+		m_rooms.clear();
+
+		// Now we need to find ZGROUP who ends by _LOCATIONS and lookup from this ZGROUP inside
+		auto locationsIt = std::find_if(
+		    m_pLevel->getSceneObjects().begin(),
+		    m_pLevel->getSceneObjects().end(),
+		    [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
+			    return pObject && pObject->getName().ends_with("_LOCATIONS.zip");
+		    });
+
+		if (locationsIt != m_pLevel->getSceneObjects().end())
+		{
+			// we've able to use standard workflow
+			// Save backdrop
+			m_pLevel->forEachObjectOfType("ZBackdrop", [this](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
+				if (pObject)
+				{
+					auto& room = m_rooms.emplace_back();
+					room.rRoom = pObject;
+					// ZBackdrop always has maximum possible size to see it from any point of the world
+					constexpr float kMinPoint = std::numeric_limits<float>::min();
+					constexpr float kMaxPoint = std::numeric_limits<float>::max();
+					room.vBoundingBox = gamelib::BoundingBox(glm::vec3(kMinPoint), glm::vec3(kMaxPoint));
+
+					return false;
+				}
+
+				return true;
+			});
+
+			// Find ZROOMs
+			const gamelib::scene::SceneObject::Ptr& pNewRoot = *locationsIt;
+
+			using R = gamelib::scene::SceneObject::EVisitResult;
+			pNewRoot->visitChildren([this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+				if (!pObject)
+				{
+					return R::VR_STOP_ALL;
+				}
+
+				if (pObject->getType()->getName() == "ZROOM")
+				{
+					// Add and go next, do not go inside
+					auto& room = m_rooms.emplace_back();
+					room.rRoom = pObject;
+
+					// Compute room dimensions
+					computeRoomBoundingBox(room);
+
+					return R::VR_NEXT;
+				}
+
+				// Go deep inside
+				return R::VR_CONTINUE;
+			});
+		}
 	}
 }

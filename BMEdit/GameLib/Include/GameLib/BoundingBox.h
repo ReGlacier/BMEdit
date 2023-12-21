@@ -14,5 +14,8 @@ namespace gamelib
 		BoundingBox(const glm::vec3 &vMin, const glm::vec3 &vMax);
 
 		glm::vec3 getCenter() const;
+
+		void expand(const BoundingBox& another);
+		bool contains(const glm::vec3& vPoint) const;
 	};
 }

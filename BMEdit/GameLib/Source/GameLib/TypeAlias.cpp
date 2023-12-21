@@ -64,6 +64,23 @@ namespace gamelib
 		throw std::runtime_error("TypeAlias::map() failed. Alias not inited yet!");
 	}
 
+	Value TypeAlias::makeDefaultPropertiesPack() const
+	{
+		if (auto typePtr = std::get_if<const Type *>(&m_resultTypeInfo); typePtr != nullptr)
+		{
+			// An alias to another type - jmp
+			return (*typePtr)->makeDefaultPropertiesPack();
+		}
+
+		if (auto typeOpCodeValue = std::get_if<prp::PRPOpCode>(&m_resultTypeInfo); typeOpCodeValue != nullptr)
+		{
+			// A holder of single instruction (like ZGEOMREF)
+			return { this, { prp::PRPInstruction(*typeOpCodeValue, prp::PRPOperandVal::kInitedOperandValue) } };
+		}
+
+		throw std::runtime_error("TypeAlias::makeDefaultPropertiesPack() failed. Alias not inited yet!");
+	}
+
 	const Type* TypeAlias::getFinalType() const
 	{
 		if (auto typePtrPtr = std::get_if<const Type*>(&m_resultTypeInfo); typePtrPtr != nullptr)

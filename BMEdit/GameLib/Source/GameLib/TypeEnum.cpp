@@ -57,6 +57,22 @@ namespace gamelib
 		return Type::DataMappingResult(Value(this, std::move(valueData), { ValueView("Value", instructions[0].getOpCode(), this) }), newSlice);
 	}
 
+	Value TypeEnum::makeDefaultPropertiesPack() const
+	{
+		// Here we need to select lowest possible value of presented and return it. When we have an empty array we should raise an exception because our behaviour is undefined in this case
+		if (m_possibleValues.empty())
+			throw std::runtime_error("Invalid enum declaration! Unable to produce 'default' enum without any variations!");
+
+		if (m_possibleValues.size() == 1)
+		{
+			// just return this entry anyway
+			return Value(this, { PRPInstruction(PRPOpCode::StringOrArray_E, PRPOperandVal(m_possibleValues[0].name)) });
+		}
+
+		auto lowest = std::min_element(m_possibleValues.begin(), m_possibleValues.end(), [](const Entry& a, const Entry& b) { return a.value < b.value; });
+		return Value(this, { PRPInstruction(PRPOpCode::StringOrArray_E, PRPOperandVal(lowest->name)) });
+	}
+
 	const TypeEnum::Entries &TypeEnum::getPossibleValues() const
 	{
 		return m_possibleValues;

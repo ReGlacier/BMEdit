@@ -16,7 +16,7 @@
         { "name": "rJournalistActor", "typename": "ZGEOMREF",  "offset": 1540 },
         { "name": "property_608", "typename": "ZGEOMREF",  "offset": 1544 },
         { "name": "rPriestActor", "typename": "ZGEOMREF",  "offset": 1548 },
-        { "name": "property_610", "typename": "ZGEOMREF",  "offset": 1552 },
-        { "name": "property_614", "typename": "ZGEOMREF",  "offset": 1556 }
+        { "name": "rHitmanDieCutSequence", "typename": "ZGEOMREF",  "offset": 1552 },
+        { "name": "rMoviePlayer", "typename": "ZGEOMREF",  "offset": 1556 }
     ]
 }

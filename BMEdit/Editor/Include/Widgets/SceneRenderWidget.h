@@ -105,6 +105,8 @@ namespace widgets
 
 		void invalidateRenderList();
 
+		void buildRoomCache();
+
 	private:
 		// Data
 		gamelib::Level* m_pLevel { nullptr };
@@ -148,5 +150,16 @@ namespace widgets
 
 		struct GLResources;
 		std::unique_ptr<GLResources> m_resources;
+
+		struct RoomDef
+		{
+			gamelib::scene::SceneObject::Ref rRoom {};
+			gamelib::BoundingBox vBoundingBox {};
+		};
+
+		std::list<RoomDef> m_rooms {};
+
+	private:
+		void computeRoomBoundingBox(RoomDef& d);
 	};
 }

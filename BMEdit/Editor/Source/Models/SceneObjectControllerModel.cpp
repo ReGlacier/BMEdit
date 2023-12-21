@@ -44,7 +44,8 @@ void SceneObjectControllerModel::setControllerIndex(int controllerIndex)
 	m_currentControllerIndex = controllerIndex;
 	endResetModel();
 
-	setValue(m_geom->getControllers().at(controllerIndex).properties);
+	const auto& controller = m_geom->getControllers().at(controllerIndex);
+	setValue(controller.properties);
 }
 
 void SceneObjectControllerModel::resetController()

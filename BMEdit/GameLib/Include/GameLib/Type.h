@@ -43,6 +43,12 @@ namespace gamelib
 		 */
 		[[nodiscard]] virtual DataMappingResult map(const Span<prp::PRPInstruction> &instructions) const;
 
+		/**
+		 * @fn makeDefaultPropertiesPack
+		 * @return Value with pack of default constructed properties
+		 */
+		[[nodiscard]] virtual Value makeDefaultPropertiesPack() const;
+
 	private:
 		std::string m_name {};
 		TypeKind m_kind { TypeKind::NONE };
