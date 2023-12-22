@@ -52,8 +52,8 @@ namespace widgets
 		[[nodiscard]] render::Camera& getCamera() { return m_camera; }
 		[[nodiscard]] const render::Camera& getCamera() const { return m_camera; }
 
-		[[nodiscard]] float getFOV() const { return m_fFOV; }
-		void setFOV(float fov) { m_fFOV = fov; m_bDirtyProj = true; }
+		[[nodiscard]] float getFOV() const { return m_camera.getFOV(); }
+		void setFOV(float fov) { m_camera.setFOV(fov); }
 
 		void setGeomViewMode(gamelib::scene::SceneObject* sceneObject);
 		void setWorldViewMode();
@@ -91,7 +91,6 @@ namespace widgets
 		void mouseReleaseEvent(QMouseEvent *event) override;
 
 	private:
-		void updateProjectionMatrix(int w, int h);
 		void doLoadTextures(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doLoadGeometry(QOpenGLFunctions_3_3_Core* glFunctions);
 		void doCompileShaders(QOpenGLFunctions_3_3_Core* glFunctions);
@@ -113,11 +112,6 @@ namespace widgets
 
 		// Camera & world view
 		render::Camera m_camera {};
-		glm::mat4 m_matProjection {};
-		float m_fFOV { 67.664f };
-		float m_fZNear { .1f };
-		float m_fZFar { 100'000.f };
-		bool m_bDirtyProj { true };
 		uint8_t m_renderMode = RenderMode::RM_DEFAULT;
 
 		// State

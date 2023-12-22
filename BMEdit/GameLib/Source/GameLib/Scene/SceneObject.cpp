@@ -149,17 +149,17 @@ namespace gamelib::scene
 		const float* pSrcMatrix = glm::value_ptr(mMatrix);
 		float* pDstMatrix = glm::value_ptr(mResult);
 
-		// Result of reverse engineering of sub_489740 (void __cdecl Transform3x3To4x4Matrix(Mat4x4 *pDstMtx, Mat3x3 *pSrcMtx, Vec3F *pVPosition))
-		pDstMatrix[0] = pSrcMatrix[6];
-		pDstMatrix[1] = pSrcMatrix[7];
-		pDstMatrix[2] = pSrcMatrix[8];
-		pDstMatrix[3] = 0.0f;
-		pDstMatrix[4] = pSrcMatrix[3];
-		pDstMatrix[5] = pSrcMatrix[4];
-		pDstMatrix[6] = pSrcMatrix[5];
-		pDstMatrix[7] = 0.0f;
-		pDstMatrix[8] = pSrcMatrix[0];
-		pDstMatrix[9] = pSrcMatrix[1];
+		// Result of reverse engineering of MatPosToMatrix (or Transform3x3To4x4Matrix from PC version (sub_489740))
+		pDstMatrix[0]  = pSrcMatrix[6];
+		pDstMatrix[1]  = pSrcMatrix[7];
+		pDstMatrix[2]  = pSrcMatrix[8];
+		pDstMatrix[3]  = 0.0f;
+		pDstMatrix[4]  = pSrcMatrix[3];
+		pDstMatrix[5]  = pSrcMatrix[4];
+		pDstMatrix[6]  = pSrcMatrix[5];
+		pDstMatrix[7]  = 0.0f;
+		pDstMatrix[8]  = pSrcMatrix[0];
+		pDstMatrix[9]  = pSrcMatrix[1];
 		pDstMatrix[10] = pSrcMatrix[2];
 		pDstMatrix[11] = 0.0f;
 		pDstMatrix[12] = vPosition.x;

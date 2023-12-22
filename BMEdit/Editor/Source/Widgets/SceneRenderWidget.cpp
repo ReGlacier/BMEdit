@@ -142,11 +142,6 @@ namespace widgets
 		funcs->glEnable(GL_BLEND);
 		funcs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		if (m_bDirtyProj)
-		{
-			updateProjectionMatrix(vp.x, vp.y);
-		}
-
 		// NOTE: Before render anything we need to look at material and check MATRenderState.
 		//       If it's applied we need to setup OpenGL into correct state to make perfect rendering
 		switch (m_eState)
@@ -243,9 +238,9 @@ namespace widgets
 		Q_UNUSED(h)
 
 		// Update projection
-		updateProjectionMatrix(w, h);
+		m_camera.setViewport(w, h);
 
-		// Because our list of visible objects could be changed here
+		// Because our list of visible objects could be changed here (???)
 		invalidateRenderList();
 	}
 
@@ -253,37 +248,40 @@ namespace widgets
 	{
 		if (m_pLevel)
 		{
-			bool bMoved = false;
-			constexpr float kBaseDt = 1.f / 60.f;
-			float kSpeedUp = 100.f;
-
-			if (event->modifiers().testFlag(Qt::KeyboardModifier::ShiftModifier))
-				    kSpeedUp *= 4.f;
-
+			render::CameraMovementMask movementMask {};
 
 			if (event->key() == Qt::Key_W)
 			{
-				m_camera.processKeyboard(render::Camera_Movement::FORWARD, kBaseDt, kSpeedUp);
-				bMoved = true;
-			}
-			else if (event->key() == Qt::Key_S)
-			{
-				m_camera.processKeyboard(render::Camera_Movement::BACKWARD, kBaseDt, kSpeedUp);
-				bMoved = true;
-			}
-			else if (event->key() == Qt::Key_A)
-			{
-				m_camera.processKeyboard(render::Camera_Movement::LEFT, kBaseDt, kSpeedUp);
-				bMoved = true;
-			}
-			else if (event->key() == Qt::Key_D)
-			{
-				m_camera.processKeyboard(render::Camera_Movement::RIGHT, kBaseDt, kSpeedUp);
-				bMoved = true;
+				movementMask |= render::CameraMovementMaskValues::CM_FORWARD;
 			}
 
-			if (bMoved)
+			if (event->key() == Qt::Key_S)
 			{
+				movementMask |= render::CameraMovementMaskValues::CM_BACKWARD;
+			}
+
+			if (event->key() == Qt::Key_A)
+			{
+				movementMask |= render::CameraMovementMaskValues::CM_LEFT;
+			}
+
+			if (event->key() == Qt::Key_D)
+			{
+				movementMask |= render::CameraMovementMaskValues::CM_RIGHT;
+			}
+
+			if (event->modifiers().testFlag(Qt::KeyboardModifier::ShiftModifier))
+			{
+				movementMask |= render::CameraMovementMaskValues::CM_SPEEDUP_MOD;
+			}
+
+			if ((movementMask & CM_FORWARD) && (movementMask & CM_BACKWARD)) movementMask &= ~(CM_FORWARD | CM_BACKWARD);
+			if ((movementMask & CM_LEFT) && (movementMask & CM_RIGHT)) movementMask &= ~(CM_LEFT | CM_RIGHT);
+
+			if (movementMask > 0 && movementMask != (CM_SPEEDUP_MOD))
+			{
+				m_camera.handleKeyboardMovement(movementMask /* dt */);
+
 				invalidateRenderList();
 				repaint();
 			}
@@ -321,7 +319,7 @@ namespace widgets
 			if (std::fabsf(xOffset - kMinMovement) > std::numeric_limits<float>::epsilon() || std::fabsf(yOffset - kMinMovement) > std::numeric_limits<float>::epsilon())
 			{
 				invalidateRenderList();
-				m_camera.processMouseMovement(xOffset, yOffset);
+				m_camera.processMouseMovement(xOffset, yOffset /* dt */);
 			}
 		}
 
@@ -340,12 +338,6 @@ namespace widgets
 
 		m_bFirstMouseQuery = true;
 		m_mouseLastPosition = QPoint(0, 0);
-	}
-
-	void SceneRenderWidget::updateProjectionMatrix(int w, int h)
-	{
-		m_matProjection = glm::perspectiveFovLH(glm::radians(m_fFOV), static_cast<float>(w), static_cast<float>(h), m_fZNear, m_fZFar);
-		m_bDirtyProj = false;
 	}
 
 	void SceneRenderWidget::setLevel(gamelib::Level *pLevel)
@@ -1003,7 +995,7 @@ namespace widgets
 			// Render static
 			for (const auto& sRoomDef : m_rooms)
 			{
-				if (sRoomDef.vBoundingBox.contains(m_camera.Position) || m_camera.canSeeObject(sRoomDef.vBoundingBox.min, sRoomDef.vBoundingBox.max, m_matProjection))
+				if (sRoomDef.vBoundingBox.contains(m_camera.getPosition()) || m_camera.canSeeObject(sRoomDef.vBoundingBox.min, sRoomDef.vBoundingBox.max))
 				{
 					if (auto pRoom = sRoomDef.rRoom.lock())
 					{
@@ -1040,8 +1032,8 @@ namespace widgets
 		// Post sorting
 		entries.sort([&camera](const render::RenderEntry& a, const render::RenderEntry& b) -> bool {
 			// Check distance to camera
-			const float fADistanceToCamera = glm::length(camera.Position - a.vPosition);
-			const float fBDistanceToCamera = glm::length(camera.Position - b.vPosition);
+			const float fADistanceToCamera = glm::length(camera.getPosition() - a.vPosition);
+			const float fBDistanceToCamera = glm::length(camera.getPosition() - b.vPosition);
 
 			return fADistanceToCamera > fBDistanceToCamera;
 		});
@@ -1126,7 +1118,7 @@ namespace widgets
 			vModelBboxMin = vModelBboxMin * mWorldTransform;
 			vModelBboxMax = vModelBboxMax * mWorldTransform;
 
-			if (m_camera.canSeeObject(glm::vec3(vModelBboxMin), glm::vec3(vModelBboxMax), m_matProjection)) {
+			if (m_camera.canSeeObject(glm::vec3(vModelBboxMin), glm::vec3(vModelBboxMax))) {
 				// Add bounding box to render list
 				if (geom == m_pSelectedSceneObject && model.boundingBoxMesh.has_value()) {
 					// Need to add mesh
@@ -1371,8 +1363,8 @@ namespace widgets
 
 			// Setup parameters (common)
 			shader->setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mWorldTransform);
-			shader->setUniform(glFunctions, ShaderConstants::kCameraProjection, m_matProjection);
-			shader->setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getViewMatrix());
+			shader->setUniform(glFunctions, ShaderConstants::kCameraProjection, m_camera.getProjection());
+			shader->setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getView());
 			shader->setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
 
 			// TODO: Need to move into constants
