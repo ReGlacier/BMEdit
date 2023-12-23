@@ -216,8 +216,8 @@ namespace widgets
 
 			    if (!m_renderList.empty())
 			    {
-				    auto onlyNonAlpha = [](const render::RenderEntry& entry) -> bool { return !entry.material.renderState.isAlphaTestEnabled(); };
-				    auto onlyAlpha = [](const render::RenderEntry& entry) -> bool { return entry.material.renderState.isAlphaTestEnabled(); };
+				    auto onlyNonAlpha = [](const render::RenderEntry& entry) -> bool { return !entry.material.renderState.isAlphaTestEnabled() && !entry.material.renderState.isBlendEnabled(); };
+				    auto onlyAlpha = [](const render::RenderEntry& entry) -> bool { return entry.material.renderState.isAlphaTestEnabled() || entry.material.renderState.isBlendEnabled(); };
 
 				    // 2 pass rendering: first render only non-alpha objects
 				    if (m_renderMode & RenderMode::RM_NON_ALPHA_OBJECTS)
@@ -1212,6 +1212,12 @@ namespace widgets
 							material.renderState = binder.renderStates[0];
 						}
 
+						if (!material.renderState.isEnabled())
+						{
+							// unable to see disabled material instance
+							continue;
+						}
+
 						// Resolve & store textures
 						std::fill(material.textures.begin(), material.textures.end(), kInvalidResource);
 
@@ -1316,11 +1322,9 @@ namespace widgets
 				break;
 			case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
 				gapi->glBlendFunc(GL_ONE, GL_ONE);
-				gapi->glEnable(GL_ALPHA_TEST);
 				break;
 			case gamelib::mat::MATBlendMode::BM_ADD:
 				gapi->glBlendFunc(GL_ONE, GL_ONE);
-				gapi->glEnable(GL_ALPHA_TEST);
 				break;
 			default:
 				// Do nothing
