@@ -39,6 +39,14 @@ namespace widgets
 		RM_DEFAULT = RM_TEXTURE | RM_NON_ALPHA_OBJECTS | RM_ALPHA_OBJECTS,  ///< Render in texture mode with alpha/non-alpha objects
 	};
 
+	struct RenderStats
+	{
+		QString currentRoom {};
+		int allowedObjects { 0 };
+		int rejectedObjects { 0 };
+		float fFrameTime { .0f };  // how much time used for render this frame
+	};
+
 	class SceneRenderWidget : public QOpenGLWidget
 	{
 		Q_OBJECT
@@ -73,6 +81,7 @@ namespace widgets
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
+		void frameReady(const RenderStats& stats);
 
 	public slots:
 		void onRedrawRequested();
@@ -98,8 +107,8 @@ namespace widgets
 		void doPrepareInvalidatedResources(QOpenGLFunctions_3_3_Core* glFunctions);
 		[[nodiscard]] glm::ivec2 getViewportSize() const;
 
-		void collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, bool bIgnoreVisibility);
-		void collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, bool bIgnoreVisibility);
+		void collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility);
+		void collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility);
 		void performRender(QOpenGLFunctions_3_3_Core* glFunctions, const render::RenderEntriesList& entries, const render::Camera& camera, const std::function<bool(const render::RenderEntry&)>& filter);
 
 		void invalidateRenderList();

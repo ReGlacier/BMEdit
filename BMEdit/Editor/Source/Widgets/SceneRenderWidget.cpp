@@ -24,7 +24,7 @@
 #include <unordered_set>
 #include <string_view>
 #include <algorithm>
-#include <optional>
+#include <chrono>
 #include <set>
 
 
@@ -123,6 +123,10 @@ namespace widgets
 
 	void SceneRenderWidget::paintGL()
 	{
+		RenderStats renderStats {};
+
+		auto renderStartTime = std::chrono::high_resolution_clock::now();
+
 		auto funcs = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_3_Core>(QOpenGLContext::currentContext());
 		if (!funcs) {
 			qFatal("Could not obtain required OpenGL context version");
@@ -207,7 +211,7 @@ namespace widgets
 
 			    if (m_renderList.empty())
 			    {
-				    collectRenderList(m_camera, pRoot, m_renderList, bIgnoreVisibility);
+				    collectRenderList(m_camera, pRoot, m_renderList, renderStats, bIgnoreVisibility);
 			    }
 
 			    if (!m_renderList.empty())
@@ -225,6 +229,15 @@ namespace widgets
 				    if (m_renderMode & RenderMode::RM_ALPHA_OBJECTS)
 				    {
 					    performRender(funcs, m_renderList, m_camera, onlyAlpha);
+				    }
+
+				    // Submit stats
+				    if (!m_renderList.empty())
+				    {
+					    auto renderEndTime = std::chrono::high_resolution_clock::now();
+					    std::chrono::duration<float> elapsed = renderEndTime - renderStartTime;
+					    renderStats.fFrameTime = elapsed.count();
+					    emit frameReady(renderStats);
 				    }
 			    }
 		    }
@@ -978,7 +991,7 @@ namespace widgets
 		return { QWidget::width(), QWidget::height() };
 	}
 
-	void SceneRenderWidget::collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, bool bIgnoreVisibility)
+	void SceneRenderWidget::collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility)
 	{
 		if (m_pLevel->getSceneObjects().empty())
 			return;
@@ -986,7 +999,7 @@ namespace widgets
 		if (pRootGeom != m_pLevel->getSceneObjects()[0].get() || m_rooms.empty() /* on some levels m_rooms cache could be not presented! */)
 		{
 			// Render from specific node
-			collectRenderEntriesIntoRenderList(pRootGeom, entries, bIgnoreVisibility);
+			collectRenderEntriesIntoRenderList(pRootGeom, entries, stats, bIgnoreVisibility);
 		}
 		else
 		{
@@ -995,11 +1008,19 @@ namespace widgets
 			// Render static
 			for (const auto& sRoomDef : m_rooms)
 			{
-				if (sRoomDef.vBoundingBox.contains(m_camera.getPosition()) || m_camera.canSeeObject(sRoomDef.vBoundingBox.min, sRoomDef.vBoundingBox.max))
+				const bool bCameraInsideRoom = sRoomDef.vBoundingBox.contains(m_camera.getPosition());
+
+				if (bCameraInsideRoom || m_camera.canSeeObject(sRoomDef.vBoundingBox.min, sRoomDef.vBoundingBox.max))
 				{
 					if (auto pRoom = sRoomDef.rRoom.lock())
 					{
-						collectRenderEntriesIntoRenderList(pRoom.get(), entries, bIgnoreVisibility);
+						if (bCameraInsideRoom)
+						{
+							// Store new room name
+							stats.currentRoom = QString::fromStdString(pRoom->getName());
+						}
+
+						collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
 					}
 
 					acceptedRooms.emplace_back(sRoomDef);
@@ -1018,12 +1039,12 @@ namespace widgets
 				const gamelib::scene::SceneObject* pDynRoot = it->get();
 
 				using R = gamelib::scene::SceneObject::EVisitResult;
-				pDynRoot->visitChildren([&entries, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+				pDynRoot->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
 					if (pObject->getName().ends_with("_LOCATIONS.zip"))
 						return R::VR_NEXT;
 
 					// Collect everything inside
-					collectRenderEntriesIntoRenderList(pObject.get(), entries, false);
+					collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
 					return R::VR_NEXT;
 				});
 			}
@@ -1039,7 +1060,7 @@ namespace widgets
 		});
 	}
 
-	void SceneRenderWidget::collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* geom, render::RenderEntriesList& entries, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
+	void SceneRenderWidget::collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* geom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
 	{
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getPosition();
@@ -1111,14 +1132,9 @@ namespace widgets
 
 			// Get model
 			const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
+			gamelib::BoundingBox modelWorldBoundingBox = gamelib::BoundingBox::toWorld(model.boundingBox, mWorldTransform);
 
-			glm::vec4 vModelBboxMin { model.boundingBox.min, 1.0f };
-			glm::vec4 vModelBboxMax { model.boundingBox.max, 1.0f };
-
-			vModelBboxMin = vModelBboxMin * mWorldTransform;
-			vModelBboxMax = vModelBboxMax * mWorldTransform;
-
-			if (m_camera.canSeeObject(glm::vec3(vModelBboxMin), glm::vec3(vModelBboxMax))) {
+			if (m_camera.canSeeObject(glm::vec3(modelWorldBoundingBox.min), glm::vec3(modelWorldBoundingBox.max))) {
 				// Add bounding box to render list
 				if (geom == m_pSelectedSceneObject && model.boundingBoxMesh.has_value()) {
 					// Need to add mesh
@@ -1141,6 +1157,9 @@ namespace widgets
 					material.vDiffuseColor = glm::vec4(0.f, 0.f, 1.f, 1.f);
 					material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
 				}
+
+				// increase allowed objects count
+				stats.allowedObjects++;
 
 				// Add each 'mesh' into render list
 				for (int iMeshIdx = 0; iMeshIdx < model.meshes.size(); iMeshIdx++) {
@@ -1250,6 +1269,11 @@ namespace widgets
 					}
 				}
 			}
+			else
+			{
+				// Increase rejected objects
+				stats.rejectedObjects++;
+			}
 		}
 
 		// Visit others
@@ -1257,7 +1281,7 @@ namespace widgets
 		{
 			if (auto g = child.lock())
 			{
-				collectRenderEntriesIntoRenderList(g.get(), entries, bIgnoreVisibility);
+				collectRenderEntriesIntoRenderList(g.get(), entries, stats, bIgnoreVisibility);
 			}
 		}
 	}
@@ -1442,15 +1466,7 @@ namespace widgets
 				{
 					// Nice, collision mesh was found! Just use it as source for bbox of ZROOM
 					auto sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
-
-					glm::vec4 vMin { sBoundingBox.min, 1.0f };
-					glm::vec4 vMax { sBoundingBox.max, 1.0f };
-					glm::mat4 mWorldTransform = pCollisionMesh->getWorldTransform();
-
-					vMin = vMin * mWorldTransform;
-					vMax = vMax * mWorldTransform;
-
-					d.vBoundingBox = gamelib::BoundingBox(glm::vec3(vMin), glm::vec3(vMax));
+					d.vBoundingBox = gamelib::BoundingBox::toWorld(sBoundingBox, pCollisionMesh->getWorldTransform());
 					return;
 				}
 			}
@@ -1469,15 +1485,7 @@ namespace widgets
 				if (m_resources->m_modelsCache.contains(iPrimId))
 				{
 					auto sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
-
-					glm::vec4 vMin { sBoundingBox.min, 1.0f };
-					glm::vec4 vMax { sBoundingBox.max, 1.0f };
-					glm::mat4 mWorldTransform = pObject->getWorldTransform();
-
-					vMin = vMin * mWorldTransform;
-					vMax = vMax * mWorldTransform;
-
-					gamelib::BoundingBox vWorldBoundingBox = { glm::vec3(vMin.x, vMin.y, vMin.z), glm::vec3(vMax.x, vMax.y, vMax.z) };
+					gamelib::BoundingBox vWorldBoundingBox = gamelib::BoundingBox::toWorld(sBoundingBox, pObject->getWorldTransform());
 
 					if (!bBboxInited)
 					{

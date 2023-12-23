@@ -30,3 +30,32 @@ bool BoundingBox::contains(const glm::vec3& vPoint) const
 			vPoint.y >= min.y && vPoint.y <= max.y &&
 			vPoint.z >= min.z && vPoint.z <= max.z;
 }
+
+BoundingBox BoundingBox::toWorld(const BoundingBox& source, const glm::mat4& mTransform)
+{
+	glm::vec3 vMin = source.min;
+	glm::vec3 vMax = source.max;
+
+	glm::vec3 avVertices[8];
+	avVertices[0] = vMin;
+	avVertices[1] = glm::vec3(vMax.x, vMin.y, vMin.z);
+	avVertices[2] = glm::vec3(vMin.x, vMax.y, vMin.z);
+	avVertices[3] = glm::vec3(vMax.x, vMax.y, vMin.z);
+	avVertices[4] = glm::vec3(vMin.x, vMin.y, vMax.z);
+	avVertices[5] = glm::vec3(vMax.x, vMin.y, vMax.z);
+	avVertices[6] = glm::vec3(vMin.x, vMax.y, vMax.z);
+	avVertices[7] = vMax;
+
+	BoundingBox result {};
+	result.min = glm::vec3(mTransform * glm::vec4(avVertices[0], 1.f));
+	result.max = result.min;
+
+	for (int i = 1; i < 8; i++)
+	{
+		glm::vec3 vTransformed = glm::vec3(mTransform * glm::vec4(avVertices[i], 1.f));
+		result.min = glm::min(result.min, vTransformed);
+		result.max = glm::max(result.max, vTransformed);
+	}
+
+	return result;
+}

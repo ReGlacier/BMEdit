@@ -11,6 +11,8 @@
 
 #include <GameLib/IO/AssetKind.h>
 
+#include <Widgets/SceneRenderWidget.h>
+
 #include "LoadSceneProgressDialog.h"
 #include "ViewTexturesDialog.h"
 
@@ -84,6 +86,7 @@ public slots:
 	void onLevelAssetsLoadFailed(const QString& reason);
 	void onSceneObjectPropertyChanged(const gamelib::scene::SceneObject* geom);
 	void onTextureChanged(uint32_t textureIndex);
+	void onSceneFramePresented(const widgets::RenderStats& stats);
 
 private:
     // UI
@@ -92,6 +95,7 @@ private:
     // Custom
     QLabel* m_operationLabel;
     QLabel* m_operationCommentLabel;
+	QLabel* m_renderStatsLabel;
     QProgressBar* m_operationProgress;
 
 	// Models

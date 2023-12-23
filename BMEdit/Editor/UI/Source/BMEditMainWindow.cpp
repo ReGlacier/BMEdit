@@ -83,12 +83,14 @@ void BMEditMainWindow::initStatusBar()
 	m_operationProgress = new QProgressBar(statusBar());
 	m_operationLabel = new QLabel(statusBar());
 	m_operationCommentLabel = new QLabel(statusBar());
+	m_renderStatsLabel = new QLabel(statusBar());
 
 	resetStatusToDefault();
 
 	statusBar()->insertWidget(0, m_operationLabel);
 	statusBar()->insertWidget(1, m_operationProgress);
 	statusBar()->insertWidget(2, m_operationCommentLabel);
+	statusBar()->insertWidget(3, m_renderStatsLabel);
 }
 
 void BMEditMainWindow::initSearchInput()
@@ -528,6 +530,17 @@ void BMEditMainWindow::onTextureChanged(uint32_t textureIndex)
 	ui->sceneGLView->reloadTexture(textureIndex);
 }
 
+void BMEditMainWindow::onSceneFramePresented(const widgets::RenderStats& stats)
+{
+	const int iApproxFPS = static_cast<int>(std::floorf(1.f / stats.fFrameTime));
+
+	m_renderStatsLabel->setText(QString("ROOM: %1 | Visible objects: %2 | Rejected objects: %3 | FPS: %4")
+	                                .arg(stats.currentRoom)
+	                                .arg(stats.allowedObjects)
+	                                .arg(stats.rejectedObjects)
+	                                .arg(iApproxFPS));
+}
+
 void BMEditMainWindow::loadTypesDataBase()
 {
 	m_operationProgress->setValue(OperationToProgress::DISCOVER_TYPES_DATABASE);
@@ -631,6 +644,7 @@ void BMEditMainWindow::resetStatusToDefault()
 {
 	m_operationLabel->setText("Progress: ");
 	m_operationCommentLabel->setText("(No active operation)");
+	m_renderStatsLabel->setText("[No render stats]");
 	m_operationProgress->setValue(0);
 }
 
@@ -667,6 +681,7 @@ void BMEditMainWindow::initSceneTree()
 
 	connect(ui->sceneGLView, &widgets::SceneRenderWidget::resourcesReady, this, &BMEditMainWindow::onLevelAssetsLoaded);
 	connect(ui->sceneGLView, &widgets::SceneRenderWidget::resourceLoadFailed, this, &BMEditMainWindow::onLevelAssetsLoadFailed);
+	connect(ui->sceneGLView, &widgets::SceneRenderWidget::frameReady, this, &BMEditMainWindow::onSceneFramePresented);
 }
 
 void BMEditMainWindow::initProperties()
