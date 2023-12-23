@@ -65,8 +65,8 @@ namespace render
 		if (movementMask > 0) {
 			if (movementMask & CM_FORWARD)  m_vPosition += m_vLookDirection * fVelocity;
 			if (movementMask & CM_BACKWARD) m_vPosition -= m_vLookDirection * fVelocity;
-			if (movementMask & CM_LEFT)     m_vPosition -= m_vRight * fVelocity;
-			if (movementMask & CM_RIGHT)    m_vPosition += m_vRight * fVelocity;
+			if (movementMask & CM_LEFT)     m_vPosition += m_vRight * fVelocity;
+			if (movementMask & CM_RIGHT)    m_vPosition -= m_vRight * fVelocity;
 
 			update();
 		}
