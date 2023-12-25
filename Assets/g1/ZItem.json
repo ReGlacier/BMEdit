@@ -8,7 +8,7 @@
     "parent": "ZGROUP",
     "properties": [
         {
-            "name": "property_4C",
+            "name": "rItemTemplate",
             "offset": 76,
             "typename": "ZGEOMREF"
         },

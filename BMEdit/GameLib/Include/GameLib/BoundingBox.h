@@ -1,18 +1,24 @@
 #pragma once
 
-#include <GameLib/Vector3.h>
+#include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 
 
 namespace gamelib
 {
 	struct BoundingBox
 	{
-		Vector3 min;
-		Vector3 max;
+		glm::vec3 min;
+		glm::vec3 max;
 
 		BoundingBox() = default;
-		BoundingBox(const Vector3 &vMin, const Vector3 &vMax);
+		BoundingBox(const glm::vec3 &vMin, const glm::vec3 &vMax);
 
-		Vector3 getCenter() const;
+		glm::vec3 getCenter() const;
+
+		void expand(const BoundingBox& another);
+		bool contains(const glm::vec3& vPoint) const;
+
+		static BoundingBox toWorld(const BoundingBox& source, const glm::mat4& mTransform);
 	};
 }

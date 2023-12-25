@@ -1,31 +1,24 @@
 #pragma once
 
-#include <GameLib/PRM/PRMHeader.h>
-#include <GameLib/PRM/PRMChunk.h>
-#include <GameLib/PRM/PRMChunkDescriptor.h>
-#include <GameLib/Span.h>
-#include <cstdint>
-#include <vector>
+#include <GameLib/PRM/PRMEntries.h>
 
 
-namespace gamelib::prm
+namespace gamelib
 {
+	/**
+	 * @note It's not full implementation of reader (it's doing partial read, but enough to visualize level geometry in editor)
+	 * @todo Need to complete reverse engineering of this stuff and make writer
+	 */
 	class PRMReader
 	{
 	public:
-		PRMReader() = delete;
-		PRMReader(PRMHeader &header, std::vector<PRMChunkDescriptor> &chunkDescriptors, std::vector<PRMChunk> &chunks);
+		PRMReader();
 
-		bool read(Span<uint8_t> buffer);
+		bool parse(const std::uint8_t* pBuffer, std::size_t iBufferSize);
 
-		[[nodiscard]] const PRMHeader &getHeader() const;
-		[[nodiscard]] const std::vector<PRMChunkDescriptor> &getChunkDescriptors() const;
-		[[nodiscard]] PRMChunk* getChunkAt(size_t chunkIndex);
-		[[nodiscard]] const PRMChunk* getChunkAt(size_t chunkIndex) const;
+		prm::PrmFile&& takePrimitives();
 
 	private:
-		PRMHeader& m_header;
-		std::vector<PRMChunk>& m_chunks;
-		std::vector<PRMChunkDescriptor>& m_chunkDescriptors;
+		prm::PrmFile m_file {};
 	};
 }

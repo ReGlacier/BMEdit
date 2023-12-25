@@ -77,6 +77,8 @@ namespace models
 		if (value.value() != m_geom->getProperties())
 		{
 			m_geom->getProperties() = value.value();
+
+			emit objectPropertiesChanged(m_geom);
 		}
 	}
 }

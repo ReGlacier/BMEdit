@@ -1,109 +1,119 @@
-#include <GameLib/PRM/PRMChunkDescriptor.h>
-#include <GameLib/BinaryReaderSeekScope.h>
-#include <GameLib/PRM/PRMBadChunkException.h>
-#include <GameLib/PRM/PRMBadFile.h>
 #include <GameLib/PRM/PRMReader.h>
-#include <GameLib/PRM/PRMChunk.h>
-#include <GameLib/PRM/PRMDescriptionChunkBaseHeader.h>
-
+#include <GameLib/ZBioHelpers.h>
 #include <ZBinaryReader.hpp>
 
 
-namespace gamelib::prm
+namespace gamelib
 {
-	constexpr std::size_t kMaxChunksPerFile = 40960; // There are 40960 geoms max
+	PRMReader::PRMReader() = default;
 
-	PRMReader::PRMReader(gamelib::prm::PRMHeader &header, std::vector<PRMChunkDescriptor> &chunkDescriptors, std::vector<PRMChunk> &chunks)
-		: m_header(header)
-		, m_chunkDescriptors(chunkDescriptors)
-		, m_chunks(chunks)
+	bool PRMReader::parse(const std::uint8_t *pBuffer, std::size_t iBufferSize)
 	{
-	}
-
-	bool PRMReader::read(Span<uint8_t> buffer)
-	{
-		if (!buffer)
-		{
+		if (!pBuffer || !iBufferSize)
 			return false;
-		}
 
-		ZBio::ZBinaryReader::BinaryReader binaryReader(reinterpret_cast<const char*>(buffer.data()), buffer.size());
+		// Initialize global reader
+		ZBio::ZBinaryReader::BinaryReader reader { reinterpret_cast<const char*>(pBuffer), static_cast<int64_t>(iBufferSize) };
 
 		// Read header
-		PRMHeader::deserialize(m_header, &binaryReader);
-		if (m_header.zeroed != 0x0)
-		{
-			throw PRMBadFile("Zeroed field must be zeroed!");
-		}
+		prm::Header::deserialize(m_file.header, &reader);
 
-		if (m_header.countOfPrimitives >= kMaxChunksPerFile)
+		// Seek & read entries
 		{
-			throw PRMBadFile("Possibly invalid PRM file. Game supports max 40959 unique primitives per level");
-		}
+			ZBio::ZBinaryReader::BinaryReader entriesReader { reinterpret_cast<const char*>(pBuffer), static_cast<int64_t>(iBufferSize) };
+			entriesReader.seek(m_file.header.table_offset);
+			m_file.entries.reserve(m_file.header.table_count); // actually, it's not a table count, it's amount of chunks.
 
-		m_chunks.reserve(m_header.countOfPrimitives);
-		m_chunkDescriptors.reserve(m_header.countOfPrimitives);
-
-		for (std::uint32_t chunkIndex = 0u; chunkIndex < m_header.countOfPrimitives; ++chunkIndex)
-		{
-			if (m_header.chunkOffset + (chunkIndex * PRMChunkDescriptor::kDescriptorSize) >= buffer.size())
+			for (int i = 0; i < m_file.header.table_count; i++)
 			{
-				throw PRMBadChunkException(chunkIndex);
+				prm::Entry& entry = m_file.entries.emplace_back();
+				prm::Entry::deserialize(entry, &entriesReader);
 			}
 
-			// Read chunk descriptor
-			binaryReader.seek(m_header.chunkOffset + (chunkIndex * PRMChunkDescriptor::kDescriptorSize));
-			auto &descriptor = m_chunkDescriptors.emplace_back();
-			PRMChunkDescriptor::deserialize(descriptor, &binaryReader);
-
-			// Read chunk
-			auto chunkBufferSize = descriptor.declarationSize;
-			auto chunkBuffer = std::make_unique<uint8_t[]>(chunkBufferSize);
-
-			{
-				BinaryReaderSeekScope scope { &binaryReader };
-
-				binaryReader.seek(descriptor.declarationOffset);
-				binaryReader.read<std::uint8_t>(&chunkBuffer[0], static_cast<std::int64_t>(chunkBufferSize));
-			}
-
-			m_chunks.emplace_back(chunkIndex, m_header.countOfPrimitives, std::move(chunkBuffer), chunkBufferSize);
+			m_file.chunks.reserve(m_file.header.table_count);
 		}
 
-		int unrecognizedChunks = 0;
-		for (const auto& chk: m_chunks)
+		// Prepare chunks
 		{
-			if (chk.getKind() == PRMChunkRecognizedKind::CRK_UNKNOWN_BUFFER)
+			for (int i = 0; i < m_file.header.table_count; i++)
 			{
-				unrecognizedChunks++;
+				ZBio::ZBinaryReader::BinaryReader chunksReader { reinterpret_cast<const char*>(pBuffer), static_cast<int64_t>(iBufferSize) };
+				chunksReader.seek(m_file.entries[i].offset);
+
+				prm::Chunk& chunk = m_file.chunks.emplace_back();
+				chunk.data = std::make_unique<std::uint8_t[]>(m_file.entries[i].size);
+
+				// TODO: Need to check that data is valid (malloc is ok)
+				chunksReader.read<std::uint8_t, ZBio::Endianness::LE>(chunk.data.get(), m_file.entries[i].size);
+
+				// TODO: Need to refactor and use former header for chunk buffer instead of cropping few bytes (will fix later)
+				// TODO: Need to use proper way to read bytes (endianness)
+				if (m_file.entries[i].size == 0x40 && *reinterpret_cast<std::uint32_t*>(chunk.data.get()) == 0x70100)
+				{
+					chunk.is_model = true;
+					chunk.model = static_cast<uint32_t>(m_file.models.size());
+
+					prm::Model& newMdl = m_file.models.emplace_back();
+					newMdl.chunk = i;
+				}
 			}
 		}
 
-		if (unrecognizedChunks > 0)
+		// Read models
 		{
-			throw PRMBadFile("Found at least 1 unrecognized chunk. Need to check level by devs");
+			for (prm::Model& model : m_file.models)
+			{
+				ZBio::ZBinaryReader::BinaryReader modelReader {
+					reinterpret_cast<const char*>(m_file.chunks[model.chunk].data.get()),
+				    static_cast<int64_t>(m_file.entries[model.chunk].size)
+				};
+
+				modelReader.seek(0x14);
+				uint32_t meshCount = 0, meshTable = 0;
+
+				meshCount = modelReader.read<uint32_t, ZBio::Endianness::LE>(); // 0x14 -> 0x18
+				meshTable = modelReader.read<uint32_t, ZBio::Endianness::LE>(); // 0x18 -> 0x1C
+
+				// Read bbox
+				ZBioHelpers::seekBy(&modelReader, 0x4);
+
+				prm::BoundingBox::deserialize(model.boundingBox, &modelReader);
+
+				// Read mesh table
+				ZBio::ZBinaryReader::BinaryReader meshTableReader {
+				    reinterpret_cast<const char*>(m_file.chunks[meshTable].data.get()),
+				    static_cast<int64_t>(m_file.entries[meshTable].size)
+				};
+
+				for (uint32_t i = 0; i < meshCount; i++)
+				{
+					// Read mesh chunk index
+					uint32_t currentMeshChunkIdx = meshTableReader.read<uint32_t, ZBio::Endianness::LE>(); // NOLINT(*-use-auto)
+
+					// And read mesh itself
+					ZBio::ZBinaryReader::BinaryReader meshEntryReader {
+					    reinterpret_cast<const char*>(m_file.chunks[currentMeshChunkIdx].data.get()),
+					    static_cast<int64_t>(m_file.entries[currentMeshChunkIdx].size)
+					};
+
+					// Read mesh
+					prm::Mesh currentMesh {};
+					prm::Mesh::deserialize(currentMesh, &meshEntryReader, m_file);
+
+					if (currentMesh.lod & (uint8_t)1 == (uint8_t)1)
+					{
+						// Save mesh
+						model.meshes.emplace_back(std::move(currentMesh));
+					}
+				}
+			}
 		}
 
 		return true;
 	}
 
-	const PRMHeader &PRMReader::getHeader() const
+	prm::PrmFile&& PRMReader::takePrimitives()
 	{
-		return m_header;
-	}
-
-	const std::vector<PRMChunkDescriptor> &PRMReader::getChunkDescriptors() const
-	{
-		return m_chunkDescriptors;
-	}
-
-	PRMChunk* PRMReader::getChunkAt(size_t chunkIndex)
-	{
-		return chunkIndex >= m_chunks.size() ? nullptr : &m_chunks[chunkIndex];
-	}
-
-	const PRMChunk* PRMReader::getChunkAt(size_t chunkIndex) const
-	{
-		return chunkIndex >= m_chunks.size() ? nullptr : &m_chunks[chunkIndex];
+		return std::move(m_file);
 	}
 }

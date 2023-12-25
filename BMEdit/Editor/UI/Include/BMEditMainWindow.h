@@ -6,11 +6,15 @@
 #include <QLabel>
 #include <QString>
 #include <QStringListModel>
+#include <QScopedPointer>
 #include <QSortFilterProxyModel>
 
 #include <GameLib/IO/AssetKind.h>
 
+#include <Widgets/SceneRenderWidget.h>
+
 #include "LoadSceneProgressDialog.h"
+#include "ViewTexturesDialog.h"
 
 
 namespace Ui {
@@ -22,9 +26,8 @@ namespace models
 	class SceneObjectPropertiesModel;
 	class SceneObjectsTreeModel;
 	class ScenePropertiesModel;
-	class ScenePrimitivesModel;
-	class ScenePrimitivesFilterModel;
 	class SceneFilterModel;
+	class SceneTexturesModel;
 }
 
 namespace delegates
@@ -58,9 +61,8 @@ private:
 	void initProperties();
 	void initSceneProperties();
 	void initControllers();
-	void initScenePrimitives();
 	void initSceneLoadingDialog();
-	void resetPrimitivesFilter();
+	void initViewTexturesDialog();
 
 public slots:
 	void onExit();
@@ -78,8 +80,13 @@ public slots:
 	void onAssetExportFailed(const QString &reason);
 	void onCloseLevel();
 	void onExportPRP();
+	void onShowTexturesDialog();
 	void onContextMenuRequestedForSceneTreeNode(const QPoint& point);
-	void onContextMenuRequestedForPrimitivesTableHeader(const QPoint& point);
+	void onLevelAssetsLoaded();
+	void onLevelAssetsLoadFailed(const QString& reason);
+	void onSceneObjectPropertyChanged(const gamelib::scene::SceneObject* geom);
+	void onTextureChanged(uint32_t textureIndex);
+	void onSceneFramePresented(const widgets::RenderStats& stats);
 
 private:
     // UI
@@ -88,6 +95,7 @@ private:
     // Custom
     QLabel* m_operationLabel;
     QLabel* m_operationCommentLabel;
+	QLabel* m_renderStatsLabel;
     QProgressBar* m_operationProgress;
 
 	// Models
@@ -96,8 +104,7 @@ private:
 	models::SceneFilterModel* m_sceneTreeFilterModel { nullptr };
 	models::SceneObjectPropertiesModel *m_sceneObjectPropertiesModel { nullptr };
 	models::ScenePropertiesModel *m_scenePropertiesModel { nullptr };
-	models::ScenePrimitivesModel *m_scenePrimitivesModel { nullptr };
-	models::ScenePrimitivesFilterModel *m_scenePrimitivesFilterModel { nullptr };
+	QScopedPointer<models::SceneTexturesModel> m_sceneTexturesModel { nullptr };
 
 	// Delegates
 	delegates::TypePropertyItemDelegate *m_typePropertyItemDelegate { nullptr };
@@ -105,6 +112,7 @@ private:
 
 	// Dialogs
 	LoadSceneProgressDialog m_loadSceneDialog;
+	ViewTexturesDialog m_viewTexturesDialog;
 
 	// Selection
 	std::optional<std::uint32_t> m_selectedPrimitiveToPreview;

@@ -18,22 +18,24 @@ Dependencies
  * [Nlohmann JSON](https://github.com/nlohmann/json)
  * [zlib](https://github.com/madler/zlib)
  * [conan](https://conan.io) (see "Build" for details)
+ * [Kenney Prototype Textures](https://www.kenney.nl/assets/prototype-textures)
 
 Build
 -----
 
 First of all you need to install [conan](https://conan.io) dependencies manager on your system.
 
-Then download (or git clone) this repository and do
+**Note** Currently supported only Conan 2 (2.0.9 in my env)
+
+Download (or git clone) this repository and do
 ```
-conan install . -s build_type=Debug --install-folder=cmake-build-debug
-```
-or
-```
-conan install . -s build_type=Release --install-folder=cmake-build-release
+conan profile detect --force
+conan install . --output-folder=cmake-build-debug --build=missing -s build_type=Debug
 ```
 
-Reload cmake project in your IDE or 
+(replace `cmake-build-debug` to your <build_folder>; replace Debug to Release for release build)
+
+Then reload cmake project in your IDE or 
 ```
 cd <build_folder>
 cmake --build .

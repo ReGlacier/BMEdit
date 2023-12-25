@@ -10,3 +10,6 @@
 [submodule "ThirdParty/fmt"]
 	path = ThirdParty/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "ThirdParty/glm"]
+	path = ThirdParty/glm
+	url = https://github.com/g-truc/glm

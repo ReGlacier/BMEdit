@@ -1,6 +1,9 @@
 #pragma once
 
 #include <QWidget>
+#include <QScopedPointer>
+#include <QStringListModel>
+#include <QSortFilterProxyModel>
 #include <GameLib/Scene/SceneObject.h>
 
 
@@ -45,7 +48,13 @@ namespace widgets
 		void editControllers();
 
 	private:
+		static QStringList getAllPossibleControllerNamesFromTypesDb();
+
+	private:
 		void setup();
+		void updateAvailableControllersList();
+		void addControllerToGeom(const QString& controllerName);
+		void removeCurrentController();
 
 	private:
 		Ui::GeomControllersWidget *m_ui { nullptr };
@@ -54,5 +63,8 @@ namespace widgets
 		models::GeomControllerListModel *m_geomControllersListModel { nullptr };
 		models::SceneObjectControllerModel *m_controllerPropertiesModel{ nullptr };
 		delegates::TypePropertyItemDelegate *m_controllerEditorDelegate{ nullptr };
+
+		QScopedPointer<QStringListModel> m_availableToAddControllersModel { nullptr }; // All possible controller classes
+		QScopedPointer<QSortFilterProxyModel> m_availableToAddControllersProxyModel { nullptr }; // Filtered by user input controller classes
 	};
 }

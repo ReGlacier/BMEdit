@@ -22,6 +22,7 @@ namespace gamelib
 
 		[[nodiscard]] VerificationResult verify(const Span<prp::PRPInstruction>& instructions) const override;
 		[[nodiscard]] Type::DataMappingResult map(const Span<prp::PRPInstruction> &instructions) const override;
+		[[nodiscard]] Value makeDefaultPropertiesPack() const override;
 
 		[[nodiscard]] const Entries &getPossibleValues() const;
 	private:

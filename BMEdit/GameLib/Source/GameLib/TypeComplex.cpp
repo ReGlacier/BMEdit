@@ -1,4 +1,5 @@
 #include <GameLib/TypeComplex.h>
+#include <stdexcept>
 #include <cassert>
 
 
@@ -221,5 +222,45 @@ namespace gamelib
 
 		// Done
 		return Type::DataMappingResult(resultValue, ourSlice);
+	}
+
+	Value TypeComplex::makeDefaultPropertiesPack() const
+	{
+		// NOTE: Complex type with unexposed properties will produce potentially wrong object. We will produce only exposed properties, nothing more.
+		Value result {this, {}, {}};
+
+		// 1: Get pack of parent properties before
+		if (auto parent = getParent(); parent != nullptr)
+		{
+			// Really shitty code copypaste from ::map() method. What the hell was in my mind at that moment???
+			auto parentPack = parent->makeDefaultPropertiesPack();
+			for (const auto& [name, ip, views]: parentPack.getEntries())
+			{
+				result += std::make_pair(name, Value(parentPack.getType(), Span(parentPack.getInstructions()).slice(ip).as<std::vector<PRPInstruction>>(), views));
+			}
+		}
+
+		// 2: Add our properties
+		for (const auto &view: m_instructionViews)
+		{
+			if (view.isTrivialType())
+			{
+				// Trivial subject - just append
+				result += std::pair(view.getName(), Value(this, { PRPInstruction(view.getTrivialType(), PRPOperandVal::kInitedOperandValue) }, { view }));
+			}
+			else
+			{
+				// Ok, need to ask inner type properties pack
+				if (auto innerType = view.getType())
+				{
+					// Just add inner type properties pack
+					auto pack = innerType->makeDefaultPropertiesPack();
+					result += std::pair(view.getName(), Value(this, pack.getInstructions(), { view }));
+				}
+				else throw std::runtime_error("TypeComplex::makeDefaultPropertiesPack: unable to make default properties pack for " + view.getName());
+			}
+		}
+
+		return result;
 	}
 }

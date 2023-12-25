@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include <functional>
 #include <string>
 #include <memory>
 #include <vector>
@@ -10,6 +11,7 @@
 #include <GameLib/PRP/PRPInstruction.h>
 #include <GameLib/Span.h>
 #include <GameLib/Type.h>
+#include <glm/mat4x4.hpp>
 #include <map>
 
 
@@ -55,6 +57,54 @@ namespace gamelib::scene
 		[[nodiscard]] const SceneObject::Ref &getParent() const;
 		[[nodiscard]] const std::vector<SceneObject::Ref> &getChildren() const;
 		[[nodiscard]] std::vector<SceneObject::Ref> &getChildren();
+
+		/**
+		 * @param baseType
+		 * @return return true if game object inherited of baseType
+		 */
+		[[nodiscard]] bool isInheritedOf(const std::string& baseType) const;
+
+		/**
+		 * @brief Calculate transform matrix for OpenGL and other render API buddies
+		 * @note This function calculates matrix at runtime. So, it's not huge operation but avoid of frequency calling of this function, please.
+		 * @return model matrix (scale, rotation and translate operations applied)
+		 */
+		[[nodiscard]] glm::mat4 getLocalTransform() const;
+
+		/**
+		 * @return Position object from ZGEOM or (0;0;0)
+		 */
+		[[nodiscard]] glm::vec3 getPosition() const;
+
+		/**
+		 * @note Unlike getLocalTransform this matrix created for DX9 renderer. Do not use this matrix without preparation!
+		 * @note If object does not contains Matrix object this method will return identity matrix for OpenGL (specific of glm). To avoid of bugs use hasProperty before!
+		 * @return Matrix object from ZGEOM or identity matrix
+		 */
+		[[nodiscard]] glm::mat3 getOriginalTransform() const;
+
+		/**
+		 * @brief Calculate world transform of object
+		 * @note This method iterates over all parents and multiply all matrices into one combined matrix. It may take a while so use external caches (because SceneObject does not make any caches itself)
+		 * @return World model matrix of object
+		 */
+		[[nodiscard]] glm::mat4 getWorldTransform() const;
+
+		enum class EVisitResult
+		{
+			VR_CONTINUE, // Continue iterations inside
+			VR_STOP_ALL, // Stop all iterations, finish visitor
+			VR_NEXT      // Go to next node on this level, do not go inside
+		};
+
+		/**
+		 * @brief Visit scene tree from this object deep inside
+		 * @param pred - predicate func
+		 */
+		void visitChildren(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const;
+
+	private:
+		EVisitResult internalVisitChildObjects(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const;
 
 	private:
 		std::string m_name {}; ///< Name of geom

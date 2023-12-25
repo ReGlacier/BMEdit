@@ -1,8 +1,7 @@
 [requires]
+zlib/1.2.13
 libzip/1.8.0
+libsquish/1.15
 
 [generators]
-cmake
-
-[options]
-libzip:shared=True
+CMakeDeps

@@ -28,7 +28,7 @@
             "typename": "ZHM3ItemTemplateWeapon.EHM3WeaponScope"
         },
         {
-            "name": "property_178",
+            "name": "rReloadAnim",
             "offset": 372,
             "typename": "PRPOpCode.String"
         },
@@ -38,12 +38,12 @@
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_180",
+            "name": "rHoldAnim",
             "offset": 380,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_184",
+            "name": "rRecoilAnim",
             "offset": 384,
             "typename": "PRPOpCode.String"
         },

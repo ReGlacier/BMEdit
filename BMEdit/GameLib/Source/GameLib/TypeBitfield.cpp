@@ -51,4 +51,11 @@ namespace gamelib
 		std::vector<PRPInstruction> data { instructions[0] };
 		return Type::DataMappingResult(Value(this, std::move(data)), span);
 	}
+
+	Value TypeBitfield::makeDefaultPropertiesPack() const
+	{
+		// By default, we will produce empty StringArray opcode
+		constexpr int32_t kNoArgs = 0;
+		return Value(this, { PRPInstruction(PRPOpCode::StringArray, PRPOperandVal(kNoArgs)) });
+	}
 }

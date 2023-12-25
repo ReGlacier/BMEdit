@@ -23,7 +23,7 @@
             "typename": "ZItemTemplateWeapon.WEAPONTYPE"
         },
         {
-            "name": "property_A4",
+            "name": "rAmmoTemplate",
             "offset": 164,
             "typename": "ZREFTAB32"
         },
@@ -78,12 +78,12 @@
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_E0",
+            "name": "rModelStates",
             "offset": 224,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_FC",
+            "name": "rFlash",
             "offset": 252,
             "typename": "ZGEOMREF"
         },
