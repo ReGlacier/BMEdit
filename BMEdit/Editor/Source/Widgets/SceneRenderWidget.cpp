@@ -364,6 +364,7 @@ namespace widgets
 			invalidateRenderList();
 			resetViewMode();
 			resetRenderMode();
+			resetLastRoom();
 		}
 	}
 
@@ -376,6 +377,7 @@ namespace widgets
 			m_pLevel = nullptr;
 			m_bFirstMouseQuery = true;
 			invalidateRenderList();
+			resetLastRoom();
 			resetViewMode();
 			resetRenderMode();
 			repaint();
@@ -1003,28 +1005,60 @@ namespace widgets
 		}
 		else
 		{
+			// Need to update room before
+			updateCameraRoomAttachment();
+
+			if (!m_pLastRoom)
+				return; // Do nothing
+
 			std::list<RoomDef> acceptedRooms {};
 
 			// Render static
+			// SEE 0047B190 (ZViewSpace::CheckExitsInRoom) for details. Current solution is piece of crap
 			for (const auto& sRoomDef : m_rooms)
 			{
-				const bool bCameraInsideRoom = sRoomDef.vBoundingBox.contains(m_camera.getPosition());
+				bool bAcceptedAnything = false;
 
-				if (bCameraInsideRoom || m_camera.canSeeObject(sRoomDef.vBoundingBox.min, sRoomDef.vBoundingBox.max))
+				if (auto eRoomLoc = m_pLastRoom->eLocation; eRoomLoc == RoomDef::ELocation::eBOTH || eRoomLoc == RoomDef::ELocation::eUNDEFINED)
 				{
-					if (auto pRoom = sRoomDef.rRoom.lock())
+					// Render if we've inside or can see
+					if (sRoomDef.vBoundingBox.contains(m_camera.getPosition()) || m_camera.canSeeObject(sRoomDef.vBoundingBox.min, sRoomDef.vBoundingBox.max))
 					{
-						if (bCameraInsideRoom)
+						// Allowed to render
+						if (auto pRoom = sRoomDef.rRoom.lock())
 						{
-							// Store new room name
-							stats.currentRoom = QString::fromStdString(pRoom->getName());
+							collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
+							bAcceptedAnything = true;
 						}
-
-						collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
 					}
-
-					acceptedRooms.emplace_back(sRoomDef);
 				}
+				else
+				{
+					const bool bBothInside = eRoomLoc == RoomDef::ELocation::eINSIDE && sRoomDef.eLocation == RoomDef::ELocation::eINSIDE;
+					const bool bBothOutside = eRoomLoc == RoomDef::ELocation::eOUTSIDE && sRoomDef.eLocation == RoomDef::ELocation::eOUTSIDE;
+
+					if (bBothInside || bBothOutside)
+					{
+						// Allowed to render
+						if (auto pRoom = sRoomDef.rRoom.lock())
+						{
+							collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
+							bAcceptedAnything = true;
+						}
+					}
+				}
+
+				// TODO: Here we need to check if we skipped this room we need to check all gates and if we able to see room through gate - include it too
+				// if (!bAcceptedAnything)
+			}
+
+			if (auto pRoom = m_pLastRoom->rRoom.lock())
+			{
+				stats.currentRoom = QString::fromStdString(pRoom->getName());
+			}
+			else
+			{
+				stats.currentRoom = {};
 			}
 
 			// Render dynamic
@@ -1075,7 +1109,7 @@ namespace widgets
 		}
 
 		// Don't draw invisible things
-		if (bInvisible && !bIgnoreVisibility)
+		if (bInvisible)
 			return;
 
 		if (g_bannedObjectIds.contains(std::string_view{geom->getName()}))
@@ -1531,6 +1565,8 @@ namespace widgets
 				{
 					auto& room = m_rooms.emplace_back();
 					room.rRoom = pObject;
+					room.eLocation = RoomDef::ELocation::eUNDEFINED;
+
 					// ZBackdrop always has maximum possible size to see it from any point of the world
 					constexpr float kMinPoint = std::numeric_limits<float>::min();
 					constexpr float kMaxPoint = std::numeric_limits<float>::max();
@@ -1558,6 +1594,17 @@ namespace widgets
 					auto& room = m_rooms.emplace_back();
 					room.rRoom = pObject;
 
+					//room.eLocation
+					const auto iLocation = pObject->getProperties().getObject<std::int32_t>("Location", 0);
+					if (iLocation >= 0 && iLocation <= 3)
+					{
+						room.eLocation = static_cast<RoomDef::ELocation>(iLocation);
+					}
+					else
+					{
+						assert(false && "Unknown room type, room will be ignored in optimisations loop");
+					}
+
 					// Compute room dimensions
 					computeRoomBoundingBox(room);
 
@@ -1568,5 +1615,58 @@ namespace widgets
 				return R::VR_CONTINUE;
 			});
 		}
+	}
+
+	void SceneRenderWidget::resetLastRoom()
+	{
+		m_pLastRoom = nullptr;
+	}
+
+	void SceneRenderWidget::updateCameraRoomAttachment()
+	{
+		if (!m_pLevel || m_rooms.empty())
+		{
+			m_pLastRoom = nullptr;
+			return;
+		}
+
+		// First of all check that we out of our current room
+		if (m_pLastRoom)
+		{
+			if (m_pLastRoom->vBoundingBox.contains(m_camera.getPosition()))
+				return; // Do nothing
+
+			// Reject current room
+			m_pLastRoom = nullptr;
+		}
+
+		std::list<const RoomDef*> foundInRooms {};
+		for (const auto& sRoom : m_rooms)
+		{
+			if (sRoom.vBoundingBox.contains(m_camera.getPosition()))
+			{
+				foundInRooms.emplace_back(&sRoom);
+			}
+		}
+
+		if (foundInRooms.empty())
+			return; // Out of rooms
+
+		// Then need to sort found rooms list. Firstly we need to have eINSIDE rooms
+		foundInRooms.sort([this](const RoomDef* a, const RoomDef* b) {
+			if (a->eLocation == b->eLocation)
+			{
+				const float d1 = glm::distance(m_camera.getPosition(), a->vBoundingBox.getCenter());
+				const float d2 = glm::distance(m_camera.getPosition(), b->vBoundingBox.getCenter());
+
+				return d1 < d2;
+			}
+
+			return static_cast<int>(a->eLocation) > static_cast<int>(b->eLocation);
+		});
+
+		// Now, use first found room
+		// NOTE: Maybe we've better to check that top room is preferable for us? Idk
+		m_pLastRoom = (*foundInRooms.begin());
 	}
 }

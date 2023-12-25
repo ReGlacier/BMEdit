@@ -271,6 +271,7 @@ void BMEditMainWindow::onLevelLoadSuccess()
 
 	// Load controllers index
 	ui->geomControllers->switchToDefaults();
+	ui->geomControllers->resetGeom();
 
 	// Export action
 	ui->menuExport->setEnabled(true);
@@ -289,6 +290,7 @@ void BMEditMainWindow::onLevelLoadFailed(const QString &reason)
 	QMessageBox::warning(this, QString("Failed to load level"), QString("Error occurred during level load process:\n%1").arg(reason));
 	m_operationCommentLabel->setText(QString("Failed to open level '%1'").arg(reason));
 	m_operationProgress->setValue(0);
+	//TODO: Need to reset global state properly!
 }
 
 void BMEditMainWindow::onLevelLoadProgressChanged(int totalPercentsProgress, const QString &currentOperationTag)
@@ -330,6 +332,7 @@ void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* 
 	ui->sceneObjectName->setText(QString::fromStdString(selectedSceneObject->getName()));
 	ui->sceneObjectTypeCombo->setEnabled(true);
 	ui->sceneObjectTypeCombo->setCurrentText(QString::fromStdString(selectedSceneObject->getType()->getName()));
+	ui->geomInstanceId->setText(QString("%1").arg(selectedSceneObject->getGeomInfo().getInstanceId()));
 
 	ui->sceneGLView->setSelectedObject(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
 
@@ -350,6 +353,7 @@ void BMEditMainWindow::onDeselectedSceneObject()
 
 	ui->sceneObjectTypeCombo->setEnabled(false);
 	ui->sceneObjectName->clear();
+	ui->geomInstanceId->setText("0");
 	ui->geomControllers->resetGeom();
 
 	m_sceneObjectPropertiesModel->resetGeom();

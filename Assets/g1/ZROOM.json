@@ -8,12 +8,14 @@
     "parent": "ZTreeGroup",
     "properties": [
         {
-            "name": "property_6C",
+            "name": "iNeighboursCount",
+            "__comment__": "I'm not sure about that. 6C and 84 sometimes same",
             "offset": 108,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_84",
+            "name": "iExitsCount",
+            "__comment__": "I'm not sure about that. 6C and 84 sometimes same",
             "offset": 132,
             "typename": "PRPOpCode.Int8"
         },

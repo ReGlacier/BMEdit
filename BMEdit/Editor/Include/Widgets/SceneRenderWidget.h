@@ -114,6 +114,8 @@ namespace widgets
 		void invalidateRenderList();
 
 		void buildRoomCache();
+		void resetLastRoom();
+		void updateCameraRoomAttachment();
 
 	private:
 		// Data
@@ -156,11 +158,31 @@ namespace widgets
 
 		struct RoomDef
 		{
+			enum class ELocation : int {
+				eUNDEFINED = 0,
+				eOUTSIDE = 1,
+				eINSIDE = 2,
+				eBOTH = 3,
+			};
+
+			/**
+			 * @brief Weak pointer to entity which represent room
+			 */
 			gamelib::scene::SceneObject::Ref rRoom {};
+
+			/**
+			 * @brief World space bounding box which cover whole room. Typically it's been built from collision box, but sometimes it could be a expanded bbox (expanded by children objects)
+			 */
 			gamelib::BoundingBox vBoundingBox {};
+
+			/**
+			 * @brief Type of room location. Seee ELocation.json for details
+			 */
+			ELocation eLocation { ELocation::eUNDEFINED };
 		};
 
 		std::list<RoomDef> m_rooms {};
+		const RoomDef* m_pLastRoom { nullptr };
 
 	private:
 		void computeRoomBoundingBox(RoomDef& d);
