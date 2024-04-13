@@ -23,10 +23,13 @@ namespace gamelib::gms::room
 	 */
 	struct ZRoomExit
 	{
-		glm::vec3 unkVec0;
-		glm::vec3 unkVec1;
-		glm::vec3 unkVec2;
-		glm::vec3 unkVec3;
+		// Plane vertices
+		glm::vec3 v0;
+		glm::vec3 v1;
+		glm::vec3 v2;
+		glm::vec3 v3;
+
+		// Other data
 		uint32_t iRoomREF;  // Instance ID, just lookup over entities on scene to locate it
 		uint8_t unk1C;
 		uint8_t unk1D;
@@ -50,6 +53,7 @@ namespace gamelib::gms::room
 		uint32_t unk8;     // Some offset inside BUF. Maybe 'neighbors'?
 
 		static void deserialize(ZRoomNeighbor& neighbor, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader);
+		static void deserialize(ZRoomNeighbor& neighbor, const Span<uint8_t>& byteBufferSpan);
 	};
 #pragma pack(pop)
 

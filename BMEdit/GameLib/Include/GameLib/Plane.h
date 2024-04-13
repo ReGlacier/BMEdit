@@ -42,6 +42,12 @@ namespace gamelib
 		glm::vec3 getCenter() const;
 
 		/**
+		 * @return point of plane (0 to 3, other index will return (0;0;0) point)
+		 * @param idx - index of point
+		 */
+		const glm::vec3& getPoint(size_t idx) const;
+
+		/**
 		 * @return Size of plane as maximum distance between points
 		 */
 		float getSize() const;

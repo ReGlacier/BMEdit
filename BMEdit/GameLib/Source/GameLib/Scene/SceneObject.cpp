@@ -182,13 +182,7 @@ namespace gamelib::scene
 
 	glm::mat4 SceneObject::getWorldTransform() const
 	{
-		// if bit#4 is set we need to take self transform and multiply by parent transform (we are relative to parent)
-		// otherwise return only self transform
 		glm::mat4 mWorldMartix = getLocalTransform();
-
-//		const bool bHasBit2 = getGeomInfo().getGeomFlags() & (1 << 2);
-//		const bool bHasBit4 = getGeomInfo().getGeomFlags() & (1 << 4);
-//		const bool bHasBit5 = getGeomInfo().getGeomFlags() & (1 << 5);
 
 		if (!getParent().expired())
 		{

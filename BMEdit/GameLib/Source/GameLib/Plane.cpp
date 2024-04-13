@@ -52,6 +52,17 @@ namespace gamelib
 		return center;
 	}
 
+	const glm::vec3& Plane::getPoint(size_t idx) const
+	{
+		if (idx >= 0 && idx <= 3)
+		{
+			return m_aVertices[idx];
+		}
+
+		static const glm::vec3 kNull { 0.f };
+		return kNull;
+	}
+
 	float Plane::getSize() const
 	{
 		float fMaxDistance = .0f;

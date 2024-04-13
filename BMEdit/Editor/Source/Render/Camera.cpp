@@ -106,6 +106,15 @@ namespace render
 		return canSeeObject(plane.makeBoundingBox());
 	}
 
+	bool Camera::canSeePlanePartial(const gamelib::Plane& plane) const
+	{
+		// if at least 1 point visible this method will return true
+		return m_sFrustum.isPointVisible(plane.getPoint(0)) ||
+		       m_sFrustum.isPointVisible(plane.getPoint(1)) ||
+		       m_sFrustum.isPointVisible(plane.getPoint(2)) ||
+		       m_sFrustum.isPointVisible(plane.getPoint(3));
+	}
+
 	void Camera::update()
 	{
 		glm::vec3 vFront { .0f };

@@ -80,6 +80,12 @@ namespace widgets
 
 		void reloadTexture(uint32_t textureIndex);
 
+		bool shouldRenderPortals() const;
+		void setShouldRenderPortals(bool bVal);
+
+		bool shouldRenderRoomBoundingBox() const;
+		void setShouldRenderRoomBoundingBox(bool bVal);
+
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
@@ -117,7 +123,13 @@ namespace widgets
 
 		void buildRoomCache(QOpenGLFunctions_3_3_Core* glFunctions);
 		void resetLastRoom();
-		void updateCameraRoomAttachment();
+
+		/**
+		 * @brief Method trying to find a new room for current camera (if camera not in that room of bRejectLastResult is true)
+		 * @param stats - reference to render stats object (method updates room name if new room presented)
+		 * @param bRejectLastResult - pass true to reject current room and try to find a new one
+		 */
+		void updateCameraRoomAttachment(RenderStats& stats, bool bRejectLastResult = true);
 
 	private:
 		// Data
@@ -141,6 +153,8 @@ namespace widgets
 		ELevelState m_eState { ELevelState::LS_NONE };
 		QPoint m_mouseLastPosition {};
 		bool m_bFirstMouseQuery { true };
+		bool m_bRenderPortals { false }; // Should we render portals between rooms (debug view)
+		bool m_bRenderRoomBoundingBox { false }; // Should we render room bounding box (of all rooms)
 
 		// View mode
 		enum class EViewMode : uint8_t
@@ -188,9 +202,19 @@ namespace widgets
 			std::vector<gamelib::gms::room::ZRoomExit> aExists {};
 
 			/**
+			 * @brief Information about neighbour rooms
+			 */
+			std::vector<gamelib::gms::room::ZRoomNeighbor> aNeighbours {};
+
+			/**
 			 * @brief Room eXit geom boxes
 			 */
 			std::unique_ptr<render::Model> mExitsDebugModel { nullptr };
+
+			/**
+			 * @brief Room bounding box debug model
+			 */
+			std::unique_ptr<render::Model> mBBoxModel { nullptr };
 		};
 
 		std::list<RoomDef> m_rooms {};

@@ -77,6 +77,8 @@
      </property>
      <addaction name="actionRenderMode_Texture"/>
      <addaction name="actionRenderMode_Wireframe"/>
+     <addaction name="actionRenderMode_Portals"/>
+     <addaction name="actionRenderMode_RenderRoomBoundingBoxes"/>
     </widget>
     <addaction name="actionSave_properties"/>
     <addaction name="separator"/>
@@ -492,6 +494,25 @@
   <action name="actionRenderMode_TextureAndWireframe">
    <property name="text">
     <string>Texture &amp; Wireframe</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_Portals">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Render Portals</string>
+   </property>
+   <property name="iconText">
+    <string>Render Portals</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_RenderRoomBoundingBoxes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Render Room Bounding Boxes</string>
    </property>
   </action>
  </widget>

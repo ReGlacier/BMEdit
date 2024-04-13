@@ -7,10 +7,10 @@ namespace gamelib::gms::room
 {
 	void ZRoomExit::deserialize(ZRoomExit& eXit, ZBio::ZBinaryReader::BinaryReader* bufBinaryReader)
 	{
-		bufBinaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(eXit.unkVec0), 3);
-		bufBinaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(eXit.unkVec1), 3);
-		bufBinaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(eXit.unkVec2), 3);
-		bufBinaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(eXit.unkVec3), 3);
+		bufBinaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(eXit.v0), 3);
+		bufBinaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(eXit.v1), 3);
+		bufBinaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(eXit.v2), 3);
+		bufBinaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(eXit.v3), 3);
 		eXit.iRoomREF = bufBinaryReader->read<uint32_t, ZBio::Endianness::LE>();
 		eXit.unk1C    = bufBinaryReader->read<uint8_t, ZBio::Endianness::LE>();
 		eXit.unk1D    = bufBinaryReader->read<uint8_t, ZBio::Endianness::LE>();
@@ -30,10 +30,16 @@ namespace gamelib::gms::room
 		ZRoomExit::deserialize(eXit, &binaryReader);
 	}
 
-	void ZRoomNeighbor::deserialize(ZRoomNeighbor& neighbor, ZBio::ZBinaryReader::BinaryReader* bufBinaryReader)
+	void ZRoomNeighbor::deserialize(ZRoomNeighbor& neighbor, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader)
 	{
 		neighbor.rRoomREF = bufBinaryReader->read<uint32_t, ZBio::Endianness::LE>();
 		neighbor.unk4 = bufBinaryReader->read<uint32_t, ZBio::Endianness::LE>();
 		neighbor.unk8 = bufBinaryReader->read<uint32_t, ZBio::Endianness::LE>();
+	}
+
+	void ZRoomNeighbor::deserialize(gamelib::gms::room::ZRoomNeighbor& neighbor, const Span<uint8_t>& byteBufferSpan)
+	{
+		ZBio::ZBinaryReader::BinaryReader binaryReader(reinterpret_cast<const char*>(byteBufferSpan.data()), byteBufferSpan.size());
+		ZRoomNeighbor::deserialize(neighbor, &binaryReader);
 	}
 }

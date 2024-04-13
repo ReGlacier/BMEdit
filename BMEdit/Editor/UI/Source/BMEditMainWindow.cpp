@@ -130,6 +130,12 @@ void BMEditMainWindow::connectActions()
 
 		ui->sceneGLView->setRenderMode(newMode);
 	});
+	connect(ui->actionRenderMode_Portals, &QAction::toggled, this, [this](bool val) {
+		ui->sceneGLView->setShouldRenderPortals(val);
+	});
+	connect(ui->actionRenderMode_RenderRoomBoundingBoxes, &QAction::toggled, this, [this](bool val) {
+		ui->sceneGLView->setShouldRenderRoomBoundingBox(val);
+	});
 }
 
 void BMEditMainWindow::connectDockWidgetActions()
@@ -244,6 +250,10 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	ui->actionRenderMode_Texture->setChecked(true);
 	ui->actionRenderMode_Wireframe->setEnabled(true);
 	ui->actionRenderMode_Wireframe->setChecked(false);
+	ui->actionRenderMode_Portals->setEnabled(true);
+	ui->actionRenderMode_Portals->setChecked(ui->sceneGLView->shouldRenderPortals());
+	ui->actionRenderMode_RenderRoomBoundingBoxes->setEnabled(true);
+	ui->actionRenderMode_RenderRoomBoundingBoxes->setChecked(ui->sceneGLView->shouldRenderRoomBoundingBox());
 
 	// Setup models
 	if (m_sceneTreeModel)
@@ -421,6 +431,10 @@ void BMEditMainWindow::onCloseLevel()
 	ui->actionRenderMode_Texture->setChecked(true);
 	ui->actionRenderMode_Wireframe->setEnabled(false);
 	ui->actionRenderMode_Wireframe->setChecked(true);
+	ui->actionRenderMode_Portals->setEnabled(false);
+	ui->actionRenderMode_Portals->setChecked(ui->sceneGLView->shouldRenderPortals());
+	ui->actionRenderMode_RenderRoomBoundingBoxes->setEnabled(false);
+	ui->actionRenderMode_RenderRoomBoundingBoxes->setChecked(ui->sceneGLView->shouldRenderRoomBoundingBox());
 
 	// Disable filtering
 	QSignalBlocker blocker { ui->searchInputField };

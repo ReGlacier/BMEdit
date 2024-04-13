@@ -39,6 +39,12 @@ namespace render
 			return true;
 		}
 
+		[[nodiscard]] bool isPointVisible(const glm::vec3& vPoint) const
+		{
+			// stupid
+			return isBoxVisible(vPoint, vPoint);
+		}
+
 	private:
 		std::array<glm::vec4, 6> m_vPlanes;
 	};
