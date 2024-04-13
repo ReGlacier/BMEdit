@@ -29,26 +29,18 @@ namespace gamelib::oct
 
 	void OCTUnknownBlock::deserialize(gamelib::oct::OCTUnknownBlock& block, ZBio::ZBinaryReader::BinaryReader* binaryReader)
 	{
-		block.unk0  = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
-		block.unk4  = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk8  = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unkC  = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk10 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk14 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk18 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk1C = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk20 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk24 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk28 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk2C = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk30 = binaryReader->read<float, ZBio::Endianness::LE>();
+		block.unk0 = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(block.vUnk4), 9);
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(block.vUnk28), 3);
+
 		block.unk34 = binaryReader->read<float, ZBio::Endianness::LE>();
 		block.unk38 = binaryReader->read<float, ZBio::Endianness::LE>();
 		block.unk3C = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk40 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk44 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk48 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk4C = binaryReader->read<float, ZBio::Endianness::LE>();
+
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(block.vUnk40), 3);
+
+		block.unk4C = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
 		block.unk50 = binaryReader->read<float, ZBio::Endianness::LE>();
 	}
 }

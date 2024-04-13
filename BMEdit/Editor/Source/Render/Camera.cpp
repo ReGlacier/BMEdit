@@ -95,6 +95,17 @@ namespace render
 		return m_sFrustum.isBoxVisible(vMin, vMax);
 	}
 
+	bool Camera::canSeeObject(const gamelib::BoundingBox& bbox) const
+	{
+		return m_sFrustum.isBoxVisible(bbox.min, bbox.max);
+	}
+
+	bool Camera::canSeeObject(const gamelib::Plane& plane) const
+	{
+		// I'm pretty sure that creating temporary bounding box around plane is faster solution than lookup for plane to plane lookup.
+		return canSeeObject(plane.makeBoundingBox());
+	}
+
 	void Camera::update()
 	{
 		glm::vec3 vFront { .0f };

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <glm/vec3.hpp>
+#include <glm/mat3x3.hpp>
 
 
 namespace ZBio::ZBinaryReader
@@ -46,25 +47,16 @@ namespace gamelib::oct
 	struct OCTUnknownBlock
 	{
 		uint32_t unk0 { 0 };
-		float unk4 { 0.f };
-		float unk8 { 0.f };
-		float unkC { 0.f };
-		float unk10 { 0.f };
-		float unk14 { 0.f };
-		float unk18 { 0.f };
-		float unk1C { 0.f };
-		float unk20 { 0.f };
-		float unk24 { 0.f };
-		float unk28 { 0.f };
-		float unk2C { 0.f };
-		float unk30 { 0.f };
+
+		glm::mat3 vUnk4 {};
+		glm::vec3 vUnk28 {};
+
 		float unk34 { 0.f };
 		float unk38 { 0.f };
 		float unk3C { 0.f };
-		float unk40 { 0.f };
-		float unk44 { 0.f };
-		float unk48 { 0.f };
-		float unk4C { 0.f };
+
+		glm::vec3 vUnk40 {};
+		uint32_t unk4C { 0 };
 		float unk50 { 0.f };
 
 		static void deserialize(OCTUnknownBlock& block, ZBio::ZBinaryReader::BinaryReader* binaryReader);

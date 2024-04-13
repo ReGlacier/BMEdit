@@ -10,6 +10,8 @@
 #include <GameLib/TypeComplex.h>
 #include <GameLib/Type.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <sstream>
 #include <string>
 #include <vector>
@@ -17,21 +19,27 @@
 
 namespace gamelib
 {
-	glm::vec3 LevelRooms::RoomGroup::worldToRoom(const glm::vec3& vWorld) const
+	glm::i16vec3 LevelRooms::RoomGroup::worldToRoom(const glm::vec3& vWorld) const
 	{
-		return {
-			(vWorld.x - header.vWorldOrigin.x) * header.fWorldScale + 32768.0f,
-			(vWorld.y - header.vWorldOrigin.y) * header.fWorldScale + 32768.0f,
-			(vWorld.z - header.vWorldOrigin.z) * header.fWorldScale + 32768.0f
-		};
+		glm::i16vec3 vR { 0 };
+		const float* pfvSrc = glm::value_ptr(vWorld);
+		const float* pfvOrigin = glm::value_ptr(header.vWorldOrigin);
+		int16_t* pvDst = glm::value_ptr(vR);
+
+		for (int i = 0; i < 3; i++)
+		{
+			pvDst[i] = static_cast<int16_t>((pfvSrc[i] - pfvOrigin[i]) * header.fWorldScale + 32768.f);
+		}
+
+		return vR;
 	}
 
-	glm::vec3 LevelRooms::RoomGroup::roomToWorld(const glm::vec3& vRoom) const
+	glm::vec3 LevelRooms::RoomGroup::roomToWorld(const glm::i16vec3& vRoom) const
 	{
 		return {
-		    (vRoom.x - 32768.0f) / header.fWorldScale + header.vWorldOrigin.x,
-		    (vRoom.y - 32768.0f) / header.fWorldScale + header.vWorldOrigin.y,
-		    (vRoom.z - 32768.0f) / header.fWorldScale + header.vWorldOrigin.z
+		    (static_cast<float>(vRoom.x) - 32768.0f) / header.fWorldScale + header.vWorldOrigin.x,
+		    (static_cast<float>(vRoom.y) - 32768.0f) / header.fWorldScale + header.vWorldOrigin.y,
+		    (static_cast<float>(vRoom.z) - 32768.0f) / header.fWorldScale + header.vWorldOrigin.z
 		};
 	}
 
@@ -144,6 +152,16 @@ namespace gamelib
 		return &m_levelMaterials;
 	}
 
+	const LevelRooms* Level::getLevelRooms() const
+	{
+		return &m_levelRooms;
+	}
+
+	LevelRooms* Level::getLevelRooms()
+	{
+		return &m_levelRooms;
+	}
+
 	const std::vector<scene::SceneObject::Ptr> &Level::getSceneObjects() const
 	{
 		return m_sceneObjects;
@@ -188,6 +206,23 @@ namespace gamelib
 		return object;
 	}
 
+	scene::SceneObject::Ptr Level::getSceneObjectByInstanceID(std::uint32_t instanceID) const
+	{
+		// It's lazy method. Just walk over all entities and check InstanceID
+		for (const auto& entity : getSceneObjects())
+		{
+			if (entity->getGeomInfo().getInstanceId() == instanceID)
+				return entity;
+		}
+
+		return nullptr;
+	}
+
+	Span<uint8_t> Level::getStaticBuffer() const
+	{
+		return m_buf.data ? Span<uint8_t>(m_buf.data.get(), m_buf.size) : nullptr;
+	}
+
 	void Level::dumpAsset(io::AssetKind assetKind, std::vector<uint8_t> &outBuffer) const
 	{
 		if (assetKind == io::AssetKind::PROPERTIES)
@@ -195,6 +230,7 @@ namespace gamelib
 			scene::SceneObjectPropertiesDumper dumper;
 			dumper.dump(this, &outBuffer);
 		}
+		else assert(false && "Unsupported");
 	}
 
 	void Level::forEachObjectOfType(const std::string& objectTypeName, const std::function<bool(const scene::SceneObject::Ptr&)>& pred) const
@@ -255,7 +291,6 @@ namespace gamelib
 	bool Level::loadLevelScene()
 	{
 		int64_t gmsFileSize = 0;
-		int64_t bufFileSize = 0;
 
 		// Load raw data
 		auto gmsFileBuffer = m_assetProvider->getAsset(io::AssetKind::SCENE, gmsFileSize);
@@ -264,14 +299,14 @@ namespace gamelib
 			return false;
 		}
 
-		auto bufFileBuffer = m_assetProvider->getAsset(io::AssetKind::BUFFER, bufFileSize);
-		if (!bufFileBuffer || !bufFileSize)
+		m_buf.data = m_assetProvider->getAsset(io::AssetKind::BUFFER, m_buf.size);
+		if (!m_buf.data || !m_buf.size)
 		{
 			return false;
 		}
 
 		gms::GMSReader reader;
-		if (!reader.parse(&m_sceneProperties.header, gmsFileBuffer.get(), gmsFileSize, bufFileBuffer.get(), bufFileSize))
+		if (!reader.parse(&m_sceneProperties.header, gmsFileBuffer.get(), gmsFileSize, m_buf.data.get(), m_buf.size))
 		{
 			return false;
 		}

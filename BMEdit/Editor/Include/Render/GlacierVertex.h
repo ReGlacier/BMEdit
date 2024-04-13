@@ -19,7 +19,7 @@ namespace render
 	{
 		glm::vec3 vPos {};
 
-		SimpleVertex();
+		SimpleVertex() = default;
 		SimpleVertex(const glm::vec3& v1) : vPos(v1) {}
 
 		static const VertexFormatDescription g_FormatDescription;

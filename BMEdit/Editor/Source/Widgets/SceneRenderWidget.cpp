@@ -8,10 +8,12 @@
 #include <QFile>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include <GameLib/TEX/TEXEntry.h>
 #include <GameLib/PRP/PRPObjectExtractor.h>
 #include <GameLib/PRP/PRPMathTypes.h>
 #include <GameLib/BoundingBox.h>
+#include <GameLib/Plane.h>
 
 #include <Render/ShaderConstants.h>
 #include <Render/GlacierVertex.h>
@@ -415,6 +417,9 @@ namespace widgets
 		if (!m_pLevel)
 			return;
 
+		auto flags = sceneObject->getGeomInfo().getGeomFlags();
+		bool isBit4Set = flags & (1 << 4);
+
 		if (m_pSelectedSceneObject != sceneObject && sceneObject != nullptr)
 		{
 			m_pSelectedSceneObject = sceneObject;
@@ -792,7 +797,7 @@ namespace widgets
 		}
 
 		// Then load rooms cache
-		buildRoomCache();
+		buildRoomCache(glFunctions);
 
 		qDebug() << "All models (" << m_pLevel->getLevelGeometry()->primitives.models.size() << ") are loaded & ready to use!";
 		m_eState = ELevelState::LS_COMPILE_SHADERS;
@@ -1048,6 +1053,12 @@ namespace widgets
 					}
 				}
 
+				if (bAcceptedAnything)
+				{
+					// Add room debug teleport points
+
+				}
+
 				// TODO: Here we need to check if we skipped this room we need to check all gates and if we able to see room through gate - include it too
 				// if (!bAcceptedAnything)
 			}
@@ -1081,6 +1092,44 @@ namespace widgets
 					collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
 					return R::VR_NEXT;
 				});
+			}
+		}
+
+		// Add debug stuff
+		for (const auto& sRoomDef : m_rooms)
+		{
+			if (!sRoomDef.mExitsDebugModel)
+				continue;
+
+			for (const auto& sMesh : sRoomDef.mExitsDebugModel->meshes)
+			{
+				render::RenderEntry &exitPlaneRenderEntry = entries.emplace_back();
+
+				// Render params
+				exitPlaneRenderEntry.iPrimitiveId = 0;
+				exitPlaneRenderEntry.iMeshIndex = 0;
+				exitPlaneRenderEntry.iTrianglesNr = 0;
+				exitPlaneRenderEntry.renderTopology = sMesh.renderTopology.value_or(render::RenderTopology::RT_TRIANGLES);
+
+				// World params
+				exitPlaneRenderEntry.vPosition = glm::vec3(.0f);
+				exitPlaneRenderEntry.mWorldTransform = glm::mat4(1.f);
+				exitPlaneRenderEntry.mLocalOriginalTransform = glm::mat3(1.f);
+				exitPlaneRenderEntry.pMesh = const_cast<render::Mesh*>(&sMesh);
+
+				// Material
+				render::RenderEntry::Material &material = exitPlaneRenderEntry.material;
+				constexpr float kOpacity = 0.1f;
+				material.vDiffuseColor = sMesh.defaultColor.value_or(glm::vec4(1.f, 1.f, 0.f, kOpacity));
+				material.renderState = gamelib::mat::MATRenderState("#BMEDIT/OPACITY_AREA",
+				                                                    true, true, true, false, false,
+				                                                    kOpacity,
+				                                                    0.f,
+				                                                    255,
+				                                                    gamelib::mat::MATCullMode::CM_DontCare,
+				                                                    gamelib::mat::MATBlendMode::BM_ADD,
+				                                                    gamelib::mat::MATValU());
+				material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
 			}
 		}
 
@@ -1480,6 +1529,7 @@ namespace widgets
 
 	void SceneRenderWidget::computeRoomBoundingBox(RoomDef& d)
 	{
+		// It's better to use data from OCT !!!
 		using R = gamelib::scene::SceneObject::EVisitResult;
 
 		if (auto pRoom = d.rRoom.lock())
@@ -1544,9 +1594,12 @@ namespace widgets
 		}
 	}
 
-	void SceneRenderWidget::buildRoomCache()
+	void SceneRenderWidget::buildRoomCache(QOpenGLFunctions_3_3_Core* glFunctions)
 	{
 		m_rooms.clear();
+
+		// Save pointer to  BUF file
+		const auto bufFileView = m_pLevel->getStaticBuffer();
 
 		// Now we need to find ZGROUP who ends by _LOCATIONS and lookup from this ZGROUP inside
 		auto locationsIt = std::find_if(
@@ -1582,7 +1635,7 @@ namespace widgets
 			const gamelib::scene::SceneObject::Ptr& pNewRoot = *locationsIt;
 
 			using R = gamelib::scene::SceneObject::EVisitResult;
-			pNewRoot->visitChildren([this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+			pNewRoot->visitChildren([this, bufFileView](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
 				if (!pObject)
 				{
 					return R::VR_STOP_ALL;
@@ -1605,6 +1658,25 @@ namespace widgets
 						assert(false && "Unknown room type, room will be ignored in optimisations loop");
 					}
 
+					//room.iExitsCount, room.ExitOffsets (Precache room exit boxes)
+					const auto iExistsCount = pObject->getProperties().getObject<std::int32_t>("iExitsCount", 0);
+					const auto iExistsOffset = pObject->getProperties().getObject<std::int32_t>("ExitOffsets", 0);
+					if (iExistsCount > 0 && iExistsOffset > 0)
+					{
+						room.aExists.reserve(iExistsCount);
+
+						// Take a slice of data
+						constexpr auto kEntrySize = static_cast<int64_t>(sizeof(gamelib::gms::room::ZRoomExit));
+						const auto roomExists = bufFileView.slice(iExistsOffset, kEntrySize * iExistsCount);;
+
+						for (int i = 0; i < iExistsCount; i++)
+						{
+							const auto exit = roomExists.slice((i * kEntrySize), kEntrySize);
+							auto& exitDef = room.aExists.emplace_back();
+							gamelib::gms::room::ZRoomExit::deserialize(exitDef, exit);
+						}
+					}
+
 					// Compute room dimensions
 					computeRoomBoundingBox(room);
 
@@ -1615,6 +1687,58 @@ namespace widgets
 				return R::VR_CONTINUE;
 			});
 		}
+
+#if 0 // Uncomment on debug planes
+		// Upload debug geom
+		for (auto& room : m_rooms)
+		{
+			if (room.aExists.empty())
+				continue;
+
+			room.mExitsDebugModel = std::make_unique<render::Model>();
+
+			for (const auto& sExit : room.aExists)
+			{
+				gamelib::Plane sPlane { sExit.unkVec0, sExit.unkVec1, sExit.unkVec2, sExit.unkVec3 };
+
+				// Plane
+				{
+					auto& exitMesh = room.mExitsDebugModel->meshes.emplace_back();
+					exitMesh.glTextureId = render::kInvalidResource;
+					exitMesh.materialId = 0;
+					exitMesh.renderTopology = RenderTopology::RT_TRIANGLES;
+
+					std::vector<render::SimpleVertex> aVertices;
+					std::vector<uint16_t> aIndices;
+
+					sPlane.toTriangles(std::back_inserter(aVertices), std::back_inserter(aIndices));
+
+					exitMesh.setup(glFunctions, render::SimpleVertex::g_FormatDescription, aVertices, aIndices, false);
+				}
+
+				// Normal vector direction
+				{
+					auto& exitMeshNormalView = room.mExitsDebugModel->meshes.emplace_back();
+					exitMeshNormalView.glTextureId = render::kInvalidResource;
+					exitMeshNormalView.materialId = 0;
+					exitMeshNormalView.renderTopology = RenderTopology::RT_LINES;
+					exitMeshNormalView.defaultColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+					const float kVecLength = sPlane.getSize() * 0.2f; //20% of size
+
+					std::vector<render::SimpleVertex> aVertices {
+						sPlane.getCenter(),
+						sPlane.getCenter() + (sPlane.getNormal() * kVecLength),
+					    sPlane.getCenter() - (sPlane.getNormal() * kVecLength)
+					};
+
+					std::vector<uint16_t> aIndices { 0, 1, 0, 2 };
+
+					exitMeshNormalView.setup(glFunctions, render::SimpleVertex::g_FormatDescription, aVertices, aIndices, false);
+				}
+			}
+		}
+#endif
 	}
 
 	void SceneRenderWidget::resetLastRoom()
@@ -1630,6 +1754,7 @@ namespace widgets
 			return;
 		}
 
+#if 1
 		// First of all check that we out of our current room
 		if (m_pLastRoom)
 		{
@@ -1653,20 +1778,53 @@ namespace widgets
 			return; // Out of rooms
 
 		// Then need to sort found rooms list. Firstly we need to have eINSIDE rooms
-		foundInRooms.sort([this](const RoomDef* a, const RoomDef* b) {
-			if (a->eLocation == b->eLocation)
-			{
-				const float d1 = glm::distance(m_camera.getPosition(), a->vBoundingBox.getCenter());
-				const float d2 = glm::distance(m_camera.getPosition(), b->vBoundingBox.getCenter());
-
-				return d1 < d2;
-			}
-
-			return static_cast<int>(a->eLocation) > static_cast<int>(b->eLocation);
+		foundInRooms.sort([](const RoomDef* a, const RoomDef* b) {
+			return static_cast<int>(a->eLocation) < static_cast<int>(b->eLocation);
 		});
 
 		// Now, use first found room
 		// NOTE: Maybe we've better to check that top room is preferable for us? Idk
 		m_pLastRoom = (*foundInRooms.begin());
+#else
+		// Lookup into RMI/RMC files and try to locate us.
+		// We need to convert camera world coordinates into room world space coordinates
+		const auto* pRooms = m_pLevel->getLevelRooms();
+		const glm::vec3 vCameraWorldPos = m_camera.getPosition();
+		const auto vCameraOutsideRoomPos = pRooms->outside.worldToRoom(vCameraWorldPos);
+		const auto vCameraInsideRoomPos = pRooms->inside.worldToRoom(vCameraWorldPos);
+
+		uint32_t iInsideRoomIdx = 0xFFFFFFFFu;
+		uint32_t iOutsideRoomIdx = 0xFFFFFFFFu;
+
+		for (int i = 0; i < pRooms->outside.objects.size(); i++)
+		{
+			const auto& currentRoom = pRooms->outside.objects[i];
+
+			if (
+			    vCameraOutsideRoomPos.x >= currentRoom.vMin.x && vCameraOutsideRoomPos.y >= currentRoom.vMin.y && vCameraOutsideRoomPos.z >= currentRoom.vMin.z &&
+			    vCameraOutsideRoomPos.x <= currentRoom.vMax.x && vCameraOutsideRoomPos.y <= currentRoom.vMax.y && vCameraOutsideRoomPos.z <= currentRoom.vMax.z
+			)
+			{
+				iOutsideRoomIdx = currentRoom.gameObjectREF;
+				break;
+			}
+		}
+
+		for (int i = 0; i < pRooms->inside.objects.size(); i++)
+		{
+			const auto& currentRoom = pRooms->inside.objects[i];
+
+			if (
+			    vCameraInsideRoomPos.x >= currentRoom.vMin.x && vCameraInsideRoomPos.y >= currentRoom.vMin.y && vCameraInsideRoomPos.z >= currentRoom.vMin.z &&
+			    vCameraInsideRoomPos.x <= currentRoom.vMax.x && vCameraInsideRoomPos.y <= currentRoom.vMax.y && vCameraInsideRoomPos.z <= currentRoom.vMax.z
+			)
+			{
+				iInsideRoomIdx = currentRoom.gameObjectREF;
+				break;
+			}
+		}
+
+		printf("VFFX\n");
+#endif
 	}
 }

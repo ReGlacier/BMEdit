@@ -32,6 +32,7 @@ namespace gamelib::gms
 		[[nodiscard]] bool isInheritedOfGeom() const;
 		[[nodiscard]] bool isRootOfGroup() const;
 		[[nodiscard]] uint32_t getRelativeDepthLevel() const;
+		[[nodiscard]] uint32_t getGeomFlags() const;
 
 		static void deserialize(GMSGeomEntity &entity, ZBio::ZBinaryReader::BinaryReader *gmsBinaryReader, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader);
 
@@ -52,7 +53,10 @@ namespace gamelib::gms
 		uint32_t m_unk10 { };
 		uint32_t m_typeId { };
 		uint32_t m_unk18 { };
-		uint32_t m_coliBits { };
+		uint8_t m_coliBits {}; // +1C
+		uint8_t m_unk1D {};
+		uint8_t m_unk1E {};
+		uint8_t m_unk1F {};
 		uint32_t m_unk20 { };
 		uint32_t m_unk24 { };
 		uint32_t m_unk28 { };

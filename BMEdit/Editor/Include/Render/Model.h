@@ -27,6 +27,8 @@ namespace render
 		GLuint glTextureId { kInvalidResource }; /// Render OpenGL texture resource handle
 		uint16_t materialId { 0 }; /// Id of material from Glacier mesh (just copy)
 		uint8_t variationId { 0 }; // Id of variation (some meshes could be attached to abstract 'variation' so each variation could be interpreted as 'group of meshes')
+		std::optional<RenderTopology> renderTopology; // Override topology (for debug only)
+		std::optional<glm::vec4> defaultColor; // Override default material color (for debug only)
 
 		int trianglesCount { 0 };
 

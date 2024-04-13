@@ -340,11 +340,28 @@ void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* 
 
 	ui->geomControllers->setGeom(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
 	ui->geomControllers->switchToFirstController();
+
+	// Show coli bits and other ZGEOM stuff
+	ui->coliBitsRepr->setPossibleValues({
+	    { "Bit 0", 0 },
+	    { "Bit 1", 1 },
+	    { "Bit 2", 2 },
+	    { "Bit 3", 3 },
+	    { "Bit 4", 4 },
+	    { "Bit 5", 5 },
+	    { "Bit 6", 6 },
+	    { "Bit 7", 7 }
+	});
+
+	ui->coliBitsRepr->setValue(selectedSceneObject->getGeomInfo().getColiBits());
+	ui->coliBitsRepr->setEnabled(true);
 }
 
 void BMEditMainWindow::onDeselectedSceneObject()
 {
 	ui->sceneGLView->resetSelectedObject();
+	ui->coliBitsRepr->reset();
+	ui->coliBitsRepr->setEnabled(false);
 
 	if (!m_sceneObjectPropertiesModel)
 	{

@@ -49,6 +49,7 @@ namespace gamelib
 		[[nodiscard]] bool empty() const { return m_size == 0; }
 		[[nodiscard]] int64_t size() const { return m_size; }
 		[[nodiscard]] T* data() { return const_cast<T*>(m_data); }
+		[[nodiscard]] const T* data() const { return m_data; }
 
 		[[nodiscard]] explicit operator bool() const noexcept { return (m_data != nullptr); }
 

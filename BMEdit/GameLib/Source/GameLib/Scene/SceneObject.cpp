@@ -182,17 +182,20 @@ namespace gamelib::scene
 
 	glm::mat4 SceneObject::getWorldTransform() const
 	{
-		const SceneObject* current = this;
-		glm::mat4 mWorldMatrix = glm::mat4(1.f);
+		// if bit#4 is set we need to take self transform and multiply by parent transform (we are relative to parent)
+		// otherwise return only self transform
+		glm::mat4 mWorldMartix = getLocalTransform();
 
-		while (current)
+//		const bool bHasBit2 = getGeomInfo().getGeomFlags() & (1 << 2);
+//		const bool bHasBit4 = getGeomInfo().getGeomFlags() & (1 << 4);
+//		const bool bHasBit5 = getGeomInfo().getGeomFlags() & (1 << 5);
+
+		if (!getParent().expired())
 		{
-			mWorldMatrix = mWorldMatrix * current->getLocalTransform();
-
-			current = current->getParent().expired() ? nullptr : current->getParent().lock().get();
+			mWorldMartix = getParent().lock()->getWorldTransform() * mWorldMartix;
 		}
 
-		return mWorldMatrix;
+		return mWorldMartix;
 	}
 
 	void SceneObject::visitChildren(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const

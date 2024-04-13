@@ -9,6 +9,7 @@
 
 #include <GameLib/BoundingBox.h>
 #include <GameLib/Level.h>
+#include <GameLib/GMS/Room/ZRoomDefs.h>
 #include <Render/Camera.h>
 
 #include <glm/vec3.hpp>
@@ -17,6 +18,7 @@
 #include <glm/glm.hpp>
 
 #include <memory>
+#include <vector>
 #include <list>
 
 
@@ -113,7 +115,7 @@ namespace widgets
 
 		void invalidateRenderList();
 
-		void buildRoomCache();
+		void buildRoomCache(QOpenGLFunctions_3_3_Core* glFunctions);
 		void resetLastRoom();
 		void updateCameraRoomAttachment();
 
@@ -179,6 +181,16 @@ namespace widgets
 			 * @brief Type of room location. Seee ELocation.json for details
 			 */
 			ELocation eLocation { ELocation::eUNDEFINED };
+
+			/**
+			 * @brief Information about room exits
+			 */
+			std::vector<gamelib::gms::room::ZRoomExit> aExists {};
+
+			/**
+			 * @brief Room eXit geom boxes
+			 */
+			std::unique_ptr<render::Model> mExitsDebugModel { nullptr };
 		};
 
 		std::list<RoomDef> m_rooms {};

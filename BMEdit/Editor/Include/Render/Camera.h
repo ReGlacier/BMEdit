@@ -2,6 +2,9 @@
 
 #include <Render/Frustum.h>
 
+#include <GameLib/BoundingBox.h>
+#include <GameLib/Plane.h>
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -57,6 +60,8 @@ namespace render
 		void handleKeyboardMovement(CameraMovementMask movementMask = CameraMovementMaskValues::CM_FORWARD, float dt = kDefaultDt);
 		void processMouseMovement(float xoffset, float yoffset, float dt = kDefaultDt);
 		[[nodiscard]] bool canSeeObject(const glm::vec3& vMin, const glm::vec3& vMax) const;
+		[[nodiscard]] bool canSeeObject(const gamelib::BoundingBox& bbox) const;
+		[[nodiscard]] bool canSeeObject(const gamelib::Plane& plane) const;
 
 	private:
 		void update();

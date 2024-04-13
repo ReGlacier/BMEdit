@@ -60,8 +60,8 @@ namespace gamelib
 			std::vector<oct::OCTObject> objects{};
 			std::vector<oct::OCTUnknownBlock> ubs{};
 
-			[[nodiscard]] glm::vec3 worldToRoom(const glm::vec3& vWorld) const;
-			[[nodiscard]] glm::vec3 roomToWorld(const glm::vec3& vTree) const;
+			[[nodiscard]] glm::i16vec3 worldToRoom(const glm::vec3& vWorld) const;
+			[[nodiscard]] glm::vec3 roomToWorld(const glm::i16vec3& vTree) const;
 		};
 
 		RoomGroup outside {};
@@ -85,10 +85,16 @@ namespace gamelib
 		[[nodiscard]] LevelGeometry* getLevelGeometry();
 		[[nodiscard]] const LevelMaterials* getLevelMaterials() const;
 		[[nodiscard]] LevelMaterials* getLevelMaterials();
+		[[nodiscard]] const LevelRooms* getLevelRooms() const;
+		[[nodiscard]] LevelRooms* getLevelRooms();
 
 		[[nodiscard]] const std::vector<scene::SceneObject::Ptr>& getSceneObjects() const;
 
 		[[nodiscard]] scene::SceneObject::Ptr getSceneObjectByGEOMREF(const std::string& path) const;
+
+		[[nodiscard]] scene::SceneObject::Ptr getSceneObjectByInstanceID(std::uint32_t instanceID) const;
+
+		[[nodiscard]] Span<uint8_t> getStaticBuffer() const;
 
 		void dumpAsset(io::AssetKind assetKind, std::vector<uint8_t> &outBuffer) const;
 
@@ -115,6 +121,12 @@ namespace gamelib
 		LevelGeometry m_levelGeometry;
 		LevelMaterials m_levelMaterials;
 		LevelRooms m_levelRooms;
+
+		struct BUF
+		{
+			std::unique_ptr<uint8_t[]> data { nullptr };
+			std::int64_t size{ 0 };
+		} m_buf;
 
 		// Managed objects
 		std::vector<scene::SceneObject::Ptr> m_sceneObjects {};
