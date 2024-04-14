@@ -94,6 +94,9 @@ namespace widgets
 		glm::mat4 getGameObjectTransform(const gamelib::scene::SceneObject::Ptr& pObject) const;
 		glm::mat4 getGameObjectTransform(const gamelib::scene::SceneObject* pObject) const;
 
+		std::optional<gamelib::BoundingBox> getGameObjectBoundingBox(const gamelib::scene::SceneObject::Ptr& pObject, bool bWorldTransform = true) const;
+		std::optional<gamelib::BoundingBox> getGameObjectBoundingBox(const gamelib::scene::SceneObject* pObject, bool bWorldTransform = true) const;
+
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);

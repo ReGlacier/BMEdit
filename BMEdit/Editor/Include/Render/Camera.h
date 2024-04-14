@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Render/Frustum.h>
+#include <Render/Ray.h>
 
 #include <GameLib/BoundingBox.h>
 #include <GameLib/Plane.h>
@@ -48,6 +49,9 @@ namespace render
 		[[nodiscard]] const glm::mat4& getView() const { return m_mView; }
 		[[nodiscard]] const glm::mat4& getProjection() const { return m_mProj; }
 		[[nodiscard]] const glm::mat4& getProjView() const { return m_mProjView; }
+
+		[[nodiscard]] Ray getRayFromScreen(const glm::ivec2& vScreenPos) const;
+		[[nodiscard]] Ray getRayFromScreen(float x, float y) const;
 
 		// Setters
 		void setFOV(float fov);

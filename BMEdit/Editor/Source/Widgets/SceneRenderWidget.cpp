@@ -345,6 +345,54 @@ namespace widgets
 	void SceneRenderWidget::mousePressEvent(QMouseEvent* event)
 	{
 		QOpenGLWidget::mousePressEvent(event);
+
+		if (event->button() == Qt::MouseButton::RightButton && m_pLastRoom != nullptr)
+		{
+			// Begin ray cast
+			const auto vMouseClickPos = event->position();
+			render::Ray sRay = m_camera.getRayFromScreen(static_cast<float>(vMouseClickPos.x()),
+			                                             static_cast<float>(vMouseClickPos.y()));
+
+			// Need to find intersects with this thing. Need to visit only current room
+			if (auto pRoom = m_pLastRoom->rRoom.lock())
+			{
+				using R = gamelib::scene::SceneObject::EVisitResult;
+				std::vector<gamelib::scene::SceneObject::Ptr> vHitList;
+
+				// Hit dynamic
+				// TODO: Implement me please
+
+				// Hit static
+				pRoom->visitChildren([&sRay, &vHitList, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+					if (auto bbox = getGameObjectBoundingBox(pObject); bbox.has_value())
+					{
+						// Need to exclude objects where bbox origin is inside
+						if (sRay.intersect(bbox.value(), false))
+						{
+							vHitList.push_back(pObject);
+							return R::VR_NEXT;
+						}
+					}
+
+					return R::VR_CONTINUE;
+				});
+
+				// Sort hit list by distance to camera
+				std::sort(vHitList.begin(), vHitList.end(), [&sRay, this](const gamelib::scene::SceneObject::Ptr& pFirst, const gamelib::scene::SceneObject::Ptr& pSecond) {
+					const float fDist0 = glm::distance(sRay.vOrigin, pFirst->getPosition());
+					const float fDist1 = glm::distance(sRay.vOrigin, pSecond->getPosition());
+
+					return fDist0 < fDist1;
+				});
+
+				if (!vHitList.empty())
+				{
+					// TODO: Remove later!
+					setGeomViewMode(vHitList[0].get());
+					setSelectedObject(vHitList[0].get());
+				}
+			}
+		}
 	}
 
 	void SceneRenderWidget::mouseReleaseEvent(QMouseEvent* event)
@@ -511,7 +559,6 @@ namespace widgets
 			return false;
 		}
 
-		//m_pLastRoom->vBoundingBox.intersect
 		auto primId = getGameObjectPrimitiveId(pObject);
 		if (primId == 0)
 		{
@@ -590,9 +637,31 @@ namespace widgets
 		return glm::mat4(1.f);
 	}
 
-	/*
-	 *
-	 */
+	std::optional<gamelib::BoundingBox> SceneRenderWidget::getGameObjectBoundingBox(const gamelib::scene::SceneObject::Ptr& pObject, bool bWorldTransform) const
+	{
+		if (!pObject) return std::nullopt;
+		return getGameObjectBoundingBox(pObject.get(), bWorldTransform);
+	}
+
+	std::optional<gamelib::BoundingBox> SceneRenderWidget::getGameObjectBoundingBox(const gamelib::scene::SceneObject* pObject, bool bWorldTransform) const
+	{
+		if (!pObject) return std::nullopt;
+
+		auto primId = getGameObjectPrimitiveId(pObject);
+		if (primId == 0)
+		{
+			return std::nullopt;
+		}
+
+		const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
+		if (bWorldTransform)
+		{
+			glm::mat4 mWorldTransform = getGameObjectTransform(pObject);
+			return gamelib::BoundingBox::toWorld(model.boundingBox, mWorldTransform);
+		}
+
+		return model.boundingBox;
+	}
 
 	void SceneRenderWidget::onRedrawRequested()
 	{
@@ -1165,7 +1234,6 @@ namespace widgets
 			}
 
 			// Try to render dynamic objects
-			// Render dynamic
 			const auto& vObjects = m_pLevel->getSceneObjects();
 			auto it = std::find_if(vObjects.begin(), vObjects.end(), [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
 				return pObject && pObject->getName().ends_with("_CHARACTERS.zip");
