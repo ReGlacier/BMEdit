@@ -504,6 +504,96 @@ namespace widgets
 		}
 	}
 
+	bool SceneRenderWidget::isGameObjectInActiveRoom(const gamelib::scene::SceneObject::Ptr& pObject) const
+	{
+		if (!m_pLastRoom || !pObject)
+		{
+			return false;
+		}
+
+		//m_pLastRoom->vBoundingBox.intersect
+		auto primId = getGameObjectPrimitiveId(pObject);
+		if (primId == 0)
+		{
+			return false;
+		}
+
+		const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
+		glm::mat4 mWorldTransform = getGameObjectTransform(pObject);
+		gamelib::BoundingBox modelWorldBoundingBox = gamelib::BoundingBox::toWorld(model.boundingBox, mWorldTransform);
+
+		return m_pLastRoom->vBoundingBox.intersect(modelWorldBoundingBox);
+	}
+
+	int32_t SceneRenderWidget::getGameObjectPrimitiveId(const gamelib::scene::SceneObject::Ptr& pObject) const
+	{
+		if (!pObject) return 0;
+
+		return getGameObjectPrimitiveId(pObject.get());
+	}
+
+	int32_t SceneRenderWidget::getGameObjectPrimitiveId(const gamelib::scene::SceneObject* pObject) const
+	{
+		if (!pObject) return 0;
+
+		if (pObject->isInheritedOf("ZItem")) // Need support of item ammo & item container here
+		{
+			//ZItems has no PrimId. Instead of this they are refs to another geom by path
+			auto rItemTemplatePath = pObject->getProperties().getObject<std::string>("rItemTemplate");
+			const auto pItemTemplate = m_pLevel->getSceneObjectByGEOMREF(rItemTemplatePath);
+
+			if (pItemTemplate)
+			{
+				gamelib::scene::SceneObject::Ptr pItem = nullptr;
+
+				// Item found by path. That's cool! But this is not an item, for item need to ask Ground... object inside
+				for (const auto& childRef : pItemTemplate->getChildren())
+				{
+					if (auto child = childRef.lock(); child && child->getName().starts_with("Ground"))
+					{
+						pItem = child;
+						break;
+					}
+				}
+
+				if (pItem)
+				{
+					// Nice! Now we ready to replace primId
+					return pItem->getProperties().getObject<std::int32_t>("PrimId");
+				}
+			}
+		}
+
+		return pObject->getProperties().getObject<int32_t>("PrimId", 0);
+	}
+
+	glm::mat4 SceneRenderWidget::getGameObjectTransform(const gamelib::scene::SceneObject::Ptr& pObject) const
+	{
+		if (!pObject) return glm::mat4(1.f);
+		return getGameObjectTransform(pObject.get());
+	}
+
+	glm::mat4 SceneRenderWidget::getGameObjectTransform(const gamelib::scene::SceneObject* pObject) const
+	{
+		if (auto it = m_resources->m_modelTransformCache.find(const_cast<gamelib::scene::SceneObject*>(pObject)); it != m_resources->m_modelTransformCache.end())
+		{
+			return it->second;
+		}
+		else
+		{
+			glm::mat4 mWorldTransform = pObject->getWorldTransform();
+			m_resources->m_modelTransformCache[const_cast<gamelib::scene::SceneObject*>(pObject)] = mWorldTransform;
+			return mWorldTransform;
+		}
+
+		// idk)
+		return glm::mat4(1.f);
+	}
+
+	/*
+	 *
+	 */
+
 	void SceneRenderWidget::onRedrawRequested()
 	{
 		if (m_pLevel)
@@ -930,7 +1020,7 @@ namespace widgets
 		if (player)
 		{
 			// Ok, level contains player. Let's take his room and move camera to player
-			const auto iPrimId = player->getProperties().getObject<std::int32_t>("PrimId", 0);
+			const auto iPrimId = getGameObjectPrimitiveId(player);
 			const auto vPlayerPosition = player->getParent().lock()->getPosition();
 			glm::vec3 vCameraPosition = vPlayerPosition;
 
@@ -1060,7 +1150,7 @@ namespace widgets
 					{
 						gamelib::Plane sPlane { eXit.v0, eXit.v1, eXit.v2, eXit.v3 };
 
-						if (m_camera.canSeePlanePartial(sPlane))
+						if (m_camera.canSeeObject(sPlane))
 						{
 							const auto& pRoom = m_pLevel->getSceneObjectByInstanceID(eXit.iRoomREF);
 							if (pRoom)
@@ -1073,63 +1163,8 @@ namespace widgets
 					}
 				}
 			}
-		}
-#if 0 // Well optimized variant since this place
-		else
-		{
-			// Need to update room before
-			updateCameraRoomAttachment();
 
-			if (!m_pLastRoom)
-				return; // Do nothing
-
-			std::list<RoomDef> acceptedRooms {};
-
-			// Render static
-			// SEE 0047B190 (ZViewSpace::CheckExitsInRoom) for details. Current solution is piece of crap
-			for (const auto& sRoomDef : m_rooms)
-			{
-				bool bAcceptedAnything = false;
-
-				if (auto eRoomLoc = m_pLastRoom->eLocation; eRoomLoc == RoomDef::ELocation::eBOTH || eRoomLoc == RoomDef::ELocation::eUNDEFINED)
-				{
-					// Render if we've inside or can see
-					if (sRoomDef.vBoundingBox.contains(m_camera.getPosition()) || m_camera.canSeeObject(sRoomDef.vBoundingBox.min, sRoomDef.vBoundingBox.max))
-					{
-						// Allowed to render
-						if (auto pRoom = sRoomDef.rRoom.lock())
-						{
-							collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
-							bAcceptedAnything = true;
-						}
-					}
-				}
-				else
-				{
-					const bool bBothInside = eRoomLoc == RoomDef::ELocation::eINSIDE && sRoomDef.eLocation == RoomDef::ELocation::eINSIDE;
-					const bool bBothOutside = eRoomLoc == RoomDef::ELocation::eOUTSIDE && sRoomDef.eLocation == RoomDef::ELocation::eOUTSIDE;
-
-					if (bBothInside || bBothOutside)
-					{
-						// Allowed to render
-						if (auto pRoom = sRoomDef.rRoom.lock())
-						{
-							collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
-							bAcceptedAnything = true;
-						}
-					}
-				}
-			}
-
-			if (auto pRoom = m_pLastRoom->rRoom.lock())
-			{
-				stats.currentRoom = QString::fromStdString(pRoom->getName());
-			}
-			else
-			{
-				stats.currentRoom = {};
-			}
-
+			// Try to render dynamic objects
 			// Render dynamic
 			const auto& vObjects = m_pLevel->getSceneObjects();
 			auto it = std::find_if(vObjects.begin(), vObjects.end(), [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
@@ -1143,11 +1178,12 @@ namespace widgets
 
 				using R = gamelib::scene::SceneObject::EVisitResult;
 				pDynRoot->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-					if (pObject->getName().ends_with("_LOCATIONS.zip"))
-						return R::VR_NEXT;
+					if (!pObject->getName().ends_with("_LOCATIONS.zip"))
+					{
+						// Collect everything inside
+						collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
+					}
 
-					// Collect everything inside
-					collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
 					return R::VR_NEXT;
 				});
 			}
@@ -1157,24 +1193,34 @@ namespace widgets
 				using R = gamelib::scene::SceneObject::EVisitResult;
 
 				m_pLevel->getSceneObjects()[0]->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-					static const std::array<std::string, 5> kAllowedTypes = { // only base types
-						"ZActor", "ZPlayer", "ZItem", "ZItemAmmo"
+					static const std::array<std::string, 4> kAllowedTypes = { // only base types
+					    "ZActor", "ZPlayer", "ZItem", "ZItemAmmo"
 					};
 
 					for (const auto& sEntBaseName : kAllowedTypes)
 					{
+						if (pObject->isInheritedOf("ZROOM"))
+						{
+							return R::VR_NEXT; // Skip all rooms
+						}
+
+						// If object based on ...
 						if (pObject->isInheritedOf(sEntBaseName))
 						{
-							collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
-							return R::VR_NEXT;
+							if (isGameObjectInActiveRoom(pObject))
+							{
+								collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
+								return R::VR_NEXT; // accepted, jump to next
+							}
 						}
 					}
 
-					return R::VR_CONTINUE; // go deeper
+					// Go deeper
+					return R::VR_CONTINUE;
 				});
 			}
 		}
-#endif
+
 		// Add debug stuff
 		if (m_bRenderPortals || m_bRenderRoomBoundingBox)
 		{
@@ -1264,7 +1310,7 @@ namespace widgets
 	{
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getPosition();
-		auto primId = geom->getProperties().getObject<std::int32_t>("PrimId", 0);
+		auto primId = getGameObjectPrimitiveId(geom);
 
 		// Calculate object world space bounding box and check that this bbox is visible by out camera
 
@@ -1284,51 +1330,11 @@ namespace widgets
 		// Check that our 'object' is not a collision box
 		if (auto parent = geom->getParent().lock(); parent && parent->getType()->getName() == "ZROOM" && parent->getName() == geom->getName())
 			return; // Do not render collision meshes
-		
-		// NOTE: Need to refactor this place and move it into separated area
-		// TODO: Move this hack into another place!
-		if (geom->isInheritedOf("ZItem"))
-		{
-			//ZItems has no PrimId. Instead of this they are refs to another geom by path
-			auto rItemTemplatePath = geom->getProperties().getObject<std::string>("rItemTemplate");
-			const auto pItemTemplate = m_pLevel->getSceneObjectByGEOMREF(rItemTemplatePath);
-
-			if (pItemTemplate)
-			{
-				gamelib::scene::SceneObject::Ptr pItem = nullptr;
-
-				// Item found by path. That's cool! But this is not an item, for item need to ask Ground... object inside
-				for (const auto& childRef : pItemTemplate->getChildren())
-				{
-					if (auto child = childRef.lock(); child && child->getName().starts_with("Ground"))
-					{
-						pItem = child;
-						break;
-					}
-				}
-
-				if (pItem)
-				{
-					// Nice! Now we ready to replace primId
-					primId = pItem->getProperties().getObject<std::int32_t>("PrimId");
-				}
-			}
-		}
 
 		// Check that object could be rendered by any way
 		if (primId != 0 && m_resources->m_modelsCache.contains(primId))
 		{
-			glm::mat4 mWorldTransform = glm::mat4(1.f);
-
-			if (auto it = m_resources->m_modelTransformCache.find(const_cast<gamelib::scene::SceneObject*>(geom)); it != m_resources->m_modelTransformCache.end())
-			{
-				mWorldTransform = it->second;
-			}
-			else
-			{
-				mWorldTransform = geom->getWorldTransform();
-				m_resources->m_modelTransformCache[const_cast<gamelib::scene::SceneObject*>(geom)] = mWorldTransform;
-			}
+			glm::mat4 mWorldTransform = getGameObjectTransform(geom);
 
 			// Get model
 			const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
@@ -1665,7 +1671,7 @@ namespace widgets
 
 			if (pCollisionMesh)
 			{
-				auto iPrimId = pCollisionMesh->getProperties().getObject<std::int32_t>("PrimId", 0);
+				auto iPrimId = getGameObjectPrimitiveId(pCollisionMesh);
 				if (iPrimId != 0)
 				{
 					// Nice, collision mesh was found! Just use it as source for bbox of ZROOM
@@ -1681,7 +1687,7 @@ namespace widgets
 				if (!pObject)
 					return R::VR_NEXT;
 
-				auto iPrimId = pObject->getProperties().getObject<std::int32_t>("PrimId", 0);
+				auto iPrimId = getGameObjectPrimitiveId(pObject);
 				if (!iPrimId)
 					return R::VR_CONTINUE; // Go deeper
 
@@ -1936,6 +1942,14 @@ namespace widgets
 
 		// Then need to sort found rooms list. Firstly we need to have eINSIDE rooms
 		foundInRooms.sort([](const RoomDef* a, const RoomDef* b) {
+			if (a->vBoundingBox.getVolume() < b->vBoundingBox.getVolume())
+			{
+				return true;
+			}
+
+			if (a->eLocation == RoomDef::ELocation::eINSIDE && a->eLocation == RoomDef::ELocation::eOUTSIDE)
+				return true;
+
 			return static_cast<int>(a->eLocation) > static_cast<int>(b->eLocation);
 		});
 

@@ -31,6 +31,27 @@ bool BoundingBox::contains(const glm::vec3& vPoint) const
 			vPoint.z >= min.z && vPoint.z <= max.z;
 }
 
+bool BoundingBox::intersect(const gamelib::BoundingBox& another) const
+{
+	if (min.x > another.max.x) return false;
+	if (max.x < another.min.x) return false;
+	if (min.y > another.max.y) return false;
+	if (max.y < another.min.y) return false;
+	if (min.z > another.max.z) return false;
+	if (max.z < another.min.z) return false;
+
+	return true;
+}
+
+float BoundingBox::getVolume() const
+{
+	const float v1 = max.x - min.x;
+	const float v2 = max.y - min.y;
+	const float v3 = max.z - min.z;
+
+	return v1 * v2 * v3;
+}
+
 BoundingBox BoundingBox::toWorld(const BoundingBox& source, const glm::mat4& mTransform)
 {
 	glm::vec3 vMin = source.min;

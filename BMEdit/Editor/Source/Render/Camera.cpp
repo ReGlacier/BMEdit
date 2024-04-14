@@ -102,17 +102,16 @@ namespace render
 
 	bool Camera::canSeeObject(const gamelib::Plane& plane) const
 	{
-		// I'm pretty sure that creating temporary bounding box around plane is faster solution than lookup for plane to plane lookup.
-		return canSeeObject(plane.makeBoundingBox());
-	}
+		const glm::vec3 vU = plane.getPoint(1) - plane.getPoint(0);
+		const glm::vec3 vV = plane.getPoint(2) - plane.getPoint(0);
+		const glm::vec3 vNormal = glm::cross(vU, vV);
 
-	bool Camera::canSeePlanePartial(const gamelib::Plane& plane) const
-	{
-		// if at least 1 point visible this method will return true
-		return m_sFrustum.isPointVisible(plane.getPoint(0)) ||
-		       m_sFrustum.isPointVisible(plane.getPoint(1)) ||
-		       m_sFrustum.isPointVisible(plane.getPoint(2)) ||
-		       m_sFrustum.isPointVisible(plane.getPoint(3));
+		if (glm::dot(vNormal, m_vLookDirection) >= 0) {
+			return false;
+		}
+
+		return true; // NOTE: Maybe we really need to check this, but it works well for now
+		//return m_sFrustum.isPlaneVisible(plane);
 	}
 
 	void Camera::update()

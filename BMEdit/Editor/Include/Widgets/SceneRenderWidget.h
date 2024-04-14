@@ -86,6 +86,14 @@ namespace widgets
 		bool shouldRenderRoomBoundingBox() const;
 		void setShouldRenderRoomBoundingBox(bool bVal);
 
+		bool isGameObjectInActiveRoom(const gamelib::scene::SceneObject::Ptr& pObject) const;
+
+		int32_t getGameObjectPrimitiveId(const gamelib::scene::SceneObject::Ptr& pObject) const;
+		int32_t getGameObjectPrimitiveId(const gamelib::scene::SceneObject* pObject) const;
+
+		glm::mat4 getGameObjectTransform(const gamelib::scene::SceneObject::Ptr& pObject) const;
+		glm::mat4 getGameObjectTransform(const gamelib::scene::SceneObject* pObject) const;
+
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);

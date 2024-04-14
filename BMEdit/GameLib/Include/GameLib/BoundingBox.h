@@ -21,6 +21,9 @@ namespace gamelib
 
 		void expand(const BoundingBox& another);
 		bool contains(const glm::vec3& vPoint) const;
+		bool intersect(const BoundingBox& another) const;
+
+		float getVolume() const;
 
 		static BoundingBox toWorld(const BoundingBox& source, const glm::mat4& mTransform);
 

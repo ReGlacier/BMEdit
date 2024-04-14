@@ -62,7 +62,6 @@ namespace render
 		[[nodiscard]] bool canSeeObject(const glm::vec3& vMin, const glm::vec3& vMax) const;
 		[[nodiscard]] bool canSeeObject(const gamelib::BoundingBox& bbox) const;
 		[[nodiscard]] bool canSeeObject(const gamelib::Plane& plane) const;
-		[[nodiscard]] bool canSeePlanePartial(const gamelib::Plane& plane) const;
 
 	private:
 		void update();
