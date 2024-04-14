@@ -136,6 +136,10 @@ void BMEditMainWindow::connectActions()
 	connect(ui->actionRenderMode_RenderRoomBoundingBoxes, &QAction::toggled, this, [this](bool val) {
 		ui->sceneGLView->setShouldRenderRoomBoundingBox(val);
 	});
+	connect(ui->sceneGLView, &widgets::SceneRenderWidget::worldSelectionChanged, this, [this](const std::vector<widgets::RayCastObjectDescription>& hitList) {
+		// On hit performed we need to react somehow
+		// TODO: Do something here
+	});
 }
 
 void BMEditMainWindow::connectDockWidgetActions()

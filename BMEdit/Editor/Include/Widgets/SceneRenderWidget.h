@@ -49,6 +49,21 @@ namespace widgets
 		float fFrameTime { .0f };  // how much time used for render this frame
 	};
 
+	struct RayCastObjectDescription
+	{
+		enum EPriority {
+			EP_STATIC_OBJECT = 0,
+			EP_DYNAMIC_OBJECT = 1
+		};
+
+		EPriority ePrio { EPriority::EP_STATIC_OBJECT };
+		float fRayOriginDistance { .0f };
+		gamelib::scene::SceneObject::Ptr pObject { nullptr };
+
+		// Operators
+		bool operator<(const RayCastObjectDescription& another) const;
+	};
+
 	class SceneRenderWidget : public QOpenGLWidget
 	{
 		Q_OBJECT
@@ -97,10 +112,14 @@ namespace widgets
 		std::optional<gamelib::BoundingBox> getGameObjectBoundingBox(const gamelib::scene::SceneObject::Ptr& pObject, bool bWorldTransform = true) const;
 		std::optional<gamelib::BoundingBox> getGameObjectBoundingBox(const gamelib::scene::SceneObject* pObject, bool bWorldTransform = true) const;
 
+		std::vector<RayCastObjectDescription> performRayCastToScene(const QPointF& screenSpace, const gamelib::scene::SceneObject::Ptr& pStartObject = nullptr) const;
+
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
 		void frameReady(const RenderStats& stats);
+
+		void worldSelectionChanged(const std::vector<RayCastObjectDescription>& selectedObjects);
 
 	public slots:
 		void onRedrawRequested();

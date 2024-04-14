@@ -17,12 +17,7 @@ namespace render
 	Ray Camera::getRayFromScreen(float x, float y) const
 	{
 		constexpr float kSign = 1.f;
-
-		glm::vec4 vRayClip = glm::vec4(
-		    (2.f * x) / static_cast<float>(m_vScreenSize.x) - 1.f,
-		    1.f - (2.f * y) / static_cast<float>(m_vScreenSize.y),
-		    kSign, 1.f);
-
+		glm::vec4 vRayClip = glm::vec4((2.f * x) / static_cast<float>(m_vScreenSize.x) - 1.f, 1.f - (2.f * y) / static_cast<float>(m_vScreenSize.y), kSign, 1.f);
 		glm::vec4 vRayEye = glm::inverse(m_mProj) * vRayClip;
 		vRayEye = glm::vec4 { vRayEye.x, vRayEye.y, kSign, .0f };
 		glm::vec3 vRayWorld = glm::normalize(glm::vec3(glm::inverse(m_mView) * vRayEye));

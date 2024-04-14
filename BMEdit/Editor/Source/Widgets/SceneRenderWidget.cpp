@@ -37,6 +37,21 @@ namespace widgets
 	    "AdditionalResources", "AllLevels/mainsceneincludes.zip", "AllLevels/equipment.zip"
 	};
 
+	bool RayCastObjectDescription::operator<(const widgets::RayCastObjectDescription& another) const
+	{
+		if (another.ePrio == ePrio)
+		{
+			if (std::fabsf(another.fRayOriginDistance - fRayOriginDistance) <= std::numeric_limits<float>::epsilon())
+			{
+				return false; // They are completely same (except object itself, but who cares?)
+			}
+
+			return fRayOriginDistance < another.fRayOriginDistance;
+		}
+
+		return static_cast<int>(ePrio) < static_cast<int>(another.ePrio);
+	}
+
 	using namespace render;
 
 	struct SceneRenderWidget::GLResources
@@ -346,51 +361,16 @@ namespace widgets
 	{
 		QOpenGLWidget::mousePressEvent(event);
 
-		if (event->button() == Qt::MouseButton::RightButton && m_pLastRoom != nullptr)
+		if (event->button() == Qt::MouseButton::RightButton && !m_pLevel->getSceneObjects().empty())
 		{
 			// Begin ray cast
 			const auto vMouseClickPos = event->position();
-			render::Ray sRay = m_camera.getRayFromScreen(static_cast<float>(vMouseClickPos.x()),
-			                                             static_cast<float>(vMouseClickPos.y()));
 
-			// Need to find intersects with this thing. Need to visit only current room
-			if (auto pRoom = m_pLastRoom->rRoom.lock())
+			// If no rooms on level we should use ROOT as initial point (not recommended in MOST cases)
+			auto result = performRayCastToScene(vMouseClickPos, (!m_pLastRoom && m_rooms.empty()) ? m_pLevel->getSceneObjects()[0] : nullptr);
+			if (!result.empty())
 			{
-				using R = gamelib::scene::SceneObject::EVisitResult;
-				std::vector<gamelib::scene::SceneObject::Ptr> vHitList;
-
-				// Hit dynamic
-				// TODO: Implement me please
-
-				// Hit static
-				pRoom->visitChildren([&sRay, &vHitList, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-					if (auto bbox = getGameObjectBoundingBox(pObject); bbox.has_value())
-					{
-						// Need to exclude objects where bbox origin is inside
-						if (sRay.intersect(bbox.value(), false))
-						{
-							vHitList.push_back(pObject);
-							return R::VR_NEXT;
-						}
-					}
-
-					return R::VR_CONTINUE;
-				});
-
-				// Sort hit list by distance to camera
-				std::sort(vHitList.begin(), vHitList.end(), [&sRay, this](const gamelib::scene::SceneObject::Ptr& pFirst, const gamelib::scene::SceneObject::Ptr& pSecond) {
-					const float fDist0 = glm::distance(sRay.vOrigin, pFirst->getPosition());
-					const float fDist1 = glm::distance(sRay.vOrigin, pSecond->getPosition());
-
-					return fDist0 < fDist1;
-				});
-
-				if (!vHitList.empty())
-				{
-					// TODO: Remove later!
-					setGeomViewMode(vHitList[0].get());
-					setSelectedObject(vHitList[0].get());
-				}
+				emit worldSelectionChanged(result);
 			}
 		}
 	}
@@ -661,6 +641,64 @@ namespace widgets
 		}
 
 		return model.boundingBox;
+	}
+
+	std::vector<RayCastObjectDescription> SceneRenderWidget::performRayCastToScene(const QPointF& screenSpace, const gamelib::scene::SceneObject::Ptr& pStartObject) const
+	{
+		render::Ray sRay = m_camera.getRayFromScreen(static_cast<float>(screenSpace.x()),
+		                                             static_cast<float>(screenSpace.y()));
+
+		gamelib::scene::SceneObject* pRoot = pStartObject.get();
+
+		if (!pRoot)
+		{
+			if (m_pLastRoom && !m_pLastRoom->rRoom.expired())
+			{
+				pRoot = m_pLastRoom->rRoom.lock().get();
+			}
+		}
+
+		// Need to find intersects with this thing. Need to visit only current room
+		if (pRoot)
+		{
+			using R = gamelib::scene::SceneObject::EVisitResult;
+
+			std::vector<RayCastObjectDescription> collectedObjects {};
+
+			static RayCastObjectDescription::EPriority s_CurrentPrio = RayCastObjectDescription::EPriority::EP_STATIC_OBJECT;
+
+			auto hitObjVisitor = [&sRay, &collectedObjects, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+				if (auto bbox = getGameObjectBoundingBox(pObject); bbox.has_value())
+				{
+					// Need to exclude objects where bbox origin is inside
+					if (sRay.intersect(bbox.value(), false))
+					{
+						auto& obj = collectedObjects.emplace_back();
+						obj.ePrio = s_CurrentPrio;
+						obj.pObject = pObject;
+						obj.fRayOriginDistance = glm::distance(sRay.vOrigin, pObject->getPosition());
+						return R::VR_NEXT;
+					}
+				}
+
+				return R::VR_CONTINUE;
+			};
+
+			// Hit dynamic (not implemented yet)
+			s_CurrentPrio = RayCastObjectDescription::EPriority::EP_DYNAMIC_OBJECT; // Now dynamic objects
+			// TODO: Iterate over dynamic objects and check collision with them
+
+			// Hit static
+			s_CurrentPrio = RayCastObjectDescription::EPriority::EP_STATIC_OBJECT; // Now static objects
+			pRoot->visitChildren(hitObjVisitor);
+
+			// Sort hit list by distance to camera
+			std::sort(collectedObjects.begin(), collectedObjects.end());
+
+			return collectedObjects;
+		}
+
+		return {};
 	}
 
 	void SceneRenderWidget::onRedrawRequested()
@@ -1195,7 +1233,7 @@ namespace widgets
 		// Update room
 		updateCameraRoomAttachment(stats);
 
-		if (pRootGeom != m_pLevel->getSceneObjects()[0].get() || m_rooms.empty() /* on some levels m_rooms cache could be not presented! */)
+		if (pRootGeom != m_pLevel->getSceneObjects()[0].get())
 		{
 			// Render from specific node (no performance optimisations here)
 			collectRenderEntriesIntoRenderList(pRootGeom, entries, stats, bIgnoreVisibility);
@@ -1231,39 +1269,33 @@ namespace widgets
 						}
 					}
 				}
-			}
 
-			// Try to render dynamic objects
-			const auto& vObjects = m_pLevel->getSceneObjects();
-			auto it = std::find_if(vObjects.begin(), vObjects.end(), [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
-				return pObject && pObject->getName().ends_with("_CHARACTERS.zip");
-			});
-
-			if (it != vObjects.end())
-			{
-				// Add this 'ROOM' as another thing to visit
-				const gamelib::scene::SceneObject* pDynRoot = it->get();
-
-				using R = gamelib::scene::SceneObject::EVisitResult;
-				pDynRoot->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-					if (!pObject->getName().ends_with("_LOCATIONS.zip"))
-					{
-						// Collect everything inside
-						collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
-					}
-
-					return R::VR_NEXT;
+				// Try to render dynamic objects
+				const auto& vObjects = m_pLevel->getSceneObjects();
+				auto it = std::find_if(vObjects.begin(), vObjects.end(), [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
+					return pObject && pObject->getName().ends_with("_CHARACTERS.zip");
 				});
-			}
-			else
-			{
-				// Need to collect every ZActor, ZHM3Actor, ZItem things from the whole scene :(
+
+				gamelib::scene::SceneObject* pDynRoot = nullptr;
+
+				if (it != vObjects.end())
+				{
+					// Add this 'ROOM' as another thing to visit
+					pDynRoot = it->get();
+				}
+				else
+				{
+					// Need to collect every ZActor, ZHM3Actor, ZItem things from the whole scene :(
+					using R = gamelib::scene::SceneObject::EVisitResult;
+
+					pDynRoot = m_pLevel->getSceneObjects()[0].get();
+				}
+
+				// Visit dynamic root
 				using R = gamelib::scene::SceneObject::EVisitResult;
 
-				m_pLevel->getSceneObjects()[0]->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-					static const std::array<std::string, 4> kAllowedTypes = { // only base types
-					    "ZActor", "ZPlayer", "ZItem", "ZItemAmmo"
-					};
+				pDynRoot->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+					static const std::array<std::string, 5> kAllowedTypes = { "ZActor", "ZPlayer", "ZItem", "ZItemAmmo", "ZLNKOBJ" };
 
 					for (const auto& sEntBaseName : kAllowedTypes)
 					{
@@ -1275,7 +1307,7 @@ namespace widgets
 						// If object based on ...
 						if (pObject->isInheritedOf(sEntBaseName))
 						{
-							if (isGameObjectInActiveRoom(pObject))
+							if (isGameObjectInActiveRoom(pObject) || m_rooms.empty())
 							{
 								collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
 								return R::VR_NEXT; // accepted, jump to next
@@ -1286,6 +1318,11 @@ namespace widgets
 					// Go deeper
 					return R::VR_CONTINUE;
 				});
+			}
+			else
+			{
+				// Ok, stupid render approach here. Just render everything starts from ROOT (dynamic & static doesn't matter in this case)
+				collectRenderEntriesIntoRenderList(m_pLevel->getSceneObjects()[0].get(), entries, stats, bIgnoreVisibility);
 			}
 		}
 
