@@ -33,14 +33,10 @@ namespace gamelib::oct
 
 		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(block.vUnk4), 9);
 		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(block.vUnk28), 3);
-
-		block.unk34 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk38 = binaryReader->read<float, ZBio::Endianness::LE>();
-		block.unk3C = binaryReader->read<float, ZBio::Endianness::LE>();
-
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(block.vUnk34), 3);
 		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(block.vUnk40), 3);
 
 		block.unk4C = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
-		block.unk50 = binaryReader->read<float, ZBio::Endianness::LE>();
+		block.unk50 = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
 	}
 }

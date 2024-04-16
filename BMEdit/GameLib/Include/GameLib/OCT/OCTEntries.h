@@ -43,21 +43,21 @@ namespace gamelib::oct
 
 	/**
 	 * Idk what this block contains
+	 *
+	 * Note: first entry in most cases zeroed ni vUnk4, vUnk28, vUnk34, vUnk40, unk4C, unk50
 	 */
 	struct OCTUnknownBlock
 	{
-		uint32_t unk0 { 0 };
+		uint32_t unk0 { 0 }; // always 1?
 
-		glm::mat3 vUnk4 {};
-		glm::vec3 vUnk28 {};
+		glm::mat3 vUnk4 {}; // in most cases identity matrix
 
-		float unk34 { 0.f };
-		float unk38 { 0.f };
-		float unk3C { 0.f };
+		glm::vec3 vUnk28 {}; // some vector
+		glm::vec3 vUnk34 { 0.f }; // another vector, Z component bigger than vUnk28
+		glm::vec3 vUnk40 {}; // vector, idk
 
-		glm::vec3 vUnk40 {};
-		uint32_t unk4C { 0 };
-		float unk50 { 0.f };
+		uint32_t unk4C { 0 }; // Looks like priority or flags. In hideout first 1114, then less and decreased by 1 since second entry
+		uint32_t unk50 { 0 }; // In eOUTSIDE tree always zeroed, in eINSIDE/eBOTH/eUNKNOWN in most cases 0 but sometimes > 0
 
 		static void deserialize(OCTUnknownBlock& block, ZBio::ZBinaryReader::BinaryReader* binaryReader);
 	};
