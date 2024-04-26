@@ -1,0 +1,223 @@
+{
+  "m12\\m12_touristwithsuitcase": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rGuidePerson"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rTargetPlace"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rSuitcase"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPutDownSuitcaseHere"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rSmokeHere"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rXrayPutDown"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rXrayPickup"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPutDownSuitcaseXRAYHere"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "cSecurityXray"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rInterrogationPlace"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rFollowToGuard"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "cEntranceController"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "BoxPosEntranceArea"
+      }
+    ]
+  },
+  "m12\\m12_touristpushable": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPushPoint0"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "pathThrownOut"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rAlarmController"
+      }
+    ]
+  },
+  "m12\\m12_tourist": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rGuidePerson"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rMuseumFoyer"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPosEntranceCheckDone"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "cEntranceController"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "BoxPosFrontArea"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "BoxPosEntranceArea"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rCameraItem"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "Array"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "PRPOpCode.Int32",
+        "name": "iPersonInPhotoIdx"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPhotoPos"
+      }
+    ]
+  },
+  "m12\\m12_tourguide": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rTourList"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rTouristTourPositionsList"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rTouristList"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rlTouristList"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "cEntranceController"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPosWaitForTourists"
+      }
+    ]
+  },
+  "m12\\m12_museumstaff": { "parent": "alllevels\\civilian" },
+  "m12\\m12_museumstaffinshower": { "parent": "alllevels\\civilian" },
+  "m12\\m12_guardbase": { "parent": "alllevels\\guard" },
+  "m12\\m12_marinebase": {
+    "parent": "m12\\m12_guardbase",
+    "parameters": [
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "Array", "Int32", "EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPosMontrePosition"
+      }
+    ]
+  },
+  "m12\\m12_marinecameraguard": { "parent": "m12\\m12_marinebase" },
+  "m12\\m12_suitcasebasementcontroller": {
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rFrom"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rIDK"
+      }
+    ]
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "alllevels\\civilian": {
+    "parameters": [
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rHelpPointList"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray"
+        ]
+      }
+    ]
+  },
+  "alllevels\\guard": {
+    "parameters": [
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rHelpPointList"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPrimaryWeapon"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rBodyStorage"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "Array", "Int32", "EndArray",
+          "Array", "Int32", "EndArray"
+        ]
+      }
+    ]
+  },
+  "alllevels\\radiocontroller": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownMask" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue7" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue8" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue9" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnknownValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["EndArray"] }
+    ]
+  }
+}
