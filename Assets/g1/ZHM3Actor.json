@@ -8,7 +8,7 @@
     "parent": "ZActor",
     "properties": [
         {
-            "name": "property_900",
+            "name": "rDisguise",
             "offset": 2304,
             "typename": "ZGEOMREF"
         },
