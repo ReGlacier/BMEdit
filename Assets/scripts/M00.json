@@ -1,0 +1,46 @@
+{
+  "m00\\m00_levelcontrol": {
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rMrSwingKing"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rScoop"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rFrontGateGuard"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rLightRack0"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rSpotsList"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rWinchA"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rWinchA_Broken"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rDruglabActorsList"
+      }
+    ]
+  }
+}
