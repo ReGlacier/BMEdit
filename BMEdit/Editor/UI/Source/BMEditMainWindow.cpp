@@ -683,7 +683,7 @@ void BMEditMainWindow::loadTypesDataBase()
 		{
 			if (scriptInfos.contains(key))
 			{
-				qWarning() << "Duplicate script name " << key << " in " << path << " (script def)";
+				qWarning() << "Duplicate script name " << QString::fromStdString(key) << " in " << path << " (script def)";
 				continue;
 			}
 
