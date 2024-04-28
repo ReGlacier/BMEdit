@@ -74,7 +74,10 @@ namespace gamelib
 
 		PRPOpCode fromString(const std::string &asString)
 		{
-#define OPSW(x) if (asString.starts_with("PRPOpCode.") && asString.find(#x) != std::string::npos) return PRPOpCode::x;
+			if (!asString.starts_with("PRPOpCode.")) return PRPOpCode::ERR_UNKNOWN;
+			const std::string argName = asString.substr(10);
+
+#define OPSW(x) if (argName == #x) return PRPOpCode::x;
 			OPSW(Array)
 			OPSW(BeginObject)
 			OPSW(Reference)

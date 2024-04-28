@@ -49,19 +49,27 @@ namespace widgets
 		float fFrameTime { .0f };  // how much time used for render this frame
 	};
 
+	enum class EObjectPriority
+	{
+		EP_STATIC_OBJECT = 0,
+		EP_DYNAMIC_OBJECT = 1
+	};
+
 	struct RayCastObjectDescription
 	{
-		enum EPriority {
-			EP_STATIC_OBJECT = 0,
-			EP_DYNAMIC_OBJECT = 1
-		};
-
-		EPriority ePrio { EPriority::EP_STATIC_OBJECT };
+		EObjectPriority ePrio { EObjectPriority::EP_STATIC_OBJECT };
 		float fRayOriginDistance { .0f };
 		gamelib::scene::SceneObject::Ptr pObject { nullptr };
 
 		// Operators
 		bool operator<(const RayCastObjectDescription& another) const;
+	};
+
+	struct SeebleObject
+	{
+		EObjectPriority ePrio { EObjectPriority::EP_STATIC_OBJECT };
+		gamelib::BoundingBox sBoundingBox {};
+		gamelib::scene::SceneObject::Ptr pObject {};
 	};
 
 	class SceneRenderWidget : public QOpenGLWidget
@@ -100,8 +108,6 @@ namespace widgets
 
 		bool shouldRenderRoomBoundingBox() const;
 		void setShouldRenderRoomBoundingBox(bool bVal);
-
-		bool isGameObjectInActiveRoom(const gamelib::scene::SceneObject::Ptr& pObject) const;
 
 		int32_t getGameObjectPrimitiveId(const gamelib::scene::SceneObject::Ptr& pObject) const;
 		int32_t getGameObjectPrimitiveId(const gamelib::scene::SceneObject* pObject) const;
@@ -146,13 +152,12 @@ namespace widgets
 		[[nodiscard]] glm::ivec2 getViewportSize() const;
 
 		void collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility);
-		void collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility);
+		void collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility, bool bBreakOnChild = false);
 		void performRender(QOpenGLFunctions_3_3_Core* glFunctions, const render::RenderEntriesList& entries, const render::Camera& camera, const std::function<bool(const render::RenderEntry&)>& filter);
 
 		void invalidateRenderList();
 
 		void buildRoomCache(QOpenGLFunctions_3_3_Core* glFunctions);
-		void resetLastRoom();
 
 		/**
 		 * @brief Method trying to find a new room for current camera (if camera not in that room of bRejectLastResult is true)
@@ -211,6 +216,13 @@ namespace widgets
 				eBOTH = 3,
 			};
 
+			enum class EBoundingBoxSource : int {
+				BBS_ROOM_COLLISION_MESH,  ///< Calculated via collision mesh
+				BBS_ZBOUNDS_AUTO_EXPAND,  ///< Calculated by ZBOUND object points
+				BBS_AUTO_ROOM_EXPAND,     ///< Calculated as expand of all objects in room
+				BBS_NONE                  ///< Not calculated or other BoundingBox source (auto-gen as example)
+			};
+
 			/**
 			 * @brief Weak pointer to entity which represent room
 			 */
@@ -225,6 +237,11 @@ namespace widgets
 			 * @brief Type of room location. Seee ELocation.json for details
 			 */
 			ELocation eLocation { ELocation::eUNDEFINED };
+
+			/**
+			 * @brief How bounding box calculated
+			 */
+			EBoundingBoxSource eBoundingBoxSource { EBoundingBoxSource::BBS_NONE };
 
 			/**
 			 * @brief Information about room exits
@@ -242,13 +259,23 @@ namespace widgets
 			std::unique_ptr<render::Model> mExitsDebugModel { nullptr };
 
 			/**
+			 * @brief This list contains objects which could be visible in this specific room
+			 */
+			std::vector<SeebleObject> vObjects {};
+
+			/**
 			 * @brief Room bounding box debug model
 			 */
 			std::unique_ptr<render::Model> mBBoxModel { nullptr };
+
+			/**
+			 * @brief Means "is this room created because no other rooms exists"
+			 */
+			bool bIsVirtualBigRoom { false };
 		};
 
 		std::list<RoomDef> m_rooms {};
-		const RoomDef* m_pLastRoom { nullptr };
+		std::list<const RoomDef*> m_cameraInRooms {};
 
 	private:
 		void computeRoomBoundingBox(RoomDef& d);

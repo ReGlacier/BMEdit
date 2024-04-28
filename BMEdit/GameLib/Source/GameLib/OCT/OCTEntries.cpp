@@ -15,7 +15,7 @@ namespace gamelib::oct
 
 	void OCTNode::deserialize(OCTNode& node, ZBio::ZBinaryReader::BinaryReader* binaryReader)
 	{
-		node.childCount = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
+		node.childCountData.iVal = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 		node.childIndex = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 		node.objectIndex = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 	}

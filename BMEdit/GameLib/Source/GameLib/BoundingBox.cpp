@@ -16,12 +16,18 @@ glm::vec3 BoundingBox::getCenter() const
 
 void BoundingBox::expand(const BoundingBox& another)
 {
-	min.x = std::min(min.x, another.min.x);
-	min.y = std::min(min.y, another.min.y);
-	min.z = std::min(min.z, another.min.z);
-	max.x = std::max(max.x, another.max.x);
-	max.y = std::max(max.y, another.max.y);
-	max.z = std::max(max.z, another.max.z);
+	expand(another.min);
+	expand(another.max);
+}
+
+void BoundingBox::expand(const glm::vec3 &vPoint)
+{
+	min.x = std::min(min.x, vPoint.x);
+	min.y = std::min(min.y, vPoint.y);
+	min.z = std::min(min.z, vPoint.z);
+	max.x = std::max(max.x, vPoint.x);
+	max.y = std::max(max.y, vPoint.y);
+	max.z = std::max(max.z, vPoint.z);
 }
 
 bool BoundingBox::contains(const glm::vec3& vPoint) const
@@ -43,13 +49,22 @@ bool BoundingBox::intersect(const gamelib::BoundingBox& another) const
 	return true;
 }
 
-float BoundingBox::getVolume() const
+double BoundingBox::getVolume() const
 {
-	const float v1 = max.x - min.x;
-	const float v2 = max.y - min.y;
-	const float v3 = max.z - min.z;
+	static auto w = static_cast<double>(max.x - min.x);
+	static auto h = static_cast<double>(max.y - min.y);
+	static auto d = static_cast<double>(max.z - min.z);
 
-	return v1 * v2 * v3;
+	return w * h * d;
+}
+
+std::tuple<float, float, float> BoundingBox::getDimensions() const
+{
+	return std::make_tuple(
+		max.x - min.x,
+		max.y - min.y,
+		max.z - min.z
+	);
 }
 
 BoundingBox BoundingBox::toWorld(const BoundingBox& source, const glm::mat4& mTransform)

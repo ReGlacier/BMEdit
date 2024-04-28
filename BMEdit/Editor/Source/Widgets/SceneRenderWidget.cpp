@@ -367,11 +367,14 @@ namespace widgets
 			const auto vMouseClickPos = event->position();
 
 			// If no rooms on level we should use ROOT as initial point (not recommended in MOST cases)
-			auto result = performRayCastToScene(vMouseClickPos, (!m_pLastRoom && m_rooms.empty()) ? m_pLevel->getSceneObjects()[0] : nullptr);
-			if (!result.empty())
-			{
-				emit worldSelectionChanged(result);
-			}
+			// Two step raycast: 1 - to room bbox (allow to run ray from room)
+			//                   2 - to in-room objects
+
+//			auto result = performRayCastToScene(vMouseClickPos, (!m_pLastRoom && m_rooms.empty()) ? m_pLevel->getSceneObjects()[0] : nullptr);
+//			if (!result.empty())
+//			{
+//				emit worldSelectionChanged(result);
+//			}
 		}
 	}
 
@@ -394,7 +397,6 @@ namespace widgets
 			invalidateRenderList();
 			resetViewMode();
 			resetRenderMode();
-			resetLastRoom();
 		}
 	}
 
@@ -407,7 +409,6 @@ namespace widgets
 			m_pLevel = nullptr;
 			m_bFirstMouseQuery = true;
 			invalidateRenderList();
-			resetLastRoom();
 			resetViewMode();
 			resetRenderMode();
 			repaint();
@@ -532,26 +533,6 @@ namespace widgets
 		}
 	}
 
-	bool SceneRenderWidget::isGameObjectInActiveRoom(const gamelib::scene::SceneObject::Ptr& pObject) const
-	{
-		if (!m_pLastRoom || !pObject)
-		{
-			return false;
-		}
-
-		auto primId = getGameObjectPrimitiveId(pObject);
-		if (primId == 0)
-		{
-			return false;
-		}
-
-		const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
-		glm::mat4 mWorldTransform = getGameObjectTransform(pObject);
-		gamelib::BoundingBox modelWorldBoundingBox = gamelib::BoundingBox::toWorld(model.boundingBox, mWorldTransform);
-
-		return m_pLastRoom->vBoundingBox.intersect(modelWorldBoundingBox);
-	}
-
 	int32_t SceneRenderWidget::getGameObjectPrimitiveId(const gamelib::scene::SceneObject::Ptr& pObject) const
 	{
 		if (!pObject) return 0;
@@ -647,25 +628,16 @@ namespace widgets
 	{
 		render::Ray sRay = m_camera.getRayFromScreen(static_cast<float>(screenSpace.x()),
 		                                             static_cast<float>(screenSpace.y()));
+		std::vector<RayCastObjectDescription> collectedObjects {};
 
 		gamelib::scene::SceneObject* pRoot = pStartObject.get();
-
-		if (!pRoot)
-		{
-			if (m_pLastRoom && !m_pLastRoom->rRoom.expired())
-			{
-				pRoot = m_pLastRoom->rRoom.lock().get();
-			}
-		}
 
 		// Need to find intersects with this thing. Need to visit only current room
 		if (pRoot)
 		{
 			using R = gamelib::scene::SceneObject::EVisitResult;
 
-			std::vector<RayCastObjectDescription> collectedObjects {};
-
-			static RayCastObjectDescription::EPriority s_CurrentPrio = RayCastObjectDescription::EPriority::EP_STATIC_OBJECT;
+			static EObjectPriority s_CurrentPrio = EObjectPriority::EP_STATIC_OBJECT;
 
 			auto hitObjVisitor = [&sRay, &collectedObjects, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
 				if (auto bbox = getGameObjectBoundingBox(pObject); bbox.has_value())
@@ -685,11 +657,11 @@ namespace widgets
 			};
 
 			// Hit dynamic (not implemented yet)
-			s_CurrentPrio = RayCastObjectDescription::EPriority::EP_DYNAMIC_OBJECT; // Now dynamic objects
+			s_CurrentPrio = EObjectPriority::EP_DYNAMIC_OBJECT; // Now dynamic objects
 			// TODO: Iterate over dynamic objects and check collision with them
 
 			// Hit static
-			s_CurrentPrio = RayCastObjectDescription::EPriority::EP_STATIC_OBJECT; // Now static objects
+			s_CurrentPrio = EObjectPriority::EP_STATIC_OBJECT; // Now static objects
 			pRoot->visitChildren(hitObjVisitor);
 
 			// Sort hit list by distance to camera
@@ -698,7 +670,7 @@ namespace widgets
 			return collectedObjects;
 		}
 
-		return {};
+		return collectedObjects;
 	}
 
 	void SceneRenderWidget::onRedrawRequested()
@@ -1241,89 +1213,94 @@ namespace widgets
 		else
 		{
 			// Try to render
-			if (m_pLastRoom)
+			for (const auto& pRoom : m_cameraInRooms)
 			{
-				if (!m_pLastRoom->rRoom.expired())
+				for (const SeebleObject& sObject : pRoom->vObjects)
 				{
-					// First of all let's render only current room
-					collectRenderEntriesIntoRenderList(m_pLastRoom->rRoom.lock().get(), entries, stats, bIgnoreVisibility);
-				}
-
-				// Let's check if we can see any portal - we need to render that room.
-				if (!m_pLastRoom->aExists.empty())
-				{
-					// Iterate over all exits and check what exit camera can see right now
-					for (const auto& eXit : m_pLastRoom->aExists)
+					if (m_camera.canSeeObject(sObject.sBoundingBox))
 					{
-						gamelib::Plane sPlane { eXit.v0, eXit.v1, eXit.v2, eXit.v3 };
-
-						if (m_camera.canSeeObject(sPlane))
-						{
-							const auto& pRoom = m_pLevel->getSceneObjectByInstanceID(eXit.iRoomREF);
-							if (pRoom)
-							{
-								// We can see another room - save it
-								collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
-								// in theory 1 room is enough, but... idk)
-							}
-						}
+						// Need to render it
+						collectRenderEntriesIntoRenderList(sObject.pObject.get(), entries, stats, bIgnoreVisibility, true);
 					}
 				}
+			}
+//			if (m_pLastRoom)
+//			{
+//				if (!m_pLastRoom->rRoom.expired())
+//				{
+//					// First of all let's render only current room
+//					collectRenderEntriesIntoRenderList(m_pLastRoom->rRoom.lock().get(), entries, stats, bIgnoreVisibility);
+//				}
+//
+//				// Let's check if we can see any portal - we need to render that room.
+//				if (!m_pLastRoom->aExists.empty())
+//				{
+//					// Iterate over all exits and check what exit camera can see right now
+//					for (const auto& eXit : m_pLastRoom->aExists)
+//					{
+//						gamelib::Plane sPlane { eXit.v0, eXit.v1, eXit.v2, eXit.v3 };
+//
+//						if (m_camera.canSeeObject(sPlane))
+//						{
+//							const auto& pRoom = m_pLevel->getSceneObjectByInstanceID(eXit.iRoomREF);
+//							if (pRoom)
+//							{
+//								// We can see another room - save it
+//								collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
+//								// in theory 1 room is enough, but... idk)
+//							}
+//						}
+//					}
+//				}
 
 				// Try to render dynamic objects
-				const auto& vObjects = m_pLevel->getSceneObjects();
-				auto it = std::find_if(vObjects.begin(), vObjects.end(), [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
-					return pObject && pObject->getName().ends_with("_CHARACTERS.zip");
-				});
-
-				gamelib::scene::SceneObject* pDynRoot = nullptr;
-
-				if (it != vObjects.end())
-				{
-					// Add this 'ROOM' as another thing to visit
-					pDynRoot = it->get();
-				}
-				else
-				{
-					// Need to collect every ZActor, ZHM3Actor, ZItem things from the whole scene :(
-					using R = gamelib::scene::SceneObject::EVisitResult;
-
-					pDynRoot = m_pLevel->getSceneObjects()[0].get();
-				}
-
-				// Visit dynamic root
-				using R = gamelib::scene::SceneObject::EVisitResult;
-
-				pDynRoot->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-					static const std::array<std::string, 5> kAllowedTypes = { "ZActor", "ZPlayer", "ZItem", "ZItemAmmo", "ZLNKOBJ" };
-
-					for (const auto& sEntBaseName : kAllowedTypes)
-					{
-						if (pObject->isInheritedOf("ZROOM"))
-						{
-							return R::VR_NEXT; // Skip all rooms
-						}
-
-						// If object based on ...
-						if (pObject->isInheritedOf(sEntBaseName))
-						{
-							if (isGameObjectInActiveRoom(pObject) || m_rooms.empty())
-							{
-								collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
-								return R::VR_NEXT; // accepted, jump to next
-							}
-						}
-					}
-
-					// Go deeper
-					return R::VR_CONTINUE;
-				});
-			}
-			else
-			{
-				// Ok, stupid render approach here. Just render everything starts from ROOT (dynamic & static doesn't matter in this case)
-				collectRenderEntriesIntoRenderList(m_pLevel->getSceneObjects()[0].get(), entries, stats, bIgnoreVisibility);
-			}
+//				const auto& vObjects = m_pLevel->getSceneObjects();
+//				auto it = std::find_if(vObjects.begin(), vObjects.end(), [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
+//					return pObject && pObject->getName().ends_with("_CHARACTERS.zip");
+//				});
+//
+//				gamelib::scene::SceneObject* pDynRoot = nullptr;
+//
+//				if (it != vObjects.end())
+//				{
+//					// Add this 'ROOM' as another thing to visit
+//					pDynRoot = it->get();
+//				}
+//				else
+//				{
+//					// Need to collect every ZActor, ZHM3Actor, ZItem things from the whole scene :(
+//					using R = gamelib::scene::SceneObject::EVisitResult;
+//
+//					pDynRoot = m_pLevel->getSceneObjects()[0].get();
+//				}
+//
+//				// Visit dynamic root
+//				using R = gamelib::scene::SceneObject::EVisitResult;
+//
+//				pDynRoot->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+//					static const std::array<std::string, 5> kAllowedTypes = { "ZActor", "ZPlayer", "ZItem", "ZItemAmmo", "ZLNKOBJ" };
+//
+//					for (const auto& sEntBaseName : kAllowedTypes)
+//					{
+//						if (pObject->isInheritedOf("ZROOM"))
+//						{
+//							return R::VR_NEXT; // Skip all rooms
+//						}
+//
+//						// If object based on ...
+//						if (pObject->isInheritedOf(sEntBaseName))
+//						{
+//							if (isGameObjectInActiveRoom(pObject) || m_rooms.empty())
+//							{
+//								collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
+//								return R::VR_NEXT; // accepted, jump to next
+//							}
+//						}
+//					}
+//
+//					// Go deeper
+//					return R::VR_CONTINUE;
+//				});
 		}
 
 		// Add debug stuff
@@ -1411,7 +1388,7 @@ namespace widgets
 		});
 	}
 
-	void SceneRenderWidget::collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* geom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility) // NOLINT(*-no-recursion)
+	void SceneRenderWidget::collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* geom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility, bool bBreakOnChild) // NOLINT(*-no-recursion)
 	{
 		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
 		const auto vPosition  = geom->getPosition();
@@ -1593,6 +1570,9 @@ namespace widgets
 			}
 		}
 
+		if (bBreakOnChild)
+			return;
+
 		// Visit others
 		for (const auto& child : geom->getChildren())
 		{
@@ -1612,34 +1592,35 @@ namespace widgets
 			// Enable or disable blending
 			if (renderState.isBlendEnabled()) {
 				gapi->glEnable(GL_BLEND);
+
+				// Set blend mode based on your enum values
+				switch (renderState.getBlendMode())
+				{
+				case gamelib::mat::MATBlendMode::BM_TRANS:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+				case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+				case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					gapi->glEnable(GL_BLEND);
+					break;
+				default:
+					// Do nothing
+					break;
+				}
 			} else {
 				gapi->glDisable(GL_BLEND);
-			}
-
-			// Set blend mode based on your enum values
-			switch (renderState.getBlendMode())
-			{
-			case gamelib::mat::MATBlendMode::BM_TRANS:
-				gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				break;
-			case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
-				gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				break;
-			case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
-				gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-				break;
-			case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
-				gapi->glBlendFunc(GL_ONE, GL_ONE);
-				break;
-			case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
-				gapi->glBlendFunc(GL_ONE, GL_ONE);
-				break;
-			case gamelib::mat::MATBlendMode::BM_ADD:
-				gapi->glBlendFunc(GL_ONE, GL_ONE);
-				break;
-			default:
-				// Do nothing
-				break;
 			}
 
 			// Enable or disable alpha testing
@@ -1656,13 +1637,15 @@ namespace widgets
 				gapi->glDisable(GL_FOG);
 			}
 
+#if 0
 			// Enable or disable depth offset (Z bias)
 			if (renderState.hasZBias()) {
 				gapi->glEnable(GL_POLYGON_OFFSET_FILL);
-				gapi->glPolygonOffset(1.0f, renderState.getZOffset());
+				gapi->glPolygonOffset(2.0f, renderState.getZOffset());
 			} else {
 				gapi->glDisable(GL_POLYGON_OFFSET_FILL);
 			}
+#endif
 
 			// Set cull mode based on your enum values
 			switch (renderState.getCullMode())
@@ -1708,10 +1691,11 @@ namespace widgets
 
 			// TODO: Need to move into constants
 			shader->setUniform(glFunctions, "i_uMaterial.v4DiffuseColor", entry.material.vDiffuseColor);
-			shader->setUniform(glFunctions, "i_uMaterial.gm_vZBiasOffset", entry.material.gm_vZBiasOffset);
+			shader->setUniform(glFunctions, "i_uMaterial.gm_vZBiasOffset", entry.material.renderState.hasZBias() ? entry.material.gm_vZBiasOffset : glm::vec4(0.f));
 			shader->setUniform(glFunctions, "i_uMaterial.v4Opacity", entry.material.v4Opacity);
 			shader->setUniform(glFunctions, "i_uMaterial.v4Bias", entry.material.v4Bias);
 			shader->setUniform(glFunctions, "i_uMaterial.alphaREF", std::clamp(entry.material.iAlphaREF, 0, 255));
+			shader->setUniform(glFunctions, "i_uMaterial.fZOffset", entry.material.renderState.getZOffset());
 
 			// Bind textures
 			for (int slotIdx = render::TextureSlotId::kMapDiffuse; slotIdx < render::TextureSlotId::kMaxTextureSlot; slotIdx++)
@@ -1765,7 +1749,7 @@ namespace widgets
 			const auto& children = pRoom->getChildren();
 			gamelib::scene::SceneObject* pCollisionMesh = nullptr;
 			pRoom->visitChildren([&pCollisionMesh, sTargetName = pRoom->getName()](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-				if (pObject->getName() == sTargetName && pObject->getType()->getName() == "ZSTDOBJ")
+				if (pObject->getName() == sTargetName/* && pObject->getType()->getName() == "ZSTDOBJ"*/)
 				{
 					pCollisionMesh = pObject.get();
 					return R::VR_STOP_ALL;
@@ -1782,48 +1766,70 @@ namespace widgets
 					// Nice, collision mesh was found! Just use it as source for bbox of ZROOM
 					auto sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
 					d.vBoundingBox = gamelib::BoundingBox::toWorld(sBoundingBox, pCollisionMesh->getWorldTransform());
+					d.eBoundingBoxSource = RoomDef::EBoundingBoxSource::BBS_ROOM_COLLISION_MESH;
 					return;
 				}
 			}
 
+			// Ok, let's try to find all ZBOUND objects and make BoundingBox
+			gamelib::BoundingBox sTempBbox {};
+			int iZBoundObjsFound = 0;
+			pRoom->visitChildren([this, &sTempBbox, &iZBoundObjsFound](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+				if (pObject && pObject->getType()->getName() == "ZBOUND")
+				{
+					if (auto bbox = getGameObjectBoundingBox(pObject.get()); bbox.has_value())
+					{
+						++iZBoundObjsFound;
+						sTempBbox.expand(bbox.value());
+					}
+				}
+
+				return R::VR_NEXT; // Never go inside
+			});
+
+			if (iZBoundObjsFound > 0)
+			{
+				d.vBoundingBox = sTempBbox;
+				d.eBoundingBoxSource = RoomDef::EBoundingBoxSource::BBS_ZBOUNDS_AUTO_EXPAND;
+				return;
+			}
+
+			// Old and hard way: just collect all visible objects with bboxes and combine them all into 1 single big bbox
 			bool bBboxInited = false;
 
 			pRoom->visitChildren([&](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
 				if (!pObject)
 					return R::VR_NEXT;
 
-				auto iPrimId = getGameObjectPrimitiveId(pObject);
-				if (!iPrimId)
-					return R::VR_CONTINUE; // Go deeper
-
-				// Find prim cache
-				if (m_resources->m_modelsCache.contains(iPrimId))
+				if (auto bbox = getGameObjectBoundingBox(pObject.get()); bbox.has_value())
 				{
-					auto sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
-					gamelib::BoundingBox vWorldBoundingBox = gamelib::BoundingBox::toWorld(sBoundingBox, pObject->getWorldTransform());
-
 					if (!bBboxInited)
 					{
 						bBboxInited = true;
-						d.vBoundingBox = vWorldBoundingBox;
+						d.vBoundingBox = bbox.value();
 					}
 					else
 					{
-						d.vBoundingBox.expand(vWorldBoundingBox);
+						d.vBoundingBox.expand(bbox.value());
 					}
 
-					// Optimisation: we've assumed that when we have an object with bbox we will use top bbox instead of compute sub-bboxes
 					return R::VR_NEXT;
 				}
 
 				return R::VR_CONTINUE;
 			});
+
+			d.eBoundingBoxSource = RoomDef::EBoundingBoxSource::BBS_AUTO_ROOM_EXPAND;
 		}
 	}
 
 	void SceneRenderWidget::buildRoomCache(QOpenGLFunctions_3_3_Core* glFunctions)
 	{
+		using R = gamelib::scene::SceneObject::EVisitResult;
+
+		// clear caches
 		m_rooms.clear();
+		m_cameraInRooms.clear();
 
 		// Save pointer to  BUF file
 		const auto bufFileView = m_pLevel->getStaticBuffer();
@@ -1839,29 +1845,9 @@ namespace widgets
 		if (locationsIt != m_pLevel->getSceneObjects().end())
 		{
 			// we've able to use standard workflow
-			// Save backdrop
-			m_pLevel->forEachObjectOfType("ZBackdrop", [this](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
-				if (pObject)
-				{
-					auto& room = m_rooms.emplace_back();
-					room.rRoom = pObject;
-					room.eLocation = RoomDef::ELocation::eUNDEFINED;
-
-					// ZBackdrop always has maximum possible size to see it from any point of the world
-					constexpr float kMinPoint = std::numeric_limits<float>::min();
-					constexpr float kMaxPoint = std::numeric_limits<float>::max();
-					room.vBoundingBox = gamelib::BoundingBox(glm::vec3(kMinPoint), glm::vec3(kMaxPoint));
-
-					return false;
-				}
-
-				return true;
-			});
-
 			// Find ZROOMs
 			const gamelib::scene::SceneObject::Ptr& pNewRoot = *locationsIt;
 
-			using R = gamelib::scene::SceneObject::EVisitResult;
 			pNewRoot->visitChildren([this, bufFileView](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
 				if (!pObject)
 				{
@@ -1875,13 +1861,21 @@ namespace widgets
 					room.rRoom = pObject;
 
 					//room.eLocation
-					const auto iLocation = pObject->getProperties().getObject<std::int32_t>("Location", 0);
-					if (iLocation >= 0 && iLocation <= 3)
+					static const std::map<std::string, RoomDef::ELocation> s_LocNameToKind {
+					    { "eBOTH", RoomDef::ELocation::eBOTH },
+					    { "eINSIDE", RoomDef::ELocation::eINSIDE },
+					    { "eOUTSIDE", RoomDef::ELocation::eOUTSIDE },
+					    { "eUNDEFINED", RoomDef::ELocation::eUNDEFINED }
+					};
+					const auto sLocation = pObject->getProperties().getObject<std::string>("Location", "");
+
+					if (auto it = s_LocNameToKind.find(sLocation); it != s_LocNameToKind.end())
 					{
-						room.eLocation = static_cast<RoomDef::ELocation>(iLocation);
+						room.eLocation = it->second;
 					}
 					else
 					{
+						room.eLocation = RoomDef::ELocation::eUNDEFINED;
 						assert(false && "Unknown room type, room will be ignored in optimisations loop");
 					}
 
@@ -1925,11 +1919,66 @@ namespace widgets
 					// Compute room dimensions
 					computeRoomBoundingBox(room);
 
+					// Collect objects list (all visible objects from room + dynamics from scene)
+					pObject->visitChildren([&room, this](const gamelib::scene::SceneObject::Ptr& pObj) -> R {
+						if (pObj->is("ZROOM")) return R::VR_CONTINUE;
+
+						if (auto bbox = getGameObjectBoundingBox(pObj); bbox.has_value())
+						{
+							SeebleObject& sObject = room.vObjects.emplace_back();
+							sObject.pObject = pObj;
+							sObject.ePrio = EObjectPriority::EP_STATIC_OBJECT;
+							sObject.sBoundingBox = bbox.value();
+							return R::VR_NEXT; // Go to next
+						}
+						return R::VR_CONTINUE; // go deeper
+					});
+
+					// TODO: Collect dynamic objects (remember: when collecting remember to check that object is in room bounding box)
 					return R::VR_NEXT;
 				}
 
 				// Go deep inside
 				return R::VR_CONTINUE;
+			});
+		}
+		else
+		{
+			// No rooms found. Need to generate 1 big room
+			RoomDef& sVirtualRoom = m_rooms.emplace_back();
+
+			// Use really huge bbox (FLT32_MIN;FLT32_MIN;FLT32_MIN) (FLT32_MAX; FLT32_MAX; FLT32_MAX)
+			sVirtualRoom.vBoundingBox = gamelib::BoundingBox(
+			    glm::vec3(
+			        std::numeric_limits<float>::min(),
+			        std::numeric_limits<float>::min(),
+			        std::numeric_limits<float>::min()
+				),
+			    glm::vec3(
+			        std::numeric_limits<float>::max(),
+			        std::numeric_limits<float>::max(),
+			        std::numeric_limits<float>::max()
+				)
+			);
+
+			// Set location & flags
+			sVirtualRoom.eLocation = RoomDef::ELocation::eUNDEFINED;
+			sVirtualRoom.bIsVirtualBigRoom = true;
+
+			// Collect objects
+			m_pLevel->getSceneObjects()[0]->visitChildren([&sVirtualRoom, this](const gamelib::scene::SceneObject::Ptr& pObj) -> R {
+				if (pObj->is("ZROOM")) return R::VR_CONTINUE;
+
+				if (auto bbox = getGameObjectBoundingBox(pObj); bbox.has_value())
+				{
+					SeebleObject& sObject = sVirtualRoom.vObjects.emplace_back();
+					sObject.pObject = pObj;
+					sObject.ePrio = EObjectPriority::EP_STATIC_OBJECT; // Idk, but in this case all objects are STATIC
+					sObject.sBoundingBox = bbox.value();
+					return R::VR_NEXT; // Go to next
+				}
+
+				return R::VR_CONTINUE; // go deeper
 			});
 		}
 
@@ -2000,69 +2049,52 @@ namespace widgets
 		}
 	}
 
-	void SceneRenderWidget::resetLastRoom()
-	{
-		m_pLastRoom = nullptr;
-	}
-
 	void SceneRenderWidget::updateCameraRoomAttachment(RenderStats& stats, bool bRejectLastResult)
 	{
-		stats.currentRoom.clear();
+		m_cameraInRooms.clear();
 
-		if (bRejectLastResult)
-		{
-			m_pLastRoom = nullptr;
-		}
-
-		if (!m_pLevel || m_rooms.empty())
-		{
-			m_pLastRoom = nullptr;
-			return;
-		}
-
-		// First of all check that we out of our current room
-		if (m_pLastRoom)
-		{
-			if (m_pLastRoom->vBoundingBox.contains(m_camera.getPosition()))
-			{
-				stats.currentRoom = QString::fromStdString(m_pLastRoom->rRoom.lock()->getName());
-				return; // Do nothing
-			}
-
-			// Reject current room
-			m_pLastRoom = nullptr;
-		}
-
-		std::list<const RoomDef*> foundInRooms {};
 		for (const auto& sRoom : m_rooms)
 		{
 			if (sRoom.vBoundingBox.contains(m_camera.getPosition()))
 			{
-				foundInRooms.emplace_back(&sRoom);
+				m_cameraInRooms.emplace_back(&sRoom);
 			}
 		}
 
-		if (foundInRooms.empty())
-			return; // Out of rooms
+#if 0
+		/**
+		 * Here is a place from hell. We need to know in which room camera and what rooms we can see from this place.
+		 *
+		 * First:
+		 * 		IDK how to solve
+		 *
+		 * Second:
+		 * 		Each room has "exits" and "neighbours". We just need to  check what planes we can see from this room and this pos + dir (camera)
+		 */
+		std::list<const RoomDef*> roomCandidates {};
 
-		// Then need to sort found rooms list. Firstly we need to have eINSIDE rooms
-		foundInRooms.sort([](const RoomDef* a, const RoomDef* b) {
-			if (a->vBoundingBox.getVolume() < b->vBoundingBox.getVolume())
+		for (const auto& sRoom : m_rooms)
+		{
+			if (sRoom.vBoundingBox.contains(m_camera.getPosition()))
 			{
-				return true;
+				roomCandidates.emplace_back(&sRoom);
 			}
+		}
 
-			if (a->eLocation == RoomDef::ELocation::eINSIDE && a->eLocation == RoomDef::ELocation::eOUTSIDE)
-				return true;
+		if (roomCandidates.empty())
+			return;
 
-			return static_cast<int>(a->eLocation) > static_cast<int>(b->eLocation);
-		});
+		roomCandidates.sort([](const RoomDef* a, const RoomDef* b) { return a->eLocation < b->eLocation; });
 
-		// Now, use first found room
-		// NOTE: Maybe we've better to check that top room is preferable for us? Idk
-		m_pLastRoom = (*foundInRooms.begin());
+		RoomDef::ELocation currentLocation = (*roomCandidates.begin())->eLocation;
 
-		// Save room name
-		stats.currentRoom = QString::fromStdString(m_pLastRoom->rRoom.lock()->getName());
+		for (const auto& sRoom : roomCandidates)
+		{
+			if (sRoom->eLocation != currentLocation)
+				continue;
+
+			m_cameraInRooms.emplace_back(sRoom);
+		}
+#endif
 	}
 }

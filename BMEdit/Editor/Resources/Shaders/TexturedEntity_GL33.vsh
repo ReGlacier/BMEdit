@@ -21,6 +21,29 @@ struct Transform
     mat4 model;
 };
 
+struct Material
+{
+    // See Common.fx for details
+    // Common uniforms
+    vec4 v4DiffuseColor;
+    vec4 gm_vZBiasOffset;
+    vec4 v4Opacity;
+    vec4 v4Bias;
+    float fZOffset;
+    int alphaREF;
+
+    // Textures
+    sampler2D mapDiffuse;
+    sampler2D mapSpecularMask;
+    sampler2D mapEnvironment;
+    sampler2D mapReflectionMask;
+    sampler2D mapReflectionFallOff;
+    sampler2D mapIllumination;
+    sampler2D mapTranslucency;
+};
+
+uniform Material i_uMaterial;
+
 // Uniforms
 uniform Camera i_uCamera;
 uniform Transform i_uTransform;
@@ -30,6 +53,10 @@ out vec2 g_TexCoord;
 
 void main()
 {
-    gl_Position = i_uCamera.proj * i_uCamera.view * i_uTransform.model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    vec4 vOut = i_uCamera.proj * i_uCamera.view * i_uTransform.model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    vOut -= i_uMaterial.gm_vZBiasOffset;
+    vOut.z -= i_uMaterial.fZOffset;
+
+    gl_Position = vOut;
     g_TexCoord = aUV;
 }

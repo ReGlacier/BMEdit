@@ -14,6 +14,13 @@
 
 namespace gamelib
 {
+	struct ScriptInfo
+	{
+		std::string name; // name of scripts
+		std::vector<ValueEntry> entries; // entries in script
+		std::vector<prp::PRPInstruction> initialInstructions; // contains instructions to produce whole description in PRP
+	};
+
 	class TypeRegistry
 	{
 		TypeRegistry();
@@ -31,6 +38,11 @@ namespace gamelib
 		void registerTypes(
 			std::vector<nlohmann::json> &&typeDeclarations,
 			std::unordered_map<std::string, std::string> &&typeToHash);
+
+		void registerScripts(std::unordered_map<std::string, nlohmann::json>&& scriptInfoMap);
+
+		[[nodiscard]] std::optional<ScriptInfo> getScriptInfo(const std::string& scriptName);
+		[[nodiscard]] bool hasScriptInfo(const std::string& scriptName);
 
 		[[nodiscard]] const Type *findTypeByName(const std::string &typeName) const;
 		[[nodiscard]] const Type *findTypeByHash(const std::string &hash) const;
@@ -86,5 +98,6 @@ namespace gamelib
 		std::vector<std::unique_ptr<Type>> m_types;
 		std::unordered_map<std::string, Type*> m_typesByHash;
 		std::unordered_map<std::string, Type*> m_typesByName;
+		std::unordered_map<std::string, ScriptInfo> m_scriptsByName;
 	};
 }

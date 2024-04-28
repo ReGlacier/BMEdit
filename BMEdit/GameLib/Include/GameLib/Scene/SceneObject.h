@@ -24,10 +24,14 @@ namespace gamelib::scene
 		using Ref = std::weak_ptr<SceneObject>;
 		using Instructions = std::vector<prp::PRPInstruction>;
 
+		/**
+		 * Scene geom controller description (ZEventBase in Glacier)
+		 */
 		struct Controller
 		{
-			std::string name;
-			Value properties;
+			std::string name; /// Name of controller
+			Value properties; /// Properties pack
+			const Type* type { nullptr };  /// Type of controller (native type, see TypeRegistry for details)
 
 			bool operator==(const std::string &controllerName) const;
 			bool operator!=(const std::string &controllerName) const;
@@ -51,7 +55,7 @@ namespace gamelib::scene
 		[[nodiscard]] const Controllers &getControllers() const;
 		[[nodiscard]] Controllers &getControllers();
 		[[nodiscard]] const Value &getProperties() const;
-		[[nodiscard]] Value &getProperties();
+		void setProperties(const Value &v);
 		[[nodiscard]] const gms::GMSGeomEntity &getGeomInfo() const;
 		[[nodiscard]] gms::GMSGeomEntity &getGeomInfo();
 		[[nodiscard]] const SceneObject::Ref &getParent() const;
@@ -63,6 +67,12 @@ namespace gamelib::scene
 		 * @return return true if game object inherited of baseType
 		 */
 		[[nodiscard]] bool isInheritedOf(const std::string& baseType) const;
+
+		/**
+		 * @param type - name of type
+		 * @return true if type equals to required 'type'
+		 */
+		[[nodiscard]] bool is(const std::string& type) const;
 
 		/**
 		 * @brief Calculate transform matrix for OpenGL and other render API buddies

@@ -24,7 +24,7 @@ namespace gamelib::scene
 
 	bool SceneObject::Controller::operator==(const SceneObject::Controller &other) const
 	{
-		return name == other.name && properties == other.properties;
+		return name == other.name && properties == other.properties && type == other.type;
 	}
 
 	bool SceneObject::Controller::operator!=(const SceneObject::Controller &other) const
@@ -88,9 +88,9 @@ namespace gamelib::scene
 		return m_properties;
 	}
 
-	Value &SceneObject::getProperties()
+	void SceneObject::setProperties(const gamelib::Value &v)
 	{
-		return m_properties;
+		m_properties = v;
 	}
 
 	const gms::GMSGeomEntity &SceneObject::getGeomInfo() const
@@ -136,6 +136,14 @@ namespace gamelib::scene
 		}
 
 		return false;
+	}
+
+	bool SceneObject::is(const std::string& type) const
+	{
+		const auto* pType = getType();
+		if (!pType) return false;
+
+		return pType->getName() == type;
 	}
 
 	glm::mat4 SceneObject::getLocalTransform() const

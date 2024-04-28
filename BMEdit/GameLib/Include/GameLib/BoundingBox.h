@@ -3,6 +3,7 @@
 #include <glm/vec3.hpp>
 #include <glm/mat4x4.hpp>
 #include <array>
+#include <tuple>
 
 #include <type_traits>
 
@@ -20,10 +21,12 @@ namespace gamelib
 		glm::vec3 getCenter() const;
 
 		void expand(const BoundingBox& another);
+		void expand(const glm::vec3& vPoint);
 		bool contains(const glm::vec3& vPoint) const;
 		bool intersect(const BoundingBox& another) const;
 
-		float getVolume() const;
+		double getVolume() const;
+		std::tuple<float, float, float> getDimensions() const;
 
 		static BoundingBox toWorld(const BoundingBox& source, const glm::mat4& mTransform);
 

@@ -30,7 +30,7 @@ namespace gamelib::oct
 			OCTNode node;
 			OCTNode::deserialize(node, &octReader);
 
-			if (node.childCount == 0xCDCDu && node.childIndex == 0xCDCDu && node.objectIndex == 0xCDCDu)
+			if (node.childCountData.iVal == 0xCDCDu && node.childIndex == 0xCDCDu && node.objectIndex == 0xCDCDu)
 			{
 				// Alignment node. Skip and break
 				break;

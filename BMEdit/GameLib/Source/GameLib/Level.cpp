@@ -37,9 +37,9 @@ namespace gamelib
 	glm::vec3 LevelRooms::RoomGroup::roomToWorld(const glm::i16vec3& vRoom) const
 	{
 		return {
-		    (static_cast<float>(vRoom.x) - 32768.0f) / header.fWorldScale + header.vWorldOrigin.x,
-		    (static_cast<float>(vRoom.y) - 32768.0f) / header.fWorldScale + header.vWorldOrigin.y,
-		    (static_cast<float>(vRoom.z) - 32768.0f) / header.fWorldScale + header.vWorldOrigin.z
+		    static_cast<float>(vRoom.x - 32768) / header.fWorldScale + header.vWorldOrigin.x,
+		    static_cast<float>(vRoom.y - 32768) / header.fWorldScale + header.vWorldOrigin.y,
+		    static_cast<float>(vRoom.z - 32768) / header.fWorldScale + header.vWorldOrigin.z
 		};
 	}
 
@@ -478,26 +478,26 @@ namespace gamelib
 
 		// Read inside rooms
 		{
-			int64_t rmcFileSize = 0;
-			auto rmcFileBuffer = m_assetProvider->getAsset(gamelib::io::AssetKind::ROOM_TREE_INSIDE, rmcFileSize);
+			int64_t rmiFileSize = 0;
+			auto rmiFileBuffer = m_assetProvider->getAsset(gamelib::io::AssetKind::ROOM_TREE_INSIDE, rmiFileSize);
 
-			if (!rmcFileBuffer || !rmcFileSize)
+			if (!rmiFileBuffer || !rmiFileSize)
 			{
 				return false;
 			}
 
-			oct::OCTReader rmcReader {};
-			const bool bParseResult = rmcReader.parse(rmcFileBuffer.get(), rmcFileSize);
+			oct::OCTReader rmiReader {};
+			const bool bParseResult = rmiReader.parse(rmiFileBuffer.get(), rmiFileSize);
 
 			if (!bParseResult)
 			{
 				return false;
 			}
 
-			m_levelRooms.inside.header = rmcReader.getHeader();
-			m_levelRooms.inside.nodes = std::move(rmcReader.takeNodes());
-			m_levelRooms.inside.objects = std::move(rmcReader.takeObjects());
-			m_levelRooms.inside.ubs = std::move(rmcReader.takeUBS());
+			m_levelRooms.inside.header = rmiReader.getHeader();
+			m_levelRooms.inside.nodes = std::move(rmiReader.takeNodes());
+			m_levelRooms.inside.objects = std::move(rmiReader.takeObjects());
+			m_levelRooms.inside.ubs = std::move(rmiReader.takeUBS());
 		}
 
 		// Read collisions

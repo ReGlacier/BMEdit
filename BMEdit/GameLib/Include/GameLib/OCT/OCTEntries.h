@@ -23,11 +23,22 @@ namespace gamelib::oct
 
 	struct OCTNode
 	{
-		uint16_t childCount { 0 };  // It's mask. Real count of objects could be extracted via (childCount >> 3) & 0xFFF
+		union
+		{
+			struct
+			{
+				uint16_t unk3 : 3 { 0 }; // Idk
+				uint16_t childCount : 12 { 0 }; // Count of child objects
+				uint16_t unk1 : 1 { 0 }; // Idk
+			} uVal;
+			uint16_t iVal { 0 };
+		} childCountData;
 		uint16_t childIndex { 0 };  // It's index of NODE
 		uint16_t objectIndex { 0 };
 
-		[[nodiscard]] uint16_t getChildCount() const { return (childCount >> 3) & 0xFFF; }
+		static_assert(sizeof(childCountData) == sizeof(uint16_t), "Bad size of childCountData");
+
+		[[nodiscard]] uint16_t getChildCount() const { return childCountData.uVal.childCount; }
 
 		static void deserialize(OCTNode& node, ZBio::ZBinaryReader::BinaryReader* binaryReader);
 	};

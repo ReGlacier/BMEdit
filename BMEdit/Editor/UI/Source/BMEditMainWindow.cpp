@@ -284,8 +284,8 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	ui->sceneGLView->setLevel(const_cast<gamelib::Level*>(currentLevel));
 
 	// Load controllers index
-	ui->geomControllers->switchToDefaults();
-	ui->geomControllers->resetGeom();
+	ui->geomControllers->resetGeom(); // FIRST: Reset geom, save or revert changes
+	ui->geomControllers->switchToDefaults(); // SECOND: Drop value
 
 	// Export action
 	ui->menuExport->setEnabled(true);
@@ -584,6 +584,7 @@ void BMEditMainWindow::loadTypesDataBase()
 {
 	m_operationProgress->setValue(OperationToProgress::DISCOVER_TYPES_DATABASE);
 
+	// TODO: Move this code to another place!!!
 	gamelib::TypeRegistry::getInstance().reset();
 
 	QFile typeRegistryFile("TypesRegistry.json");
@@ -605,7 +606,7 @@ void BMEditMainWindow::loadTypesDataBase()
 
 	m_operationProgress->setValue(OperationToProgress::DATABASE_PARSED);
 
-	if (!registryFile.contains("inc") || !registryFile.contains("db"))
+	if (!registryFile.contains("inc") || !registryFile.contains("db") || !registryFile.contains("script_incs"))
 	{
 		m_operationCommentLabel->setText("Invalid types database format");
 		return;
@@ -621,6 +622,7 @@ void BMEditMainWindow::loadTypesDataBase()
 	}
 
 	const auto incPath = registryFile["inc"].get<std::string>();
+	const auto scriptsPath = registryFile["script_incs"].get<std::string>();
 
 	m_operationProgress->setValue(OperationToProgress::LOADING_TYPE_DESCRIPTORS);
 	m_operationCommentLabel->setText(QString("Hash indices loaded (%1), loading types from '%2' folder").arg(typesToHashes.size()).arg(QString::fromStdString(incPath)));
@@ -653,9 +655,49 @@ void BMEditMainWindow::loadTypesDataBase()
 		}
 	}
 
+	// Here we need to lookup for script declarations and parse them
+	std::unordered_map<std::string, nlohmann::json> scriptInfos;
+	QDirIterator scriptInfoFolderIterator(QString::fromStdString(scriptsPath), { "*.json" }, QDir::Files);
+	while (scriptInfoFolderIterator.hasNext())
+	{
+		auto path = scriptInfoFolderIterator.next();
+
+		QFile scriptDescriptionFile(path);
+		if (!scriptDescriptionFile.open(QIODevice::ReadOnly))
+		{
+			m_operationCommentLabel->setText(QString("ERROR: Failed to open file '%1'").arg(path));
+			return;
+		}
+
+		auto scriptInfoContents = scriptDescriptionFile.readAll().toStdString();
+		scriptDescriptionFile.close();
+
+		nlohmann::json jContents = nlohmann::json::parse(scriptInfoContents, nullptr, false, true);
+		if (jContents.is_discarded())
+		{
+			qWarning() << "Failed to parse " << path << " (script def)";
+			continue;
+		}
+
+		for (const auto& [key, data] : jContents.items())
+		{
+			if (scriptInfos.contains(key))
+			{
+				qWarning() << "Duplicate script name " << key << " in " << path << " (script def)";
+				continue;
+			}
+
+			scriptInfos[key] = data;
+		}
+	}
+
 	try
 	{
+		// register common types
 		registry.registerTypes(std::move(typeInfos), std::move(typesToHashes));
+
+		// register script extensions (extra types)
+		registry.registerScripts(std::move(scriptInfos));
 
 		QStringList allAvailableTypes;
 		gamelib::TypeRegistry::getInstance().forEachType([&allAvailableTypes](const gamelib::Type *type) { allAvailableTypes.push_back(QString::fromStdString(type->getName())); });

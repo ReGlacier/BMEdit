@@ -211,6 +211,7 @@ void GeomControllersWidget::addControllerToGeom(const QString& controllerName)
 		gamelib::scene::SceneObject::Controller& newController = m_sceneObject->getControllers().emplace_back();
 		newController.name = serializeControllerName(pType->getName());
 		newController.properties = pType->makeDefaultPropertiesPack();
+		newController.type = pType;
 
 		// Update UI
 		updateAvailableControllersList();
