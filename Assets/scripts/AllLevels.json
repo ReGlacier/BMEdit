@@ -547,5 +547,73 @@
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnknown" },
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rHidePos" }
     ]
+  },
+  "alllevels\\armed": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue3" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPrimaryWeapon" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue8" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue9" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\poodle": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue3" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rOwnerHuman" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue6" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue7" }
+    ]
   }
 }

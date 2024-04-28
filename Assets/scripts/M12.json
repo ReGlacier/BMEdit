@@ -206,6 +206,15 @@
     ]
   },
   "m12\\m12_marinecameraguard": { "parent": "m12\\m12_marinebase" },
+  "m12\\m12_marinexray": {
+    "parent": "m12\\m12_marinebase",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF",  "name": "rSecurityCheckpoint" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF",  "name": "rGuardPoint" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF",  "name": "rList_IgnoreHitmanAs" }
+    ]
+  },
+  "m12\\m12_marineentrance": { "parent": "m12\\m12_marinexray" },
   "m12\\m12_suitcasebasementcontroller": {
     "parameters": [
       {
@@ -218,6 +227,98 @@
         "typename": "ZGEOMREF",
         "name": "rIDK"
       }
+    ]
+  },
+  "m12\\m12_albinoassassin": {
+    "parent": "alllevels\\armed",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPathOvalOffice" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPosMrXIntermezzo" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rMrX" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rMrX_CheckBox" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPosDialogue_Hitman" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPosDialogue_Albino" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTrigger_HitmanNearOvalOffice_inside" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTrigger_HitmanNearOvalOffice_outside" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPoshitmanNearingOutsided" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rHitmanEnterOvalOffice" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBombActivatorItem" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rVirtualAimPoint" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rCoverBoxesList" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPathToTheRoof" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fSeeHitmanDistance" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBombsList" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rListVisibleBombs" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rHMHighNoonScaffold" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPosHighNoonShootScaffold" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWW_HMHighNoonClimbWall" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPosHighNoonShootClimbWall" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBombController" }
+    ]
+  },
+  "m12\\m12_mrx": {
+    "parent": "alllevels\\armed",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rDog" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rDogPath_PissOut" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rDogPath_PathBack" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rFirstLady" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPickUpDog" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rMyOffice" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPath_PatrolOffice" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTrigger_MrXOfficeHitman" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTrigger_OfficeMrX" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rHMAS_Carpenter" }
+    ]
+  },
+  "m12\\m12_officebase": { "parent": "alllevels\\civilian" },
+  "m12\\m12_carpenteralt": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownParameter_M12_0" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownParameter_M12_1" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPosDialog" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rCarpenter_01" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rItem" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rToolbox" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPathHammerMrX" }
+    ]
+  },
+  "m12\\m12_justice": { "parent": "alllevels\\poodle" },
+  "m12\\m12_firstlady": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rIntercom" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rIntercomMrX" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rDog" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rInterludePos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rMrX" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rNSA_Guy" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rNSA_Office" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWalk_Chamber" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rMrX_Office" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWalk_NSA" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWalkInterlude" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPathBackToChamber" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTrigger_DogExchangeBox" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTrigger_StartMrX_FirstLady" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPathChamberWalk" }
+    ]
+  },
+  "m12\\m12_securitycheckpointguard": {
+    "parent": "m12\\m12_marinebase",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTargetCivilian" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue_M12_SecurityCheckpointGuard_1" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rSuitcaseStorage" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPickUpSuitcase" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rGuardPoint21" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue_M12_SecurityCheckpointGuard_5" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue_M12_SecurityCheckpointGuard_6" }
     ]
   }
 }

@@ -1,4 +1,5 @@
 #include <Models/SceneObjectControllerModel.h>
+#include <GameLib/PRP/PRPMathTypes.h>
 #include <GameLib/TypeRegistry.h>
 #include <GameLib/TypeComplex.h>
 #include <string_view>
