@@ -115,5 +115,6 @@
         "0x200458": "ZHFlowLnkObj",
         "0x20045C": "ZMardiGrassHFlow",
         "0x20045F": "ZHFlowM11"
-    }
+    },
+    "script_incs": "scripts"
 }

@@ -130,7 +130,7 @@
       {
         "kind": "UNKNOWN",
         "opcodes": [
-          "Array"
+          "PRPOpCode.Array"
         ]
       },
       {
@@ -141,7 +141,7 @@
       {
         "kind": "UNKNOWN",
         "opcodes": [
-          "EndArray"
+          "PRPOpCode.EndArray"
         ]
       },
       {
@@ -195,7 +195,7 @@
       {
         "kind": "UNKNOWN",
         "opcodes": [
-          "Array", "Int32", "EndArray"
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray"
         ]
       },
       {

@@ -19,37 +19,37 @@
       { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue1" },
       { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue2" },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue3" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "iUnknownValue4" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "iUnknownValue5" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "iUnknownValue6" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue7" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue8" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue9" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue10" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
       { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue11" },
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBirdPos" }
@@ -57,17 +57,17 @@
   },
   "hideout\\hideout_happyrat": {
     "parameters": [
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "UNKNOWN", "opcodes": ["Array"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
       { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
-      { "kind": "UNKNOWN", "opcodes": ["EndArray"] },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
       { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue3" },
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rRatRace" },
