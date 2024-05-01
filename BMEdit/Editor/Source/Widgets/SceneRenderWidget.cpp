@@ -1425,10 +1425,7 @@ namespace widgets
 			if (m_camera.canSeeObject(glm::vec3(modelWorldBoundingBox.min), glm::vec3(modelWorldBoundingBox.max))) {
 				// Add bounding box to render list
 				{
-					std::optional<Mesh> bboxMesh = model.boundingBoxMesh;
-					// NOTE: Here we need to try locate inner bbox or construct it but it can drop FPS
-
-					if (geom == m_pSelectedSceneObject && bboxMesh.has_value()) {
+					if (geom == m_pSelectedSceneObject && model.boundingBoxMesh.has_value()) {
 						// Need to add mesh
 						render::RenderEntry &boundingBoxEntry = entries.emplace_back();
 
@@ -1442,7 +1439,7 @@ namespace widgets
 						boundingBoxEntry.vPosition = vPosition;
 						boundingBoxEntry.mWorldTransform = mWorldTransform;
 						boundingBoxEntry.mLocalOriginalTransform = geom->getOriginalTransform();
-						boundingBoxEntry.pMesh = const_cast<render::Mesh *>(&bboxMesh.value());
+						boundingBoxEntry.pMesh = const_cast<render::Mesh *>(&model.boundingBoxMesh.value());
 
 						// Material
 						render::RenderEntry::Material &material = boundingBoxEntry.material;

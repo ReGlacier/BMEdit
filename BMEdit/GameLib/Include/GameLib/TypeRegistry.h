@@ -50,6 +50,7 @@ namespace gamelib
 		[[nodiscard]] const Type *findTypeByShortName(const std::string &typeName) const;
 
 		void forEachType(const std::function<void(const Type *)> &predicate);
+		void forEachScript(const std::function<void(const std::string&, const ScriptInfo&)> &predicate);
 
 		void linkTypes();
 		void addHashAssociation(std::size_t hash, const std::string &typeName);

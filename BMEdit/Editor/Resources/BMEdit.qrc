@@ -2,6 +2,7 @@
 <qresource prefix="/bmedit">
     <file alias="remove_icon.png">Icons/Remove.png</file>
     <file alias="add_icon.png">Icons/Add.png</file>
+    <file alias="folder_icon.png">Icons/Folder.png</file>
     <file alias="geom_icon.png">Icons/Glacier/Geom.png</file>
     <file alias="group_icon.png">Icons/Glacier/Group.png</file>
     <file alias="camera_icon.png">Icons/Glacier/Camera.png</file>
@@ -11,6 +12,7 @@
     <file alias="weapon_icon.png">Icons/Glacier/Weapon.png</file>
     <file alias="cloth_icon.png">Icons/Glacier/Cloth.png</file>
     <file alias="unknown_icon.png">Icons/Glacier/Unknown.png</file>
+    <file alias="script_icon.png">Icons/Glacier/Script.png</file>
 
     <file alias="mtl_unsupported.png">Textures/unsupported_material.png</file>
     <file alias="mtl_missing_texture.png">Textures/missing_texture.png</file>

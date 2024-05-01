@@ -293,6 +293,19 @@ namespace gamelib
 		}
 	}
 
+	void TypeRegistry::forEachScript(const std::function<void(const std::string&, const ScriptInfo&)> &predicate)
+	{
+		if (!predicate)
+		{
+			return;
+		}
+
+		for (const auto& [scriptName, scriptInfo] : m_scriptsByName)
+		{
+			predicate(scriptName, scriptInfo);
+		}
+	}
+
 	void TypeRegistry::linkTypes()
 	{
 		// Resolve links

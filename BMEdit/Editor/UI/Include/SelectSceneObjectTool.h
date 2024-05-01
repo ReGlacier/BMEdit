@@ -10,6 +10,7 @@ class Frontend_SelectSceneObjectTool final : public widgets::TypePropertyWidget
 	Q_OBJECT
 public:
 	Frontend_SelectSceneObjectTool(QWidget* parent, widgets::TypePropertyWidget* pTarget);
+	~Frontend_SelectSceneObjectTool() override;
 
 	void setValue(const types::QGlacierValue &value) override;
 	[[nodiscard]] const types::QGlacierValue &getValue() const override;
@@ -18,6 +19,10 @@ public:
 
 private:
 	void commitValue(const types::QGlacierValue &value);
+
+private slots:
+	void onTargetValueChanged();
+	void onTargetEditFinished();
 
 private:
 	widgets::TypePropertyWidget* m_pTarget { nullptr };

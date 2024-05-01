@@ -13,16 +13,8 @@ Frontend_SelectSceneObjectTool::Frontend_SelectSceneObjectTool(QWidget *parent, 
 {
 	if (m_pTarget)
 	{
-		connect(m_pTarget, &widgets::TypePropertyWidget::valueChanged, [this]() {
-			commitValue(m_pTarget->getValue());
-			emit valueChanged();
-		});
-
-		connect(m_pTarget, &widgets::TypePropertyWidget::editFinished, [this]() {
-			auto v = m_pTarget->getValue();
-			commitValue(v);
-			emit editFinished();
-		});
+		connect(m_pTarget, &widgets::TypePropertyWidget::valueChanged, this, &Frontend_SelectSceneObjectTool::onTargetEditFinished);
+		connect(m_pTarget, &widgets::TypePropertyWidget::editFinished, this, &Frontend_SelectSceneObjectTool::onTargetValueChanged);
 
 		m_pTarget->setWindowModality(Qt::WindowModality::ApplicationModal);
 		m_pTarget->show();
@@ -34,6 +26,11 @@ Frontend_SelectSceneObjectTool::Frontend_SelectSceneObjectTool(QWidget *parent, 
 	m_pLabel->setText("MAYBE");
 	pLayout->addWidget(m_pLabel);
 	setLayout(pLayout);
+}
+
+Frontend_SelectSceneObjectTool::~Frontend_SelectSceneObjectTool()
+{
+	m_pTarget = nullptr;
 }
 
 void Frontend_SelectSceneObjectTool::setValue(const types::QGlacierValue &value)
@@ -69,6 +66,23 @@ void Frontend_SelectSceneObjectTool::commitValue(const types::QGlacierValue &val
 	widgets::TypePropertyWidget::setValue(value);
 }
 
+void Frontend_SelectSceneObjectTool::onTargetValueChanged()
+{
+	if (m_pTarget)
+	{
+		commitValue(m_pTarget->getValue());
+		emit editFinished();
+	}
+}
+
+void Frontend_SelectSceneObjectTool::onTargetEditFinished()
+{
+	if (m_pTarget)
+	{
+		commitValue(m_pTarget->getValue());
+		emit valueChanged();
+	}
+}
 
 SelectSceneObjectTool::SelectSceneObjectTool(QWidget* parent) : widgets::TypePropertyWidget(parent), m_ui(new Ui::SelectSceneObjectTool)
 {

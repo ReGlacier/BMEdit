@@ -20,6 +20,7 @@
 #include <Models/ScenePropertiesModel.h>
 #include <Models/SceneFilterModel.h>
 #include <Models/SceneTexturesModel.h>
+#include <Models/GameScriptsTreeModel.h>
 #include <Models/ModelsLocator.h>
 
 #include <Delegates/TypePropertyItemDelegate.h>
@@ -71,6 +72,7 @@ BMEditMainWindow::~BMEditMainWindow()
 	delete m_typePropertyItemDelegate;
 	delete m_sceneTreeFilterModel;
 	models::ModelsLocator::s_SceneTreeModel = nullptr; // reset me
+	models::ModelsLocator::s_GameScriptsTreeModel = nullptr; // reset me
 	delete m_sceneObjectPropertiesModel;
 
 	delete m_operationProgress;
@@ -702,6 +704,9 @@ void BMEditMainWindow::loadTypesDataBase()
 
 		QStringList allAvailableTypes;
 		gamelib::TypeRegistry::getInstance().forEachType([&allAvailableTypes](const gamelib::Type *type) { allAvailableTypes.push_back(QString::fromStdString(type->getName())); });
+
+		// Runtime types
+		models::ModelsLocator::s_GameScriptsTreeModel = std::make_unique<models::GameScriptsTreeModel>(this);
 
 		delete m_geomTypesModel;
 		m_geomTypesModel = new QStringListModel(allAvailableTypes, this);

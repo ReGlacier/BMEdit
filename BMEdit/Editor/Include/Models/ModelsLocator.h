@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <Models/SceneObjectsTreeModel.h>
+#include <Models/GameScriptsTreeModel.h>
 
 
 namespace models
@@ -19,5 +20,6 @@ namespace models
 
 		// Instances
 		static std::unique_ptr<SceneObjectsTreeModel> s_SceneTreeModel;
+		static std::unique_ptr<GameScriptsTreeModel> s_GameScriptsTreeModel;
 	};
 }
