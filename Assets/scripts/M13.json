@@ -1,67 +1,14 @@
 {
   "m13\\m13_levelcontrol": {},
   "m13\\journalist": {
+    "parent": "alllevels\\civilian",
     "parameters": [
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      {
-        "kind": "VARIABLE",
-        "typename": "ZGEOMREF",
-        "name": "rHelpPointsList"
-      },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue6" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      {
-        "kind": "VARIABLE",
-        "typename": "ZGEOMREF",
-        "name": "rVoiceRecorder"
-      },
-      {
-        "kind": "VARIABLE",
-        "typename": "ZGEOMREF",
-        "name": "rWheelchairGuy"
-      },
-      {
-        "kind": "VARIABLE",
-        "typename": "ZGEOMREF",
-        "name": "rWheelchairGuy_ForGame"
-      },
-      {
-        "kind": "VARIABLE",
-        "typename": "ZGEOMREF",
-        "name": "rWheelchairGuy_MOVETOCREATION"
-      },
-      {
-        "kind": "VARIABLE",
-        "typename": "ZGEOMREF",
-        "name": "rLookout"
-      },
-      {
-        "kind": "VARIABLE",
-        "typename": "ZGEOMREF",
-        "name": "rWaypointsList"
-      }
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rVoiceRecorder" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWheelchairGuy" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWheelchairGuy_ForGame" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWheelchairGuy_MOVETOCREATION" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rLookout" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWaypointsList" }
     ]
   },
   "m13\\wheelchair": {
@@ -84,43 +31,8 @@
     ]
   },
   "m13\\wheelchairguy": {
+    "parent": "alllevels\\armed",
     "parameters": [
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue3" },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue6" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPrimaryWeapon" },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue8" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue9" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWheelChair_for_game_0" },
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWheelChair_for_game_1" },
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rJournalist_01" },
@@ -131,86 +43,16 @@
     ]
   },
   "m13\\priest": {
+    "parent": "alllevels\\civilian",
     "parameters": [
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rHelpPointsList" },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue6" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBible" },
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWaypoint_Podium" },
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWaypoint_preach" }
     ]
   },
   "m13\\secretservice": {
+    "parent": "alllevels\\guard",
     "parameters": [
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue3" },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue6" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPrimaryWeapon" },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue8" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue9" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rGuardQuarter" },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue11" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue12" },
-      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
-
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rCinematicTargets" },
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rInsideChurchRoom" },
       { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue15" },
