@@ -29,6 +29,11 @@ namespace widgets {
 		return m_value;
 	}
 
+	bool TypePropertyWidget::canHookFocus() const
+	{
+		return false;
+	}
+
 	bool TypePropertyWidget::areSame(const types::QGlacierValue &current, const types::QGlacierValue &value)
 	{
 		if (current.instructions.size() != value.instructions.size()) return false;

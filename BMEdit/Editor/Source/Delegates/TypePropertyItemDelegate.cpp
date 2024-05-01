@@ -4,14 +4,17 @@
 #include <Widgets/TypeSimplePropertyWidget.h>
 #include <Widgets/TypeRefTabPropertyWidget.h>
 #include <Widgets/TypePropertyWidget.h>
+#include <Widgets/EditorToolFactory.h>
 #include <GameLib/PRP/PRPInstruction.h>
 #include <Types/QGlacierValue.h>
+#include <GameLib/TypeAlias.h>
 #include <GameLib/Type.h>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QApplication>
+#include <QFocusEvent>
 #include <QPainter>
 
 
@@ -53,7 +56,9 @@ namespace delegates
 	static bool isRefTab(const types::QGlacierValue &data)
 	{
 		if (data.views.empty())
+		{
 			return false;
+		}
 
 		const gamelib::ValueView& view = data.views.at(0);
 		if (auto type = view.getType())
@@ -75,29 +80,46 @@ namespace delegates
 			widgets::TypePropertyWidget *editor = nullptr;
 
 			auto data = index.data(Qt::EditRole).value<types::QGlacierValue>();
-			if (data.instructions.empty())
+			if (data.views.size() == 1)
 			{
-				// Empty widget
-				editor = new widgets::TypePropertyWidget(parent);
+				if (auto* pType = data.views[0].getType(); pType && pType->getKind() == gamelib::TypeKind::ALIAS)
+				{
+					const auto* pAsAlias = reinterpret_cast<const gamelib::TypeAlias*>(pType);
+					if (pAsAlias->hasToolHint())
+					{
+						// Nice! Use this hint!
+						const auto& toolHintId = pAsAlias->getToolHint();
+						editor = widgets::EditorToolFactory::createToolById(parent, toolHintId);
+					}
+				}
 			}
-			else if (isValueCouldBePresentedBySimpleView(data))
+
+			if (!editor)
 			{
-				// If trivial thing (int, string, enum (?), bool) we may show simple widgets::TypeSimplePropertyWidget (inherited of widgets::TypePropertyWidget)
-				editor = new widgets::TypeSimplePropertyWidget(parent);
-			}
-			else if (isValueCouldBePresentedAsSimpleVectorWidget(data))
-			{
-				// It's vector (3 elements)
-				editor = new widgets::TypeVector3PropertyWidget(parent);
-			}
-			else if (isValueCouldBePresentedAsSimpleMatrixWidget(data, Matrix3x3::Rows, Matrix3x3::Columns))
-			{
-				// It's matrix 3x3
-				editor = new widgets::TypeMatrixPropertyWidget(Matrix3x3::Rows, Matrix3x3::Columns, parent);
-			}
-			else if (isRefTab(data))
-			{
-				editor = new widgets::TypeRefTabPropertyWidget(parent);
+				if (data.instructions.empty())
+				{
+					// Empty widget
+					editor = new widgets::TypePropertyWidget(parent);
+				}
+				else if (isValueCouldBePresentedBySimpleView(data))
+				{
+					// If trivial thing (int, string, enum (?), bool) we may show simple widgets::TypeSimplePropertyWidget (inherited of widgets::TypePropertyWidget)
+					editor = new widgets::TypeSimplePropertyWidget(parent);
+				}
+				else if (isValueCouldBePresentedAsSimpleVectorWidget(data))
+				{
+					// It's vector (3 elements)
+					editor = new widgets::TypeVector3PropertyWidget(parent);
+				}
+				else if (isValueCouldBePresentedAsSimpleMatrixWidget(data, Matrix3x3::Rows, Matrix3x3::Columns))
+				{
+					// It's matrix 3x3
+					editor = new widgets::TypeMatrixPropertyWidget(Matrix3x3::Rows, Matrix3x3::Columns, parent);
+				}
+				else if (isRefTab(data))
+				{
+					editor = new widgets::TypeRefTabPropertyWidget(parent);
+				}
 			}
 
 			if (editor)
@@ -191,6 +213,20 @@ namespace delegates
 		{
 			ed->setGeometry(option.rect);
 		}
+	}
+
+	bool TypePropertyItemDelegate::eventFilter(QObject* editor, QEvent* event)
+	{
+		if (event->type() == QEvent::FocusOut)
+		{
+			if (auto* pEditor = qobject_cast<widgets::TypePropertyWidget*>(editor); pEditor && pEditor->canHookFocus())
+			{
+				// Do not send this event to delegate. We can handle focus and it's ok
+				return true;
+			}
+		}
+
+		return QStyledItemDelegate::eventFilter(editor, event);
 	}
 
 	void TypePropertyItemDelegate::commitDataChunk()

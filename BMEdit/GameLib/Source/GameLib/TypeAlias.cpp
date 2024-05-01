@@ -100,4 +100,19 @@ namespace gamelib
 
 		return prp::PRPOpCode::ERR_UNKNOWN;
 	}
+
+	bool TypeAlias::hasToolHint() const
+	{
+		return !m_toolHint.empty();
+	}
+
+	const std::string &TypeAlias::getToolHint() const
+	{
+		return m_toolHint;
+	}
+
+	void TypeAlias::setToolHint(const std::string &toolHint)
+	{
+		m_toolHint = toolHint;
+	}
 }

@@ -1,9 +1,11 @@
 #include <Widgets/TypeSimplePropertyWidget.h>
 #include <QApplication>
 #include <QPainter>
+#include <QLabel>
 
 #include <GameLib/Type.h>
 #include <GameLib/TypeEnum.h>
+#include <GameLib/TypeAlias.h>
 
 // Layout
 #include <QVBoxLayout>

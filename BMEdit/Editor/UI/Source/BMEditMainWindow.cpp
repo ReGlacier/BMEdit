@@ -20,6 +20,7 @@
 #include <Models/ScenePropertiesModel.h>
 #include <Models/SceneFilterModel.h>
 #include <Models/SceneTexturesModel.h>
+#include <Models/ModelsLocator.h>
 
 #include <Delegates/TypePropertyItemDelegate.h>
 #include <Delegates/ScenePropertyTypeDelegate.h>
@@ -69,7 +70,7 @@ BMEditMainWindow::~BMEditMainWindow()
 	delete m_geomTypesModel;
 	delete m_typePropertyItemDelegate;
 	delete m_sceneTreeFilterModel;
-	delete m_sceneTreeModel;
+	models::ModelsLocator::s_SceneTreeModel = nullptr; // reset me
 	delete m_sceneObjectPropertiesModel;
 
 	delete m_operationProgress;
@@ -260,9 +261,9 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	ui->actionRenderMode_RenderRoomBoundingBoxes->setChecked(ui->sceneGLView->shouldRenderRoomBoundingBox());
 
 	// Setup models
-	if (m_sceneTreeModel)
+	if (models::ModelsLocator::s_SceneTreeModel)
 	{
-		m_sceneTreeModel->setLevel(currentLevel);
+		models::ModelsLocator::s_SceneTreeModel->setLevel(currentLevel);
 	}
 
 	if (m_sceneTexturesModel)
@@ -412,7 +413,7 @@ void BMEditMainWindow::onAssetExportFailed(const QString &reason)
 void BMEditMainWindow::onCloseLevel()
 {
 	// Cleanup models
-	if (m_sceneTreeModel) m_sceneTreeModel->resetLevel();
+	if (models::ModelsLocator::s_SceneTreeModel) models::ModelsLocator::s_SceneTreeModel->resetLevel();
 	if (m_sceneObjectPropertiesModel) m_sceneObjectPropertiesModel->resetLevel();
 	if (m_scenePropertiesModel) m_scenePropertiesModel->resetLevel();
 	if (m_sceneTexturesModel) m_sceneTexturesModel->resetLevel();
@@ -476,7 +477,7 @@ void BMEditMainWindow::onShowTexturesDialog()
 
 void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& point)
 {
-	if (!m_sceneTreeModel)
+	if (!models::ModelsLocator::s_SceneTreeModel)
 	{
 		return;
 	}
@@ -732,9 +733,9 @@ void BMEditMainWindow::resetStatusToDefault()
 void BMEditMainWindow::initSceneTree()
 {
 	// Main model
-	m_sceneTreeModel = new models::SceneObjectsTreeModel(this);
+	models::ModelsLocator::s_SceneTreeModel = std::make_unique<models::SceneObjectsTreeModel>(this);
 	m_sceneTreeFilterModel = new models::SceneFilterModel(this);
-	m_sceneTreeFilterModel->setSourceModel(m_sceneTreeModel);
+	m_sceneTreeFilterModel->setSourceModel(models::ModelsLocator::s_SceneTreeModel.get());
 
 	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->sceneTreeView->setModel(m_sceneTreeFilterModel);

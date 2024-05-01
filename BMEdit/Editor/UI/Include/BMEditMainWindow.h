@@ -100,7 +100,6 @@ private:
 
 	// Models
 	QStringListModel *m_geomTypesModel { nullptr };
-	models::SceneObjectsTreeModel *m_sceneTreeModel { nullptr };
 	models::SceneFilterModel* m_sceneTreeFilterModel { nullptr };
 	models::SceneObjectPropertiesModel *m_sceneObjectPropertiesModel { nullptr };
 	models::ScenePropertiesModel *m_scenePropertiesModel { nullptr };

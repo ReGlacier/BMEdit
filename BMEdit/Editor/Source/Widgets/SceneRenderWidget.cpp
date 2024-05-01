@@ -1424,26 +1424,31 @@ namespace widgets
 
 			if (m_camera.canSeeObject(glm::vec3(modelWorldBoundingBox.min), glm::vec3(modelWorldBoundingBox.max))) {
 				// Add bounding box to render list
-				if (geom == m_pSelectedSceneObject && model.boundingBoxMesh.has_value()) {
-					// Need to add mesh
-					render::RenderEntry &boundingBoxEntry = entries.emplace_back();
+				{
+					std::optional<Mesh> bboxMesh = model.boundingBoxMesh;
+					// NOTE: Here we need to try locate inner bbox or construct it but it can drop FPS
 
-					// Render params
-					boundingBoxEntry.iPrimitiveId = 0;
-					boundingBoxEntry.iMeshIndex = 0;
-					boundingBoxEntry.iTrianglesNr = 0;
-					boundingBoxEntry.renderTopology = render::RenderTopology::RT_LINES;
+					if (geom == m_pSelectedSceneObject && bboxMesh.has_value()) {
+						// Need to add mesh
+						render::RenderEntry &boundingBoxEntry = entries.emplace_back();
 
-					// World params
-					boundingBoxEntry.vPosition = vPosition;
-					boundingBoxEntry.mWorldTransform = mWorldTransform;
-					boundingBoxEntry.mLocalOriginalTransform = geom->getOriginalTransform();
-					boundingBoxEntry.pMesh = const_cast<render::Mesh *>(&model.boundingBoxMesh.value());
+						// Render params
+						boundingBoxEntry.iPrimitiveId = 0;
+						boundingBoxEntry.iMeshIndex = 0;
+						boundingBoxEntry.iTrianglesNr = 0;
+						boundingBoxEntry.renderTopology = render::RenderTopology::RT_LINES;
 
-					// Material
-					render::RenderEntry::Material &material = boundingBoxEntry.material;
-					material.vDiffuseColor = glm::vec4(0.f, 0.f, 1.f, 1.f);
-					material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
+						// World params
+						boundingBoxEntry.vPosition = vPosition;
+						boundingBoxEntry.mWorldTransform = mWorldTransform;
+						boundingBoxEntry.mLocalOriginalTransform = geom->getOriginalTransform();
+						boundingBoxEntry.pMesh = const_cast<render::Mesh *>(&bboxMesh.value());
+
+						// Material
+						render::RenderEntry::Material &material = boundingBoxEntry.material;
+						material.vDiffuseColor = glm::vec4(0.f, 0.f, 1.f, 1.f);
+						material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
+					}
 				}
 
 				// increase allowed objects count

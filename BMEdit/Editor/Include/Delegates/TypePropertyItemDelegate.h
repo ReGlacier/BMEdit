@@ -25,6 +25,9 @@ namespace delegates
 		                          const QStyleOptionViewItem &option,
 		                          const QModelIndex &index) const override;
 
+	protected:
+		bool eventFilter(QObject* editor, QEvent* event) override;
+
 	private slots:
 		void commitDataChunk();
 		void commitDataChunkAndCloseEditor();

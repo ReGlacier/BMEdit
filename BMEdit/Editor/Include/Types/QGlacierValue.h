@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QMetaType>
 #include <GameLib/Value.h>
+#include <QMetaType>
 
 
 namespace types

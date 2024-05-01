@@ -1,5 +1,6 @@
 {
     "typename": "ZGEOMREF",
     "kind": "TypeKind.ALIAS",
-    "alias": "PRPOpCode.String"
+    "alias": "PRPOpCode.String",
+    "editor": "SelectGeomTool"
 }
