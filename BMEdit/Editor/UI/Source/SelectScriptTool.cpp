@@ -129,7 +129,28 @@ void SelectScriptTool::enableAcceptButton()
 
 void SelectScriptTool::onAccepted()
 {
-	// TODO: Need commit current value here and notify editFinished here
+	// need to set value
+	const QModelIndexList selectedIndexes = m_ui->gameScripts->selectionModel()->selectedIndexes();
+	if (selectedIndexes.isEmpty())
+	{
+		// just do nothing
+		return;
+	}
+
+	QModelIndex currentIndex = selectedIndexes.first();
+	auto* pScript = reinterpret_cast<models::GameScriptsTreeModel::ScripTreeNode*>(currentIndex.internalPointer());
+	if (!pScript || pScript->type != models::GameScriptsTreeModel::ScripTreeNode::NodeType::STN_SCRIPT || m_value.instructions.empty())
+	{
+		// Just do nothing
+		return;
+	}
+
+	auto newVal = getValue();
+	newVal.instructions[0] = gamelib::prp::PRPInstruction(newVal.instructions[0].getOpCode(), gamelib::prp::PRPOperandVal(pScript->fullPath.toStdString()));
+	widgets::TypePropertyWidget::setValue(newVal);
+	emit editFinished();
+
+	close();
 }
 
 void SelectScriptTool::onRejected()
@@ -162,10 +183,6 @@ void SelectScriptTool::onScriptSelected(const QItemSelection &selected, const QI
 		}
 		else
 		{
-			temp.instructions[0] = gamelib::prp::PRPInstruction(temp.instructions[0].getOpCode(), gamelib::prp::PRPOperandVal(pScript->fullPath.toStdString()));
-			widgets::TypePropertyWidget::setValue(temp);
-
-			emit valueChanged();
 			enableAcceptButton();
 		}
 	}

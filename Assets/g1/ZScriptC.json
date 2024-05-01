@@ -4,6 +4,6 @@
     "kind": "TypeKind.COMPLEX",
     "skip_unexposed_properties": true,
     "properties": [
-        { "name": "ScriptName",  "typename": "PRPOpCode.String", "__note": "DO NOT MODIFY THIS NAME!!!" }
+        { "name": "ScriptName",  "typename": "ZScriptC.ScriptID", "__note": "DO NOT MODIFY THIS NAME!!!" }
     ]
 }
