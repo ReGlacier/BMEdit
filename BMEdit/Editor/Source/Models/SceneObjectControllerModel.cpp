@@ -21,7 +21,6 @@ void SceneObjectControllerModel::setGeom(gamelib::scene::SceneObject *geom)
 	const bool isNewGeom = m_geom != geom;
 	beginResetModel();
 
-	m_specialRows.clear();
 	m_geom = geom;
 	m_currentControllerIndex = kUnset;
 	endResetModel();
@@ -37,7 +36,6 @@ void SceneObjectControllerModel::resetGeom()
 	beginResetModel();
 
 	// and after that we've ready to do smth else
-	m_specialRows.clear();
 	m_geom = nullptr;
 	m_currentControllerIndex = kUnset;
 	endResetModel();
@@ -55,9 +53,6 @@ void SceneObjectControllerModel::setControllerIndex(int controllerIndex)
 	auto& controller = m_geom->getControllers().at(controllerIndex);
 
 	beginResetModel();
-
-	// reset special rows info
-	m_specialRows.clear();
 
 	// reset controller index
 	m_currentControllerIndex = controllerIndex;
@@ -90,23 +85,6 @@ void SceneObjectControllerModel::resetController()
 	resetValue();
 }
 
-QVariant SceneObjectControllerModel::data(const QModelIndex &index, int role) const
-{
-	if (role == Qt::BackgroundRole)
-	{
-		for (const auto& specialRow : m_specialRows)
-		{
-			if (specialRow.includes(index.row()))
-			{
-				return specialRow.backgroundColor;
-			}
-		}
-	}
-
-	// other requests redirect to root logic
-	return ValueModelBase::data(index, role);
-}
-
 void SceneObjectControllerModel::addSugarViews(const gamelib::Type* pControllerType, gamelib::Value &v, const std::string &scriptName)
 {
 	// Ok, it must be pretty easy. First of all we need to find a script description in TypeRegistry
@@ -114,10 +92,6 @@ void SceneObjectControllerModel::addSugarViews(const gamelib::Type* pControllerT
 	const auto asDefault = pControllerType->makeDefaultPropertiesPack(); //TODO: Less hacks, please
 	const int baseViewsNr = asDefault.getEntries().size();
 	const int baseSize = asDefault.getInstructions().size();
-
-	SpecialRow row {};
-	row.endRow = row.startRow = baseSize;
-	row.backgroundColor = QColor(26, 188, 156);
 
 	if (auto scriptInfo = gamelib::TypeRegistry::getInstance().getScriptInfo(scriptName); scriptInfo.has_value())
 	{
@@ -128,11 +102,7 @@ void SceneObjectControllerModel::addSugarViews(const gamelib::Type* pControllerT
 			gamelib::ValueEntry temp = ent;
 			temp.instructions.iOffset += baseSize;
 			v += temp;
-			++row.endRow; // I'm not sure that +1 is enough here, but += temp.instructions.iSize is not valid too!
 		}
-
-		// save new row
-		m_specialRows.emplace_back(row);
 	}
 }
 
@@ -190,7 +160,11 @@ void SceneObjectControllerModel::onValueChanged()
 
 				// And add extra stubs
 				for (const auto& ent : scriptInfo->entries)
-					newProperties += ent;
+				{
+					auto newEnt = ent;
+					newEnt.instructions.iOffset += 1; // Add +1 because instruction #0 - our root instruction
+					newProperties += newEnt;
+				}
 
 				// Done
 				setValue(newProperties);

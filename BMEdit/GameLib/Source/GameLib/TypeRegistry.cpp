@@ -62,7 +62,8 @@ namespace gamelib
 
 	void produceOpCode(ScriptInfo& si, prp::PRPOpCode opCode)
 	{
-		prp::PRPInstruction instruction { opCode }; // idk is it ok or not
+		const gamelib::prp::PRPOperandVal kNullOperand(0); // initialized with zero but it's not typed holder
+		prp::PRPInstruction instruction { opCode, kNullOperand };
 		si.initialInstructions.emplace_back(instruction);
 	}
 

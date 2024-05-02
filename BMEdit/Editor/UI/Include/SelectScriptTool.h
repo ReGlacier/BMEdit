@@ -45,6 +45,8 @@ public:
 
 	static Frontend_SelectScriptTool* Create(QWidget* parent);
 
+	void setValue(const types::QGlacierValue &value) override;
+
 protected:
 	// buildLayout and updateLayout not implemented because no dynamic layout here. I'm just handling setValue
 	void closeEvent(QCloseEvent* pEvent) override;
@@ -52,6 +54,7 @@ protected:
 private:
 	void disableAcceptButton();
 	void enableAcceptButton();
+	void selectByPath(const QString& path);
 
 private slots:
 	void onAccepted();

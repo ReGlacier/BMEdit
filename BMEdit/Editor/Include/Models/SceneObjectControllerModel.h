@@ -13,19 +13,6 @@ namespace models
 	{
 		Q_OBJECT
 
-	private:
-		struct SpecialRow
-		{
-			int startRow { 0 };
-			int endRow { 0 };
-			QColor backgroundColor {};
-
-			bool includes(int row) const
-			{
-				return row >= startRow && row <= endRow;
-			}
-		};
-
 	public:
 		SceneObjectControllerModel(QObject *parent = nullptr);
 
@@ -33,8 +20,6 @@ namespace models
 		void resetGeom();
 		void setControllerIndex(int controllerIndex);
 		void resetController();
-
-		QVariant data(const QModelIndex &index, int role) const override;
 
 	private:
 		void addSugarViews(const gamelib::Type* pControllerType, gamelib::Value& v, const std::string& scriptName);
@@ -48,6 +33,5 @@ namespace models
 
 		gamelib::scene::SceneObject *m_geom { nullptr };
 		int m_currentControllerIndex = kUnset;
-		std::vector<SpecialRow> m_specialRows {};
 	};
 }

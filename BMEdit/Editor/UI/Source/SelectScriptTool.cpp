@@ -127,6 +127,50 @@ void SelectScriptTool::enableAcceptButton()
 	}
 }
 
+void SelectScriptTool::selectByPath(const QString &path)
+{
+	QSignalBlocker blocker { m_ui->gameScripts->selectionModel() };
+
+	QStringList pathParts = path.split('\\');
+	if (pathParts.empty()) return;
+
+	auto* model = qobject_cast<models::GameScriptsTreeModel*>(m_ui->gameScripts->model());
+	if (!model)
+	{
+		return;
+	}
+
+	QModelIndex currentIndex = QModelIndex();
+
+	foreach (const QString& part, pathParts)
+	{
+		bool found = false;
+		int rows = model->rowCount(currentIndex);
+
+		for (int i = 0; i < rows; ++i)
+		{
+			QModelIndex childIndex = model->index(i, 0, currentIndex);
+			QString entryName = model->data(childIndex, Qt::DisplayRole).toString();
+
+			if (entryName == part)
+			{
+				currentIndex = childIndex;
+				found = true;
+				m_ui->gameScripts->expand(currentIndex);
+				m_ui->gameScripts->scrollTo(currentIndex);
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			return;
+		}
+	}
+
+	m_ui->gameScripts->selectionModel()->select(currentIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+}
+
 void SelectScriptTool::onAccepted()
 {
 	// need to set value
@@ -185,6 +229,18 @@ void SelectScriptTool::onScriptSelected(const QItemSelection &selected, const QI
 		{
 			enableAcceptButton();
 		}
+	}
+}
+
+void SelectScriptTool::setValue(const types::QGlacierValue &value)
+{
+	// call for base
+	widgets::TypePropertyWidget::setValue(value);
+
+	if (value.instructions.size() == 1 && value.instructions[0].isString())
+	{
+		// Need to parse path
+		selectByPath(QString::fromStdString(value.instructions[0].getOperand().str));
 	}
 }
 
