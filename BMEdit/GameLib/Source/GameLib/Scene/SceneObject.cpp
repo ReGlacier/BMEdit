@@ -188,16 +188,16 @@ namespace gamelib::scene
 		return getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
 	}
 
-	glm::mat4 SceneObject::getWorldTransform() const
+	glm::mat4 SceneObject::getWorldTransform() const // NOLINT(*-no-recursion)
 	{
-		glm::mat4 mWorldMartix = getLocalTransform();
+		glm::mat4 mMatrix = getLocalTransform();
 
 		if (!getParent().expired())
 		{
-			mWorldMartix = getParent().lock()->getWorldTransform() * mWorldMartix;
+			mMatrix = getParent().lock()->getWorldTransform() * mMatrix;
 		}
 
-		return mWorldMartix;
+		return mMatrix;
 	}
 
 	void SceneObject::visitChildren(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const

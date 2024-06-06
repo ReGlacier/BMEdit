@@ -1213,94 +1213,27 @@ namespace widgets
 		else
 		{
 			// Try to render
+			std::set<const gamelib::scene::SceneObject*> visitedDynamics {};
+
 			for (const auto& pRoom : m_cameraInRooms)
 			{
 				for (const SeebleObject& sObject : pRoom->vObjects)
 				{
+					if (sObject.ePrio == EObjectPriority::EP_DYNAMIC_OBJECT && visitedDynamics.contains(sObject.pObject.get()))
+						continue; // Skip because it's in render list already
+
 					if (m_camera.canSeeObject(sObject.sBoundingBox))
 					{
 						// Need to render it
 						collectRenderEntriesIntoRenderList(sObject.pObject.get(), entries, stats, bIgnoreVisibility, true);
+
+						if (sObject.ePrio == EObjectPriority::EP_DYNAMIC_OBJECT)
+						{
+							visitedDynamics.insert(sObject.pObject.get());
+						}
 					}
 				}
 			}
-//			if (m_pLastRoom)
-//			{
-//				if (!m_pLastRoom->rRoom.expired())
-//				{
-//					// First of all let's render only current room
-//					collectRenderEntriesIntoRenderList(m_pLastRoom->rRoom.lock().get(), entries, stats, bIgnoreVisibility);
-//				}
-//
-//				// Let's check if we can see any portal - we need to render that room.
-//				if (!m_pLastRoom->aExists.empty())
-//				{
-//					// Iterate over all exits and check what exit camera can see right now
-//					for (const auto& eXit : m_pLastRoom->aExists)
-//					{
-//						gamelib::Plane sPlane { eXit.v0, eXit.v1, eXit.v2, eXit.v3 };
-//
-//						if (m_camera.canSeeObject(sPlane))
-//						{
-//							const auto& pRoom = m_pLevel->getSceneObjectByInstanceID(eXit.iRoomREF);
-//							if (pRoom)
-//							{
-//								// We can see another room - save it
-//								collectRenderEntriesIntoRenderList(pRoom.get(), entries, stats, bIgnoreVisibility);
-//								// in theory 1 room is enough, but... idk)
-//							}
-//						}
-//					}
-//				}
-
-				// Try to render dynamic objects
-//				const auto& vObjects = m_pLevel->getSceneObjects();
-//				auto it = std::find_if(vObjects.begin(), vObjects.end(), [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
-//					return pObject && pObject->getName().ends_with("_CHARACTERS.zip");
-//				});
-//
-//				gamelib::scene::SceneObject* pDynRoot = nullptr;
-//
-//				if (it != vObjects.end())
-//				{
-//					// Add this 'ROOM' as another thing to visit
-//					pDynRoot = it->get();
-//				}
-//				else
-//				{
-//					// Need to collect every ZActor, ZHM3Actor, ZItem things from the whole scene :(
-//					using R = gamelib::scene::SceneObject::EVisitResult;
-//
-//					pDynRoot = m_pLevel->getSceneObjects()[0].get();
-//				}
-//
-//				// Visit dynamic root
-//				using R = gamelib::scene::SceneObject::EVisitResult;
-//
-//				pDynRoot->visitChildren([&entries, &stats, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-//					static const std::array<std::string, 5> kAllowedTypes = { "ZActor", "ZPlayer", "ZItem", "ZItemAmmo", "ZLNKOBJ" };
-//
-//					for (const auto& sEntBaseName : kAllowedTypes)
-//					{
-//						if (pObject->isInheritedOf("ZROOM"))
-//						{
-//							return R::VR_NEXT; // Skip all rooms
-//						}
-//
-//						// If object based on ...
-//						if (pObject->isInheritedOf(sEntBaseName))
-//						{
-//							if (isGameObjectInActiveRoom(pObject) || m_rooms.empty())
-//							{
-//								collectRenderEntriesIntoRenderList(pObject.get(), entries, stats, false);
-//								return R::VR_NEXT; // accepted, jump to next
-//							}
-//						}
-//					}
-//
-//					// Go deeper
-//					return R::VR_CONTINUE;
-//				});
 		}
 
 		// Add debug stuff
@@ -1936,7 +1869,6 @@ namespace widgets
 						return R::VR_CONTINUE; // go deeper
 					});
 
-					// TODO: Collect dynamic objects (remember: when collecting remember to check that object is in room bounding box)
 					return R::VR_NEXT;
 				}
 
@@ -1979,6 +1911,41 @@ namespace widgets
 					sObject.sBoundingBox = bbox.value();
 					return R::VR_NEXT; // Go to next
 				}
+
+				return R::VR_CONTINUE; // go deeper
+			});
+		}
+
+		if (m_rooms.size() > 1 && !m_rooms.begin()->bIsVirtualBigRoom)
+		{
+			// Visit all objects before any rooms
+			m_pLevel->getSceneObjects()[0]->visitChildren([this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
+				if (pObject->getName() == "Scar!scar")
+				{
+					printf("DEBUG\n");
+				}
+				if (pObject->isInheritedOf("ZROOM")) return R::VR_NEXT; // Skip current branch
+
+				if (auto rBBOX = getGameObjectBoundingBox(pObject, true); rBBOX.has_value())
+				{
+					// Need to find in which room this subject should be
+					for (auto& sRoom : m_rooms)
+					{
+						if (sRoom.vBoundingBox.intersect(rBBOX.value()))
+						{
+							// Nice, save here
+							SeebleObject& sObject = sRoom.vObjects.emplace_back();
+							sObject.pObject = pObject;
+							sObject.sBoundingBox = rBBOX.value();
+							sObject.ePrio = EObjectPriority::EP_DYNAMIC_OBJECT; // mark as dynamic
+
+							// break; // DronCode: Need to fix global bboxes before work with it.
+						}
+					}
+
+					// Skip subtree (no visible inside)
+					return R::VR_NEXT;
+				} // skipped, no real reason to handle invisible object (but object could be visible after prop changed. be aware)
 
 				return R::VR_CONTINUE; // go deeper
 			});
