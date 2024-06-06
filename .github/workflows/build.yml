@@ -71,6 +71,7 @@ jobs:
           mv build/Release/imageformats dist/imageformats
           mv build/Release/iconengines dist/iconengines
           mv Assets/g1 dist/g1
+          mv Assets/scripts dist/scripts
           mv Assets/TypesRegistry.json dist
           mv README.md dist
 
