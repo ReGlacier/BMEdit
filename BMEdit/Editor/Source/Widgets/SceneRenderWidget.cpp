@@ -1213,13 +1213,13 @@ namespace widgets
 		else
 		{
 			// Try to render
-			std::set<const gamelib::scene::SceneObject*> visitedDynamics {};
+			std::set<const gamelib::scene::SceneObject*> visitedObjects {};
 
 			for (const auto& pRoom : m_cameraInRooms)
 			{
 				for (const SeebleObject& sObject : pRoom->vObjects)
 				{
-					if (sObject.ePrio == EObjectPriority::EP_DYNAMIC_OBJECT && visitedDynamics.contains(sObject.pObject.get()))
+					if (visitedObjects.contains(sObject.pObject.get()))
 						continue; // Skip because it's in render list already
 
 					if (m_camera.canSeeObject(sObject.sBoundingBox))
@@ -1227,10 +1227,7 @@ namespace widgets
 						// Need to render it
 						collectRenderEntriesIntoRenderList(sObject.pObject.get(), entries, stats, bIgnoreVisibility, true);
 
-						if (sObject.ePrio == EObjectPriority::EP_DYNAMIC_OBJECT)
-						{
-							visitedDynamics.insert(sObject.pObject.get());
-						}
+						visitedObjects.insert(sObject.pObject.get());
 					}
 				}
 			}

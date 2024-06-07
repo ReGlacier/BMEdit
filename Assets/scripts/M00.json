@@ -42,5 +42,131 @@
         "name": "rDruglabActorsList"
       }
     ]
+  },
+  "m00\\m00_sniper": { "parent": "alllevels\\guard" },
+  "m00\\m00_scoopsguards": {
+    "parent": "alllevels\\guard",
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rIdlePos"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rShootPos"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rScoop"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rScoopsVictim"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rGuardSearchZone_0"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rGuardSearchZone_1"
+      }
+    ]
+  },
+  "m00\\m00_scoopsbiatch": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rBlowPos"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rScoop"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rVictim"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rStandIdlePos"
+      }
+    ]
+  },
+  "m00\\scoop": {
+    "parent": "alllevels\\guard",
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rBed"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rScoopsVictim"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rDesertEagleItem"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rGunPos"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rSnoopsTroops"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rFluffer"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rAlertPos"
+      }
+    ]
+  },
+  "m00\\m00_scoopsvictim": {
+    "parent": "alllevels\\guard",
+    "parameters": [
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rVictimStand"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rScoop"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rGuard0"
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rGuard1"
+      }
+    ]
   }
 }
