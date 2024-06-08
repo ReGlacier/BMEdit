@@ -1346,7 +1346,7 @@ namespace widgets
 		if (bInvisible)
 			return;
 
-		if (g_bannedObjectIds.contains(std::string_view{geom->getName()}))
+		if (g_bannedObjectIds.contains(std::string_view{geom->getName()}) || geom->getName().starts_with("CloneGroup_"))
 			return;
 
 		// Check that our 'object' is not a collision box

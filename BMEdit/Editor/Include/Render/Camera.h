@@ -79,7 +79,7 @@ namespace render
 		float m_fSpeed { 2.5f };
 		float m_fSensitivity { 0.1f };
 		float m_fNearPlane { .01f };
-		float m_fFarPlane { 3'000.f };
+		float m_fFarPlane { 10'000.f };
 
 		// Calculated things
 		glm::vec3 m_vPosition { .0f };
