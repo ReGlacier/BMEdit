@@ -190,11 +190,11 @@
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rSwingKingPosForDialog" },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnknownFlags_0" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "rUnknownFlags_0" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnknownFlags_1" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "rUnknownFlags_1" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
     ]
   },
@@ -228,7 +228,7 @@
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPlayingGuard" },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__m00_playinggangster__Unk1" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__m00_playinggangster__Unk1" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPissingGuard" },
@@ -254,7 +254,7 @@
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rStandGuardInDarkness" },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__m00_druglabgangster__Unk0" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__m00_druglabgangster__Unk0" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rIgnoreSoundsBox" }
@@ -276,7 +276,7 @@
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__druggirl__Unk1" },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__druggirl__Unk2" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__druggirl__Unk2" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
     ]
   },
@@ -284,21 +284,21 @@
     "parent": "alllevels\\civilian",
     "parameters": [
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__lawyer__Unk0" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__lawyer__Unk0" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__lawyer__Unk1" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__lawyer__Unk1" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__lawyer__Unk2" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__lawyer__Unk2" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__druggirl__Unk3" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__druggirl__Unk3" },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__lawyer__Unk4" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__lawyer__Unk4" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
 
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rSitPosition" },
@@ -306,7 +306,118 @@
       { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__lawyer__Unk5" },
 
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
-      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "__lawyer__UnkMask0" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "__lawyer__UnkMask0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "m00\\chemist": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rDoor" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rStandPos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTakeMoneyPos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rKnockSound" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rKeycard_Item" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rLevelControl" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rWaitTillDoor" }
+    ]
+  },
+  "m00\\m00_testergangster_01": {
+    "parent": "alllevels\\guard",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rSecondGuy" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rChair" }
+    ]
+  },
+  "m00\\m00_gateguard": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rHitmanPos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnk" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPosAtGate" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rCutSequencePlayer" }
+    ]
+  },
+  "m00\\m00_talkinggangstab": {
+    "parent": "alllevels\\guard",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTalkingGuardC" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rFaceThisWayAfterDistraction" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rIgnoreDistractionsThatAreInsideThisBox" }
+    ]
+  },
+  "m00\\m00_talkinggangstac": {
+    "parent": "alllevels\\guard",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rTalkingGuardC" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rFaceThisWayAfterDistraction" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rIgnoreDistractionsThatAreInsideThisBox" }
+    ]
+  },
+  "m00\\torturegangster": {
+    "parent": "alllevels\\guard",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rLawyer" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rInterrogatePoint" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rSmokePoint" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rGasolineItem" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rGasolineEmitter" }
+    ]
+  },
+  "m00\\m00_basebird": {
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rFlyBox" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnk0" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rGroundPoints" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnk1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnk2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnk3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnk4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnk5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnk6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnk7" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnk8" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBirdEffectList" }
+    ]
+  },
+  "m00\\peckingbird": {
+    "parent": "m00\\m00_basebird",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rArrowDir" }
+    ]
+  },
+  "m00\\entrancebird": {
+    "parent": "m00\\m00_basebird",
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "peckingbird_Unk0" },
       { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
     ]
   }
