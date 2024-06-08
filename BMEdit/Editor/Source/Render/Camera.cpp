@@ -112,8 +112,7 @@ namespace render
 
 	bool Camera::canSeeObject(const gamelib::BoundingBox& bbox) const
 	{
-		return glm::distance(m_vPosition, bbox.getCenter()) <= m_fFarPlane &&
-		    m_sFrustum.isBoxVisible(bbox.min, bbox.max);
+		return glm::distance(m_vPosition, bbox.getCenter()) <= m_fFarPlane && m_sFrustum.isBoxVisible(bbox.min, bbox.max);
 	}
 
 	bool Camera::canSeeObject(const gamelib::Plane& plane) const

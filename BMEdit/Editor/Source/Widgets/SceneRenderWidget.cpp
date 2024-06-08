@@ -684,7 +684,17 @@ namespace widgets
 		if (!sceneObject || !m_pLevel || !m_resources)
 			return;
 
-		m_resources->m_modelTransformCache[sceneObject] = sceneObject->getWorldTransform();
+		// Visit limited subtree
+		int iDepth = 2;  // max 2 objects, otherwise it's better to make full invalidation (in case when user wants to move some huge object)
+		sceneObject->visitChildren([this, &iDepth](const gamelib::scene::SceneObject::Ptr& pObject) -> gamelib::scene::SceneObject::EVisitResult {
+			// Update transform
+			m_resources->m_modelTransformCache[pObject.get()] = pObject->getWorldTransform();
+
+			--iDepth;
+			return iDepth > 0 ? gamelib::scene::SceneObject::EVisitResult::VR_CONTINUE  // Go deeper
+			                  : gamelib::scene::SceneObject::EVisitResult::VR_STOP_ALL; // Out of limit
+		});
+
 		invalidateRenderList();  //TODO: Need invalidate only object, not whole list!
 		repaint();
 	}
@@ -1222,7 +1232,7 @@ namespace widgets
 					if (visitedObjects.contains(sObject.pObject.get()))
 						continue; // Skip because it's in render list already
 
-					if (m_camera.canSeeObject(sObject.sBoundingBox))
+					if (auto bbox = getGameObjectBoundingBox(sObject.pObject, true); bbox.has_value() && m_camera.canSeeObject(bbox.value()))
 					{
 						// Need to render it
 						collectRenderEntriesIntoRenderList(sObject.pObject.get(), entries, stats, bIgnoreVisibility, true);
@@ -1860,7 +1870,6 @@ namespace widgets
 							SeebleObject& sObject = room.vObjects.emplace_back();
 							sObject.pObject = pObj;
 							sObject.ePrio = EObjectPriority::EP_STATIC_OBJECT;
-							sObject.sBoundingBox = bbox.value();
 							return R::VR_NEXT; // Go to next
 						}
 						return R::VR_CONTINUE; // go deeper
@@ -1905,7 +1914,6 @@ namespace widgets
 					SeebleObject& sObject = sVirtualRoom.vObjects.emplace_back();
 					sObject.pObject = pObj;
 					sObject.ePrio = EObjectPriority::EP_STATIC_OBJECT; // Idk, but in this case all objects are STATIC
-					sObject.sBoundingBox = bbox.value();
 					return R::VR_NEXT; // Go to next
 				}
 
@@ -1933,7 +1941,6 @@ namespace widgets
 							// Nice, save here
 							SeebleObject& sObject = sRoom.vObjects.emplace_back();
 							sObject.pObject = pObject;
-							sObject.sBoundingBox = rBBOX.value();
 							sObject.ePrio = EObjectPriority::EP_DYNAMIC_OBJECT; // mark as dynamic
 
 							// break; // DronCode: Need to fix global bboxes before work with it.

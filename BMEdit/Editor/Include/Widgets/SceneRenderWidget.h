@@ -68,7 +68,6 @@ namespace widgets
 	struct SeebleObject
 	{
 		EObjectPriority ePrio { EObjectPriority::EP_STATIC_OBJECT };
-		gamelib::BoundingBox sBoundingBox {};
 		gamelib::scene::SceneObject::Ptr pObject {};
 	};
 
