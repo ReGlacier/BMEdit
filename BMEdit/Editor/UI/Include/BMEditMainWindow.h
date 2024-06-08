@@ -88,6 +88,10 @@ public slots:
 	void onTextureChanged(uint32_t textureIndex);
 	void onSceneFramePresented(const widgets::RenderStats& stats);
 
+protected:
+	void dragEnterEvent(QDragEnterEvent* pEvent) override;
+	void dropEvent(QDropEvent* pEvent) override;
+
 private:
     // UI
 	Ui::BMEditMainWindow *ui;

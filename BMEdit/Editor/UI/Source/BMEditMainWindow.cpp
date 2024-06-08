@@ -9,6 +9,9 @@
 #include <QFileDialog>
 #include <QStringListModel>
 #include <QClipboard>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 
 #include <GameLib/TypeRegistry.h>
 #include <GameLib/TypeNotFoundException.h>
@@ -64,6 +67,9 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 	connectDockWidgetActions();
 	connectEditorSignals();
 	loadTypesDataBase();
+
+	// Drag & Drop for levels
+	setAcceptDrops(true);
 }
 
 BMEditMainWindow::~BMEditMainWindow()
@@ -581,6 +587,39 @@ void BMEditMainWindow::onSceneFramePresented(const widgets::RenderStats& stats)
 	                                .arg(stats.allowedObjects)
 	                                .arg(stats.rejectedObjects)
 	                                .arg(iApproxFPS));
+}
+
+void BMEditMainWindow::dragEnterEvent(QDragEnterEvent *pEvent)
+{
+	if (pEvent->mimeData()->hasUrls())
+	{
+		for (const QUrl& url : pEvent->mimeData()->urls())
+		{
+			if (QFileInfo(url.toLocalFile()).suffix().toLower() == "zip")
+			{
+				pEvent->acceptProposedAction();
+				return;
+			}
+		}
+	}
+}
+
+void BMEditMainWindow::dropEvent(QDropEvent *pEvent)
+{
+	if (pEvent->mimeData()->hasUrls())
+	{
+		QString info;
+
+		for (const QUrl& url : pEvent->mimeData()->urls())
+		{
+			QString fileName = url.toLocalFile();
+			if (QFileInfo(fileName).suffix().toLower() == "zip")
+			{
+				editor::EditorInstance::getInstance().openLevelFromZIP(fileName.toStdString());
+				return;
+			}
+		}
+	}
 }
 
 void BMEditMainWindow::loadTypesDataBase()

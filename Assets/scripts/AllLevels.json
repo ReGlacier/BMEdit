@@ -590,5 +590,35 @@
       { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue6" },
       { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue7" }
     ]
+  },
+  "alllevels\\useable\\useable_playanim_pickup": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "rANIM_0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iPlayCount_0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "rANIM_1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iPlayCount_1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "rANIM_2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iPlayCount_2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue5" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue6" }
+    ]
   }
 }
