@@ -31,6 +31,7 @@ namespace editor {
 
 		void exportAsset(gamelib::io::AssetKind assetKind);
 		bool exportPRP(const QString &filePath);
+		bool exportLOC(const QString &filePath);
 
 	signals:
 		void levelLoadSuccess();

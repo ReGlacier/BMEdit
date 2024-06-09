@@ -42,6 +42,7 @@
       <string>Export</string>
      </property>
      <addaction name="actionExport_PRP_properties"/>
+     <addaction name="actionExport_LOC_localization"/>
     </widget>
     <addaction name="actionOpen_level"/>
     <addaction name="menuExport"/>
@@ -535,6 +536,14 @@
    </property>
    <property name="text">
     <string>Render Room Bounding Boxes</string>
+   </property>
+  </action>
+  <action name="actionExport_LOC_localization">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Export LOC (localization)</string>
    </property>
   </action>
  </widget>

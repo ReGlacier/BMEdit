@@ -116,6 +116,7 @@ void BMEditMainWindow::connectActions()
 	connect(ui->actionTypes_Viewer, &QAction::triggered, this, &BMEditMainWindow::onShowTypesViewer);
 	connect(ui->actionSave_properties, &QAction::triggered, this, &BMEditMainWindow::onExportProperties);
 	connect(ui->actionExport_PRP_properties, &QAction::triggered, this, &BMEditMainWindow::onExportPRP);
+	connect(ui->actionExport_LOC_localization, &QAction::triggered, this, &BMEditMainWindow::onExportLOC);
 	connect(ui->actionTextures, &QAction::triggered, this, &BMEditMainWindow::onShowTexturesDialog);
 	connect(ui->actionView_whole_scene, &QAction::triggered, this, [this] { ui->sceneGLView->setWorldViewMode(); });
 
@@ -305,6 +306,7 @@ void BMEditMainWindow::onLevelLoadSuccess()
 	// Export action
 	ui->menuExport->setEnabled(true);
 	ui->actionExport_PRP_properties->setEnabled(true);
+	ui->actionExport_LOC_localization->setEnabled(true);
 	ui->actionTextures->setEnabled(true);
 
 	//ui->actionSave_properties->setEnabled(true); //TODO: Uncomment when exporter to ZIP will be done
@@ -442,6 +444,7 @@ void BMEditMainWindow::onCloseLevel()
 	// Reset export menu
 	ui->menuExport->setEnabled(false);
 	ui->actionExport_PRP_properties->setEnabled(false);
+	ui->actionExport_LOC_localization->setEnabled(false);
 	ui->actionTextures->setEnabled(false);
 
 	// Reset world view mode
@@ -483,6 +486,29 @@ void BMEditMainWindow::onExportPRP()
 	editor::EditorInstance::getInstance().exportPRP(saveAsPath);
 
 	QMessageBox::information(this, "Export PRP", QString("PRP file exported successfully to %1").arg(saveAsPath));
+}
+
+void BMEditMainWindow::onExportLOC()
+{
+	QFileDialog saveLOCDialog(this, QString("Save LOC"), QString(), QString("Localization (*.LOC)"));
+	saveLOCDialog.setViewMode(QFileDialog::ViewMode::Detail);
+	saveLOCDialog.setFileMode(QFileDialog::FileMode::AnyFile);
+	saveLOCDialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+	saveLOCDialog.selectFile(QString("%1.LOC").arg(QString::fromStdString(editor::EditorInstance::getInstance().getActiveLevel()->getLevelName())));
+	if (!saveLOCDialog.exec())
+	{
+		return;
+	}
+
+	if (saveLOCDialog.selectedFiles().empty())
+	{
+		return;
+	}
+
+	const auto saveAsPath = saveLOCDialog.selectedFiles().first();
+	editor::EditorInstance::getInstance().exportLOC(saveAsPath);
+
+	QMessageBox::information(this, "Export LOC", QString("LOC file exported successfully to %1").arg(saveAsPath));
 }
 
 void BMEditMainWindow::onShowTexturesDialog()
@@ -791,6 +817,7 @@ void BMEditMainWindow::initSceneTree()
 
 	// Fill LocalizationTree view
 	ui->localizationTree->setModel(models::ModelsLocator::s_LocalizationTreeModel.get());
+	ui->localizationTree->setSelectionMode(QAbstractItemView::SingleSelection);
 
 	// Fill SceneTree view
 	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);

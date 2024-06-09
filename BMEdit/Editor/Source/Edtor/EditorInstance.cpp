@@ -215,4 +215,32 @@ namespace editor {
 
 		return true;
 	}
+
+	bool EditorInstance::exportLOC(const QString &filePath)
+	{
+		std::vector<uint8_t> locFileBuffer;
+
+		if (!m_currentLevel)
+		{
+			return false;
+		}
+
+		QFile locFile(filePath);
+		if (!locFile.open(QIODeviceBase::OpenModeFlag::WriteOnly | QIODeviceBase::OpenModeFlag::Truncate | QIODeviceBase::OpenModeFlag::Unbuffered))
+		{
+			return false;
+		}
+
+		m_currentLevel->dumpAsset(gamelib::io::AssetKind::LOCALIZATION, locFileBuffer);
+
+		if (locFileBuffer.empty())
+		{
+			return false;
+		}
+
+		QByteArray raw(reinterpret_cast<const char*>(locFileBuffer.data()), static_cast<qsizetype>(locFileBuffer.size()));
+		locFile.write(raw);
+
+		return true;
+	}
 }

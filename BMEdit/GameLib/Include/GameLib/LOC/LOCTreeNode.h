@@ -68,6 +68,9 @@ namespace gamelib::loc
 			uint8_t unkData[8];
 		} subtitle;
 
+		[[nodiscard]] bool canHaveValue() const;
+		[[nodiscard]] bool canHaveChildren() const;
+
 		static void deserialize(const LOCTreeNode::Ptr &node, ZBio::ZBinaryReader::BinaryReader* binaryReader);
 		static void serialize(const LOCTreeNode::Ptr& node, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
 	};

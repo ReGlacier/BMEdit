@@ -7,6 +7,16 @@
 
 namespace gamelib::loc
 {
+	bool LOCTreeNode::canHaveValue() const
+	{
+		return type == LOCTreeNodeType::LOCALIZED_STRING || type == LOCTreeNodeType::SUBTITLES;
+	}
+
+	bool LOCTreeNode::canHaveChildren() const
+	{
+		return type == LOCTreeNodeType::CHILDREN;
+	}
+
 	void LOCTreeNode::deserialize(const gamelib::loc::LOCTreeNode::Ptr &node, ZBio::ZBinaryReader::BinaryReader *binaryReader)
 	{
 		// Read self name
@@ -90,8 +100,12 @@ namespace gamelib::loc
 
 		if (node->type == LOCTreeNodeType::CHILDREN)
 		{
+			// Sort children
+			auto children = node->children; // Need copy
+			std::sort(children.begin(), children.end(), [](const LOCTreeNode::Ptr& a, const LOCTreeNode::Ptr& b) { return a->name < b->name; });
+
 			// Write count
-			const auto childrenCount = node->children.size() > 0xFF ? 0xFF : static_cast<uint8_t>(node->children.size());
+			const auto childrenCount = children.size() > 0xFF ? 0xFF : static_cast<uint8_t>(children.size());
 			binaryWriter->write<uint8_t, ZBio::Endianness::LE>(childrenCount);
 
 			// Write offsets
@@ -121,7 +135,7 @@ namespace gamelib::loc
 				}
 
 				// Write node itself
-				LOCTreeNode::serialize(node->children[i], binaryWriter);
+				LOCTreeNode::serialize(children[i], binaryWriter);
 			}
 		}
 		else if (node->type == LOCTreeNodeType::LOCALIZED_STRING)

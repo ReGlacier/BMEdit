@@ -245,6 +245,10 @@ namespace gamelib
 			scene::SceneObjectPropertiesDumper dumper;
 			dumper.dump(this, &outBuffer);
 		}
+		else if (assetKind == io::AssetKind::LOCALIZATION)
+		{
+			loc::LOCWriter::write(m_levelLocalization.localizationRoot, outBuffer);
+		}
 		else assert(false && "Unsupported");
 	}
 

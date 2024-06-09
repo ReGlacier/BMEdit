@@ -22,10 +22,23 @@ namespace models
 		const auto* node = reinterpret_cast<const gamelib::loc::LOCTreeNode*>(index.constInternalPointer());
 		if (!node) return {};
 
+		if (role == Qt::EditRole)
+		{
+			if (index.column() == 0)
+			{
+				return QString::fromStdString(node->name);
+			}
+
+			if (index.column() == 1 && node->canHaveValue())
+			{
+				return QString::fromStdString(node->value);
+			}
+		}
+
 		if (role == Qt::DisplayRole)
 		{
 			if (index.column() == 0) return QString::fromStdString(node->name);
-			if (index.column() == 1 && (node->type == gamelib::loc::LOCTreeNodeType::LOCALIZED_STRING || node->type == gamelib::loc::LOCTreeNodeType::SUBTITLES))
+			if (index.column() == 1 && node->canHaveValue())
 			{
 				return QString::fromStdString(node->value);
 			}
@@ -50,13 +63,35 @@ namespace models
 				return locationPath.join('/');
 			}
 
-			if (index.column() == 1 && (node->type == gamelib::loc::LOCTreeNodeType::LOCALIZED_STRING || node->type == gamelib::loc::LOCTreeNodeType::SUBTITLES))
+			if (index.column() == 1 && node->canHaveValue())
 			{
 				return QString::fromStdString(node->value);
 			}
 		}
 
 		return {};
+	}
+
+	bool LocalizationTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
+	{
+		if (!isValidLevel() || role != Qt::EditRole || !value.canConvert<QString>()) return false;
+
+		auto* node = reinterpret_cast<gamelib::loc::LOCTreeNode*>(index.internalPointer());
+		if (!node) return false;
+
+		if (index.column() == 0)
+		{
+			node->name = value.value<QString>().toStdString();
+			return true;
+		}
+
+		if (index.column() == 1 && node->canHaveValue())
+		{
+			node->value = value.value<QString>().toStdString();
+			return true;
+		}
+
+		return false;
 	}
 
 	QModelIndex LocalizationTreeModel::index(int row, int column, const QModelIndex &parent) const
@@ -155,6 +190,21 @@ namespace models
 		}
 
 		return QAbstractItemModel::headerData(section, orientation, role);
+	}
+
+	Qt::ItemFlags LocalizationTreeModel::flags(const QModelIndex &index) const
+	{
+		Qt::ItemFlags flags = QAbstractItemModel::flags(index);
+		const auto* node = reinterpret_cast<const gamelib::loc::LOCTreeNode*>(index.constInternalPointer());
+
+		if (!node) return flags;
+
+		if (index.column() == 0 || (index.column() == 1 && node->canHaveValue()))
+		{
+			flags |= Qt::ItemIsEditable;
+		}
+
+		return flags;
 	}
 
 	void LocalizationTreeModel::setLevel(const gamelib::Level *level)
