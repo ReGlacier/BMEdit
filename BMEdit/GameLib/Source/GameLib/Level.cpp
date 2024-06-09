@@ -85,6 +85,11 @@ namespace gamelib
 			return false;
 		}
 
+		if (!loadLevelLocalization())
+		{
+			return false;
+		}
+
 		// TODO: Load things (it's time to combine GMS, PRP & BUF files)
 		m_isLevelLoaded = true;
 		return true;
@@ -160,6 +165,16 @@ namespace gamelib
 	LevelRooms* Level::getLevelRooms()
 	{
 		return &m_levelRooms;
+	}
+
+	const LevelLocalization* Level::getLevelLocalization() const
+	{
+		return &m_levelLocalization;
+	}
+
+	LevelLocalization* Level::getLevelLocalization()
+	{
+		return &m_levelLocalization;
 	}
 
 	const std::vector<scene::SceneObject::Ptr> &Level::getSceneObjects() const
@@ -505,5 +520,27 @@ namespace gamelib
 		}
 
 		return true;
+	}
+
+	bool Level::loadLevelLocalization()
+	{
+		int64_t locFileSize = 0;
+		auto locFileBuffer = m_assetProvider->getAsset(gamelib::io::AssetKind::LOCALIZATION, locFileSize);
+
+		if (!locFileBuffer || !locFileSize)
+		{
+			return false;
+		}
+
+		loc::LOCReader locReader {};
+		const bool bParseResult = locReader.parse(locFileBuffer.get(), locFileSize);
+
+		if (!bParseResult)
+		{
+			return false;
+		}
+
+		m_levelLocalization.localizationRoot = locReader.getRoot();
+		return m_levelLocalization.localizationRoot != nullptr && !m_levelLocalization.localizationRoot->children.empty();
 	}
 }

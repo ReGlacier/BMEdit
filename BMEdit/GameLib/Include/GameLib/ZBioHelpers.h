@@ -32,6 +32,14 @@ namespace gamelib
 		}
 	};
 
+	template <typename T>
+	concept TSeekable = requires (T t)
+	{
+		t.seek((int64_t)1337);
+		t.tell();
+	};
+
+	template <typename T = ZBio::ZBinaryReader::BinaryReader> requires (TSeekable<T>)
 	struct ZBioSeekGuard
 	{
 		ZBioSeekGuard() = delete;
@@ -40,27 +48,27 @@ namespace gamelib
 		ZBioSeekGuard& operator=(const ZBioSeekGuard&) = delete;
 		ZBioSeekGuard& operator=(ZBioSeekGuard&&) = delete;
 
-		explicit ZBioSeekGuard(ZBio::ZBinaryReader::BinaryReader* reader)
+		explicit ZBioSeekGuard(T* seekable)
 		{
-			m_reader = reader;
+			m_seekable = seekable;
 
-			if (reader)
+			if (seekable)
 			{
-				m_seekTo = reader->tell();
+				m_seekTo = seekable->tell();
 			}
 		}
 
 		~ZBioSeekGuard()
 		{
-			if (m_reader)
+			if (m_seekable)
 			{
-				m_reader->seek(m_seekTo);
-				m_reader = nullptr;
+				m_seekable->seek(m_seekTo);
+				m_seekable = nullptr;
 			}
 		}
 
 	private:
-		ZBio::ZBinaryReader::BinaryReader* m_reader { nullptr };
+		T* m_seekable { nullptr };
 		int64_t m_seekTo { 0 };
 	};
 }

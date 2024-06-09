@@ -8,6 +8,7 @@
 #include <GameLib/PRM/PRM.h>
 #include <GameLib/MAT/MAT.h>
 #include <GameLib/OCT/OCT.h>
+#include <GameLib/LOC/LOC.h>
 
 #include <functional>
 #include <memory>
@@ -68,6 +69,11 @@ namespace gamelib
 		RoomGroup inside {};
 	};
 
+	struct LevelLocalization
+	{
+		loc::LOCTreeNode::Ptr localizationRoot { nullptr };
+	};
+
 	class Level
 	{
 	public:
@@ -87,6 +93,8 @@ namespace gamelib
 		[[nodiscard]] LevelMaterials* getLevelMaterials();
 		[[nodiscard]] const LevelRooms* getLevelRooms() const;
 		[[nodiscard]] LevelRooms* getLevelRooms();
+		[[nodiscard]] const LevelLocalization* getLevelLocalization() const;
+		[[nodiscard]] LevelLocalization* getLevelLocalization();
 
 		[[nodiscard]] const std::vector<scene::SceneObject::Ptr>& getSceneObjects() const;
 
@@ -108,6 +116,7 @@ namespace gamelib
 		bool loadLevelTextures();
 		bool loadLevelMaterials();
 		bool loadLevelRooms();
+		bool loadLevelLocalization();
 
 	private:
 		// Core
@@ -121,6 +130,7 @@ namespace gamelib
 		LevelGeometry m_levelGeometry;
 		LevelMaterials m_levelMaterials;
 		LevelRooms m_levelRooms;
+		LevelLocalization m_levelLocalization;
 
 		struct BUF
 		{
