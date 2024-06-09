@@ -3,7 +3,7 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "ActionName", "typename": "PRPOpCode.String" },
+        { "name": "ActionName", "typename": "ZLocalizedString" },
         { "name": "IsVisible", "typename": "PRPOpCode.Bool" },
         { "name": "ActionType", "typename": "ZAction.EActionType", "offset": 44 },
         { "name": "MessageID", "typename": "ZMsg", "offset": 48 },

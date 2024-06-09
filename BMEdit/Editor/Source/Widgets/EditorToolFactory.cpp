@@ -1,6 +1,7 @@
 #include <Widgets/EditorToolFactory.h>
 
 // Widgets
+#include <SelectLocalizationTool.h>
 #include <SelectSceneObjectTool.h>
 #include <SelectScriptTool.h>
 #include <QDebug>
@@ -20,6 +21,11 @@ namespace widgets
 		if (hintId == "SelectGameScript")
 		{
 			pResult = SelectScriptTool::Create(parent);
+		}
+
+		if (hintId == "SelectLocalizationKey")
+		{
+			pResult = SelectLocalizationTool::Create(parent);
 		}
 
 		if (!pResult)
