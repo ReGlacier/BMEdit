@@ -79,6 +79,7 @@ BMEditMainWindow::~BMEditMainWindow()
 	delete m_sceneTreeFilterModel;
 	models::ModelsLocator::s_SceneTreeModel = nullptr; // reset me
 	models::ModelsLocator::s_GameScriptsTreeModel = nullptr; // reset me
+	models::ModelsLocator::s_LocalizationTreeModel = nullptr; // reset me
 	delete m_sceneObjectPropertiesModel;
 
 	delete m_operationProgress;
@@ -274,6 +275,11 @@ void BMEditMainWindow::onLevelLoadSuccess()
 		models::ModelsLocator::s_SceneTreeModel->setLevel(currentLevel);
 	}
 
+	if (models::ModelsLocator::s_LocalizationTreeModel)
+	{
+		models::ModelsLocator::s_LocalizationTreeModel->setLevel(currentLevel);
+	}
+
 	if (m_sceneTexturesModel)
 	{
 		m_sceneTexturesModel->setLevel(currentLevel);
@@ -422,6 +428,7 @@ void BMEditMainWindow::onCloseLevel()
 {
 	// Cleanup models
 	if (models::ModelsLocator::s_SceneTreeModel) models::ModelsLocator::s_SceneTreeModel->resetLevel();
+	if (models::ModelsLocator::s_LocalizationTreeModel) models::ModelsLocator::s_LocalizationTreeModel->resetLevel();
 	if (m_sceneObjectPropertiesModel) m_sceneObjectPropertiesModel->resetLevel();
 	if (m_scenePropertiesModel) m_scenePropertiesModel->resetLevel();
 	if (m_sceneTexturesModel) m_sceneTexturesModel->resetLevel();
@@ -778,9 +785,14 @@ void BMEditMainWindow::initSceneTree()
 {
 	// Main model
 	models::ModelsLocator::s_SceneTreeModel = std::make_unique<models::SceneObjectsTreeModel>(this);
+	models::ModelsLocator::s_LocalizationTreeModel = std::make_unique<models::LocalizationTreeModel>(this);
 	m_sceneTreeFilterModel = new models::SceneFilterModel(this);
 	m_sceneTreeFilterModel->setSourceModel(models::ModelsLocator::s_SceneTreeModel.get());
 
+	// Fill LocalizationTree view
+	ui->localizationTree->setModel(models::ModelsLocator::s_LocalizationTreeModel.get());
+
+	// Fill SceneTree view
 	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->sceneTreeView->setModel(m_sceneTreeFilterModel);
 	ui->sceneTreeView->setContextMenuPolicy(Qt::CustomContextMenu);

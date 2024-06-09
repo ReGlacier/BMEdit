@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include <Models/LocalizationTreeModel.h>
 #include <Models/SceneObjectsTreeModel.h>
 #include <Models/GameScriptsTreeModel.h>
 
@@ -21,5 +22,6 @@ namespace models
 		// Instances
 		static std::unique_ptr<SceneObjectsTreeModel> s_SceneTreeModel;
 		static std::unique_ptr<GameScriptsTreeModel> s_GameScriptsTreeModel;
+		static std::unique_ptr<LocalizationTreeModel> s_LocalizationTreeModel;
 	};
 }
