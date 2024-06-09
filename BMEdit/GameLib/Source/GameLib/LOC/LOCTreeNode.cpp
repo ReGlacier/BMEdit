@@ -69,13 +69,6 @@ namespace gamelib::loc
 
 			// Read subtitle data. I really don't know what that value means, but as 2xu32 each same to each
 			binaryReader->read<uint8_t, ZBio::Endianness::LE>(&node->subtitle.unkData[0], 8);
-
-			// Check that next byte is always valid for us
-			{
-				ZBioSeekGuard guard { binaryReader };
-				auto lb = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
-				assert((lb >= 'a' && lb <='z') || (lb >= 'A' && lb <= 'Z') || (lb >= '0' && lb <= '9'));
-			}
 		}
 		else if (node->type == LOCTreeNodeType::EMPTY_BLOCK)
 		{

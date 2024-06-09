@@ -35,17 +35,25 @@ namespace models
 
 		if (role == Qt::ItemDataRole::ToolTipRole)
 		{
-			QStringList locationPath {};
-
-			auto currentNode = node;
-			while (currentNode)
+			if (index.column() == 0)
 			{
-				locationPath.push_front(QString::fromStdString(currentNode->name));
-				const auto& parent = currentNode->parent.lock();
-				currentNode = parent ? parent.get() : nullptr;
+				QStringList locationPath {};
+
+				auto currentNode = node;
+				while (currentNode)
+				{
+					locationPath.push_front(QString::fromStdString(currentNode->name));
+					const auto& parent = currentNode->parent.lock();
+					currentNode = parent ? parent.get() : nullptr;
+				}
+
+				return locationPath.join('/');
 			}
 
-			return locationPath.join('/');
+			if (index.column() == 1 && (node->type == gamelib::loc::LOCTreeNodeType::LOCALIZED_STRING || node->type == gamelib::loc::LOCTreeNodeType::SUBTITLES))
+			{
+				return QString::fromStdString(node->value);
+			}
 		}
 
 		return {};
