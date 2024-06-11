@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <unordered_map>
 
 
 namespace ZBio::ZBinaryReader
@@ -23,7 +24,9 @@ namespace gamelib::loc
 		EMPTY_BLOCK = 0x8, ///< Empty chunk, no data at all
 		LOCALIZED_STRING = 0x9,   ///< Key value (string to aligned string)
 		CHILDREN = 0x10, ///< Container (amount & list of offsets)
+		SUBTITLES_FIN = 0x28, ///< Subtitles finish string. NOTE: Maybe it's finish subtitle, will rename it later
 		SUBTITLES = 0x29, ///< Subtitles value (long text with extra parameters) | 0x20 mask means that extra data exists
+		SUBTITLES_HINT = 0x2B ///< Another subtitles data with extra string hint
 	};
 
 	enum LOCMissionObjectiveType : char
@@ -66,12 +69,13 @@ namespace gamelib::loc
 		struct SubtitleData
 		{
 			uint8_t unkData[8];
+			std::string extraHint {};
 		} subtitle;
 
 		[[nodiscard]] bool canHaveValue() const;
 		[[nodiscard]] bool canHaveChildren() const;
 
 		static void deserialize(const LOCTreeNode::Ptr &node, ZBio::ZBinaryReader::BinaryReader* binaryReader);
-		static void serialize(const LOCTreeNode::Ptr& node, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+		static void serialize(const LOCTreeNode::Ptr& node, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter, std::vector<std::pair<size_t, uint32_t>>& replacement);
 	};
 }

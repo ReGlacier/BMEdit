@@ -43,6 +43,11 @@ namespace models
 				return QString::fromStdString(node->value);
 			}
 
+			if (index.column() == 1 && node->type == gamelib::loc::LOCTreeNodeType::EMPTY_BLOCK)
+			{
+				return QString("(EMPTY)");
+			}
+
 			return {};
 		}
 
@@ -199,9 +204,17 @@ namespace models
 
 		if (!node) return flags;
 
-		if (index.column() == 0 || (index.column() == 1 && node->canHaveValue()))
+		if (index.column() == 0)
 		{
 			flags |= Qt::ItemIsEditable;
+		}
+
+		if (index.column() == 1)
+		{
+			if (node->canHaveValue())
+			{
+				flags |= Qt::ItemIsEditable;
+			}
 		}
 
 		return flags;

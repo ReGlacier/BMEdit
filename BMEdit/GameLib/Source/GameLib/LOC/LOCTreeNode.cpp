@@ -2,6 +2,7 @@
 #include <GameLib/ZBioHelpers.h>
 #include <ZBinaryReader.hpp>
 #include <ZBinaryWriter.hpp>
+#include <fmt/format.h>
 #include <cassert>
 
 
@@ -9,7 +10,11 @@ namespace gamelib::loc
 {
 	bool LOCTreeNode::canHaveValue() const
 	{
-		return type == LOCTreeNodeType::LOCALIZED_STRING || type == LOCTreeNodeType::SUBTITLES;
+		return
+		    type == LOCTreeNodeType::LOCALIZED_STRING ||
+		    type == LOCTreeNodeType::SUBTITLES ||
+		    type == LOCTreeNodeType::SUBTITLES_HINT ||
+		    type == LOCTreeNodeType::SUBTITLES_FIN;
 	}
 
 	bool LOCTreeNode::canHaveChildren() const
@@ -23,9 +28,12 @@ namespace gamelib::loc
 		node->name = binaryReader->readCString();
 
 		const auto type = binaryReader->read<int8_t, ZBio::Endianness::LE>();
-		if (type != LOCTreeNodeType::CHILDREN && type != LOCTreeNodeType::LOCALIZED_STRING && type != LOCTreeNodeType::SUBTITLES && type != LOCTreeNodeType::EMPTY_BLOCK)
+		if (type != LOCTreeNodeType::CHILDREN && type != LOCTreeNodeType::LOCALIZED_STRING &&
+		    type != LOCTreeNodeType::SUBTITLES && type != LOCTreeNodeType::EMPTY_BLOCK &&
+		    type != LOCTreeNodeType::SUBTITLES_FIN && type != LOCTreeNodeType::SUBTITLES_HINT)
 		{
-			throw std::runtime_error("Invalid LOC format: expected to have 0x0 or 0x10, got smth else");
+			auto errorMessage = fmt::format("Invalid LOC format: unexpected entity code 0x{:02X} at offset {} (0x{:X})", type, binaryReader->tell(), binaryReader->tell());
+			throw std::runtime_error(errorMessage);
 		}
 
 		// Store type
@@ -72,13 +80,38 @@ namespace gamelib::loc
 			ZBioHelpers::seekBy(binaryReader, 4); // Need seek by 4 because value strings are "aligned".
 			// Formula: len + 1 + 4 (+1 - zero terminator, 4 - "alignment")
 		}
-		else if (node->type == LOCTreeNodeType::SUBTITLES)
+		else if (node->type == LOCTreeNodeType::SUBTITLES || node->type == LOCTreeNodeType::SUBTITLES_HINT || node->type == LOCTreeNodeType::SUBTITLES_FIN)
 		{
 			// Subtitles text
 			node->value = binaryReader->readCString();
 
-			// Read subtitle data. I really don't know what that value means, but as 2xu32 each same to each
-			binaryReader->read<uint8_t, ZBio::Endianness::LE>(&node->subtitle.unkData[0], 8);
+			if (node->type == LOCTreeNodeType::SUBTITLES_HINT)
+			{
+				// Read extra hint string
+				node->subtitle.extraHint = binaryReader->readCString();
+			}
+
+			if (node->type == LOCTreeNodeType::SUBTITLES || node->type == LOCTreeNodeType::SUBTITLES_HINT)
+			{
+				// Read subtitle data. In most cases there are 2xu32, but when first u32 zeroed next u32 not presented
+				// I love IOI because they don't give me an opportunity to relax...
+				uint32_t first = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+				uint32_t second = 0;
+				if (first != 0)
+				{
+					// Ok, read second
+					second = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+				}
+
+				*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]) = first;
+				*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[4]) = second;
+			}
+
+			if (node->type == LOCTreeNodeType::SUBTITLES_FIN)
+			{
+				// Always only 1 u32
+				binaryReader->read<uint8_t, ZBio::Endianness::LE>(&node->subtitle.unkData[0], 4);
+			}
 		}
 		else if (node->type == LOCTreeNodeType::EMPTY_BLOCK)
 		{
@@ -90,7 +123,7 @@ namespace gamelib::loc
 		}
 	}
 
-	void LOCTreeNode::serialize(const LOCTreeNode::Ptr &node, ZBio::ZBinaryWriter::BinaryWriter *binaryWriter) // NOLINT(*-no-recursion)
+	void LOCTreeNode::serialize(const LOCTreeNode::Ptr &node, ZBio::ZBinaryWriter::BinaryWriter *binaryWriter, std::vector<std::pair<size_t, uint32_t>>& replacement) // NOLINT(*-no-recursion)
 	{
 		// Write name (not aligned)
 		binaryWriter->writeCString(node->name);
@@ -102,19 +135,19 @@ namespace gamelib::loc
 		{
 			// Sort children
 			auto children = node->children; // Need copy
-			std::sort(children.begin(), children.end(), [](const LOCTreeNode::Ptr& a, const LOCTreeNode::Ptr& b) { return a->name < b->name; });
+			//std::sort(children.begin(), children.end(), [](const LOCTreeNode::Ptr& a, const LOCTreeNode::Ptr& b) { return a->name < b->name; });
 
 			// Write count
 			const auto childrenCount = children.size() > 0xFF ? 0xFF : static_cast<uint8_t>(children.size());
 			binaryWriter->write<uint8_t, ZBio::Endianness::LE>(childrenCount);
 
 			// Write offsets
-			std::vector<uint32_t> offsets{};
+			std::vector<uint32_t> offsets { 0u };
 
 			for (int i = 1; i < childrenCount; i++)
 			{
 				offsets.push_back(binaryWriter->tell());
-				binaryWriter->write<uint32_t, ZBio::Endianness::LE>(0); // Fake offset (will be fixed)
+				binaryWriter->write<uint32_t, ZBio::Endianness::LE>(0xDDDDDDDDu);
 			}
 
 			// Write node by node & restore offsets
@@ -124,18 +157,13 @@ namespace gamelib::loc
 			{
 				if (i > 0)
 				{
-					// Restore offset
+					// Save replacement instruction
 					uint32_t newOffset = binaryWriter->tell();
-
-					ZBioSeekGuard<ZBio::ZBinaryWriter::BinaryWriter> guard { binaryWriter };
-					binaryWriter->seek(offsets[i - 1]);
-
-					// Update offset
-					binaryWriter->write<uint32_t, ZBio::Endianness::LE>(newOffset - baseOffset); // Offset calculated from node #0
+					replacement.emplace_back(offsets[i], newOffset - baseOffset);
 				}
 
 				// Write node itself
-				LOCTreeNode::serialize(children[i], binaryWriter);
+				LOCTreeNode::serialize(children[i], binaryWriter, replacement);
 			}
 		}
 		else if (node->type == LOCTreeNodeType::LOCALIZED_STRING)
@@ -146,13 +174,29 @@ namespace gamelib::loc
 			// Write 4 byte alignment
 			binaryWriter->write<uint32_t, ZBio::Endianness::LE>(0);
 		}
-		else if (node->type == LOCTreeNodeType::SUBTITLES)
+		else if (node->type == LOCTreeNodeType::SUBTITLES || node->type == LOCTreeNodeType::SUBTITLES_HINT)
 		{
 			// Write unaligned string
 			binaryWriter->writeCString(node->value);
 
+			if (node->type == LOCTreeNodeType::SUBTITLES_HINT)
+			{
+				// For hinted string need to write extra hint
+				binaryWriter->writeCString(node->subtitle.extraHint);
+			}
+
+			uint32_t first = *reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]);
+			uint32_t second = *reinterpret_cast<uint32_t*>(&node->subtitle.unkData[4]);
+
 			// Write subtitles data
-			binaryWriter->write<uint8_t, ZBio::Endianness::LE>(&node->subtitle.unkData[0], 8);
+			binaryWriter->write<uint32_t, ZBio::Endianness::LE>(first);
+			if (first)
+				binaryWriter->write<uint32_t, ZBio::Endianness::LE>(second);
+		}
+		else if (node->type == LOCTreeNodeType::SUBTITLES_FIN)
+		{
+			// Store tutorial data here
+			binaryWriter->write<uint8_t, ZBio::Endianness::LE>(&node->subtitle.unkData[0], 4);
 		}
 		else if (node->type == LOCTreeNodeType::EMPTY_BLOCK)
 		{
