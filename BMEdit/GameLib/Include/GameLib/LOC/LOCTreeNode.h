@@ -24,7 +24,8 @@ namespace gamelib::loc
 		EMPTY_BLOCK = 0x8, ///< Empty chunk, no data at all
 		LOCALIZED_STRING = 0x9,   ///< Key value (string to aligned string)
 		CHILDREN = 0x10, ///< Container (amount & list of offsets)
-		SUBTITLES_FIN = 0x28, ///< Subtitles finish string. NOTE: Maybe it's finish subtitle, will rename it later
+		SUBTITLES_HINT_WITH_COMMENT = 0x0B, ///< Some subtitle bullshit with comment (key, value string, comment aligned CString)
+		SUBTITLES_FIN = 0x28, ///< Subtitles finish string
 		SUBTITLES = 0x29, ///< Subtitles value (long text with extra parameters) | 0x20 mask means that extra data exists
 		SUBTITLES_HINT = 0x2B ///< Another subtitles data with extra string hint
 	};

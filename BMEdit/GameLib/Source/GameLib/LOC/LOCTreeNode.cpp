@@ -14,7 +14,8 @@ namespace gamelib::loc
 		    type == LOCTreeNodeType::LOCALIZED_STRING ||
 		    type == LOCTreeNodeType::SUBTITLES ||
 		    type == LOCTreeNodeType::SUBTITLES_HINT ||
-		    type == LOCTreeNodeType::SUBTITLES_FIN;
+		    type == LOCTreeNodeType::SUBTITLES_FIN ||
+		    type == LOCTreeNodeType::SUBTITLES_HINT_WITH_COMMENT;
 	}
 
 	bool LOCTreeNode::canHaveChildren() const
@@ -30,7 +31,8 @@ namespace gamelib::loc
 		const auto type = binaryReader->read<int8_t, ZBio::Endianness::LE>();
 		if (type != LOCTreeNodeType::CHILDREN && type != LOCTreeNodeType::LOCALIZED_STRING &&
 		    type != LOCTreeNodeType::SUBTITLES && type != LOCTreeNodeType::EMPTY_BLOCK &&
-		    type != LOCTreeNodeType::SUBTITLES_FIN && type != LOCTreeNodeType::SUBTITLES_HINT)
+		    type != LOCTreeNodeType::SUBTITLES_FIN && type != LOCTreeNodeType::SUBTITLES_HINT &&
+		    type != LOCTreeNodeType::SUBTITLES_HINT_WITH_COMMENT)
 		{
 			auto errorMessage = fmt::format("Invalid LOC format: unexpected entity code 0x{:02X} at offset {} (0x{:X})", type, binaryReader->tell(), binaryReader->tell());
 			throw std::runtime_error(errorMessage);
@@ -80,38 +82,64 @@ namespace gamelib::loc
 			ZBioHelpers::seekBy(binaryReader, 4); // Need seek by 4 because value strings are "aligned".
 			// Formula: len + 1 + 4 (+1 - zero terminator, 4 - "alignment")
 		}
-		else if (node->type == LOCTreeNodeType::SUBTITLES || node->type == LOCTreeNodeType::SUBTITLES_HINT || node->type == LOCTreeNodeType::SUBTITLES_FIN)
+		else if (node->type == LOCTreeNodeType::SUBTITLES)
 		{
 			// Subtitles text
 			node->value = binaryReader->readCString();
 
-			if (node->type == LOCTreeNodeType::SUBTITLES_HINT)
+			// Read subtitle data. In most cases there are 2xu32, but when first u32 zeroed next u32 not presented
+			// I love IOI because they don't give me an opportunity to relax...
+			uint32_t first = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+			uint32_t second = 0;
+			if (first != 0)
 			{
-				// Read extra hint string
-				node->subtitle.extraHint = binaryReader->readCString();
+				// Ok, read second
+				second = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
 			}
 
-			if (node->type == LOCTreeNodeType::SUBTITLES || node->type == LOCTreeNodeType::SUBTITLES_HINT)
-			{
-				// Read subtitle data. In most cases there are 2xu32, but when first u32 zeroed next u32 not presented
-				// I love IOI because they don't give me an opportunity to relax...
-				uint32_t first = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
-				uint32_t second = 0;
-				if (first != 0)
-				{
-					// Ok, read second
-					second = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
-				}
+			*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]) = first;
+			*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[4]) = second;
+		}
+		else if (node->type == LOCTreeNodeType::SUBTITLES_HINT)
+		{
+			// Subtitles text
+			node->value = binaryReader->readCString();
 
-				*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]) = first;
-				*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[4]) = second;
+			// Read extra hint string
+			node->subtitle.extraHint = binaryReader->readCString();
+
+			// Read subtitle data. In most cases there are 2xu32, but when first u32 zeroed next u32 not presented
+			// I love IOI because they don't give me an opportunity to relax...
+			uint32_t first = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+			uint32_t second = 0;
+			if (first != 0)
+			{
+				// Ok, read second
+				second = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
 			}
 
-			if (node->type == LOCTreeNodeType::SUBTITLES_FIN)
-			{
-				// Always only 1 u32
-				binaryReader->read<uint8_t, ZBio::Endianness::LE>(&node->subtitle.unkData[0], 4);
-			}
+			*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]) = first;
+			*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[4]) = second;
+		}
+		else if (node->type == LOCTreeNodeType::SUBTITLES_FIN)
+		{
+			// Always only 1 u32
+			uint32_t first = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+			*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]) = first;
+		}
+		else if (node->type == LOCTreeNodeType::SUBTITLES_HINT_WITH_COMMENT)
+		{
+			// Read value
+			node->value = binaryReader->readCString();
+
+			// Read hint (?)
+			node->subtitle.extraHint = binaryReader->readCString();
+
+			// DronCode: I'm not sure that next few bytes always zeroed.
+			// As we remember in LOCTreeNodeType::SUBTITLES & LOCTreeNodeType::SUBTITLES_HINT we have extra 8 bytes (2xu32 but sometimes only 1xu32 when it's zeroed).
+			// This could be our case. Idk, let's use code from SUBTITLES_FIN (idk why)
+			uint32_t first = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+			*reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]) = first;
 		}
 		else if (node->type == LOCTreeNodeType::EMPTY_BLOCK)
 		{
@@ -193,10 +221,24 @@ namespace gamelib::loc
 			if (first)
 				binaryWriter->write<uint32_t, ZBio::Endianness::LE>(second);
 		}
+		else if (node->type == LOCTreeNodeType::SUBTITLES_HINT_WITH_COMMENT)
+		{
+			// Write value
+			binaryWriter->writeCString(node->value);
+
+			// Write hint
+			binaryWriter->writeCString(node->subtitle.extraHint);
+
+			// Write u32 (see deserializer code for details)
+			uint32_t first = *reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]);
+			binaryWriter->write<uint32_t, ZBio::Endianness::LE>(first);
+		}
 		else if (node->type == LOCTreeNodeType::SUBTITLES_FIN)
 		{
 			// Store tutorial data here
-			binaryWriter->write<uint8_t, ZBio::Endianness::LE>(&node->subtitle.unkData[0], 4);
+			uint32_t first = *reinterpret_cast<uint32_t*>(&node->subtitle.unkData[0]);
+
+			binaryWriter->write<uint32_t, ZBio::Endianness::LE>(first);
 		}
 		else if (node->type == LOCTreeNodeType::EMPTY_BLOCK)
 		{
