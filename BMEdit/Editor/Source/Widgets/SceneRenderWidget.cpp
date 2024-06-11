@@ -684,6 +684,10 @@ namespace widgets
 		if (!sceneObject || !m_pLevel || !m_resources)
 			return;
 
+
+		// Invalidate self
+		m_resources->m_modelTransformCache[sceneObject] = sceneObject->getWorldTransform();
+
 		// Visit limited subtree
 		int iDepth = 2;  // max 2 objects, otherwise it's better to make full invalidation (in case when user wants to move some huge object)
 		sceneObject->visitChildren([this, &iDepth](const gamelib::scene::SceneObject::Ptr& pObject) -> gamelib::scene::SceneObject::EVisitResult {
