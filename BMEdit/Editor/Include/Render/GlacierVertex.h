@@ -7,6 +7,7 @@
 
 namespace render
 {
+#pragma pack(push, 1)
 	struct GlacierVertex
 	{
 		glm::vec3 vPos {};
@@ -14,6 +15,7 @@ namespace render
 
 		static const VertexFormatDescription g_FormatDescription;
 	};
+#pragma pack(pop)
 
 	struct SimpleVertex
 	{

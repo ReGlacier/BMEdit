@@ -10,7 +10,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC OFF)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)      # UI
+find_package(Qt6 REQUIRED COMPONENTS 3DCore 3DRender 3DInput 3DLogic 3DExtras)  # For new Scene3D
 find_package(OpenGL REQUIRED)
 
 message(STATUS "Found Qt component versions: ")
@@ -41,6 +42,9 @@ file(
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Widgets/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Data/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/Include/Render/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/Include/Scene3D/*.h
+        # For RCameraController (modmesh project)
+        ${CMAKE_CURRENT_SOURCE_DIR}/Include/Scene3D/*.hpp
 )
 file(GLOB_RECURSE EDITOR_AUTOGEN_UI_FILES ${CMAKE_CURRENT_SOURCE_DIR}/UI/UI/*.ui)
 
@@ -63,6 +67,7 @@ target_compile_definitions(Editor
 
 # --- Required GameLib & Qt6
 target_link_libraries(Editor PUBLIC Qt6::Widgets OpenGL::GL Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(Editor PUBLIC Qt6::3DCore Qt6::3DRender Qt6::3DLogic Qt6::3DExtras)
 target_link_libraries(Editor PRIVATE GameLib)
 target_link_libraries(Editor PRIVATE ${libzip_LIBRARIES} ${ZLIB_LIBRARIES} ${libsquish_LIBRARIES})
 target_include_directories(Editor PRIVATE ${ZLIB_INCLUDE_DIRS} ${libzip_INCLUDE_DIRS} ${libsquish_INCLUDE_DIRS})

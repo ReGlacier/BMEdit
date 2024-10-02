@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="widgets::SceneRenderWidget" name="sceneGLView">
+     <widget class="scene3d::GameSceneView" name="sceneGLView">
       <property name="focusPolicy">
        <enum>Qt::ClickFocus</enum>
       </property>
@@ -563,6 +563,11 @@
    <class>widgets::SceneRenderWidget</class>
    <extends>QOpenGLWidget</extends>
    <header>Widgets/SceneRenderWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>scene3d::GameSceneView</class>
+   <extends>QWidget</extends>
+   <header>Scene3D/Scene3D.h</header>
   </customwidget>
   <customwidget>
    <class>widgets::BitSetViewWidget</class>

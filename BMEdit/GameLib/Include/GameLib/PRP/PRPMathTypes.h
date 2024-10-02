@@ -6,6 +6,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <string>
+#include <array>
 
 
 namespace gamelib
@@ -180,6 +181,29 @@ namespace gamelib
 
 			assert(false && "Bad object");
 			return {};
+		}
+	};
+
+	template<typename T, size_t N>
+	struct TObjectExtractor<std::array<T, N>>
+	{
+		static std::array<T, N> extract(const Span<prp::PRPInstruction>& instructions)
+		{
+			std::array<T, N> result{};
+
+			if (instructions.size() == N + 2)
+			{
+
+				for (size_t i = 0; i < N; i++)
+				{
+					result[i] = instructions[i + 1].getOperand().get<T>();
+				}
+
+				return result;
+			}
+
+			assert(false && "Bad object");
+			return result;
 		}
 	};
 }

@@ -83,11 +83,8 @@ public slots:
 	void onExportLOC();
 	void onShowTexturesDialog();
 	void onContextMenuRequestedForSceneTreeNode(const QPoint& point);
-	void onLevelAssetsLoaded();
-	void onLevelAssetsLoadFailed(const QString& reason);
 	void onSceneObjectPropertyChanged(const gamelib::scene::SceneObject* geom);
 	void onTextureChanged(uint32_t textureIndex);
-	void onSceneFramePresented(const widgets::RenderStats& stats);
 
 protected:
 	void dragEnterEvent(QDragEnterEvent* pEvent) override;

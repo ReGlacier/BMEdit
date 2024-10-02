@@ -188,6 +188,11 @@ namespace gamelib::scene
 		return getProperties().getObject<glm::mat3>("Matrix", glm::mat3(1.f));
 	}
 
+	std::array<float, 9> SceneObject::getMatrixValue() const
+	{
+		return getProperties().getObject<std::array<float, 9>>("Matrix");
+	}
+
 	glm::mat4 SceneObject::getWorldTransform() const // NOLINT(*-no-recursion)
 	{
 		glm::mat4 mMatrix = getLocalTransform();
@@ -206,6 +211,30 @@ namespace gamelib::scene
 			return;
 
 		internalVisitChildObjects(pred);
+	}
+
+	std::string SceneObject::getGeomREF(bool bIncludeROOT) const
+	{
+		std::string sPath { getName() };
+
+		SceneObject::Ref rCurrent = getParent();
+		while (!rCurrent.expired())
+		{
+			auto pCurrent = rCurrent.lock();
+			if (!pCurrent)
+				break;
+
+			if (pCurrent->getParent().expired() && !bIncludeROOT)
+				break;
+
+			sPath.insert(sPath.begin(), '\\');
+			sPath.insert(0, pCurrent->getName());
+
+			// Switch to next
+			rCurrent = pCurrent->getParent();
+		}
+
+		return sPath;
 	}
 
 	SceneObject::EVisitResult SceneObject::internalVisitChildObjects(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr &)>& pred) const

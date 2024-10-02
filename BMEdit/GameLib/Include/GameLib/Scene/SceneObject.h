@@ -13,6 +13,7 @@
 #include <GameLib/Type.h>
 #include <glm/mat4x4.hpp>
 #include <map>
+#include <array>
 
 
 namespace gamelib::scene
@@ -94,6 +95,11 @@ namespace gamelib::scene
 		[[nodiscard]] glm::mat3 getOriginalTransform() const;
 
 		/**
+		 * @return Original "Matrix" value (transform from original scene without any changes)
+		 */
+		[[nodiscard]] std::array<float, 9> getMatrixValue() const;
+
+		/**
 		 * @brief Calculate world transform of object
 		 * @note This method iterates over all parents and multiply all matrices into one combined matrix. It may take a while so use external caches (because SceneObject does not make any caches itself)
 		 * @return World model matrix of object
@@ -112,6 +118,11 @@ namespace gamelib::scene
 		 * @param pred - predicate func
 		 */
 		void visitChildren(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const;
+
+		/**
+		 * @return ZGEOMREF style path to this object.
+		 */
+		std::string getGeomREF(bool bIncludeROOT = true) const;
 
 	private:
 		EVisitResult internalVisitChildObjects(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr&)>& pred) const;
