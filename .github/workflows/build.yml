@@ -76,7 +76,7 @@ jobs:
           mv README.md dist
 
       - name: Upload build artifacts - BMEdit
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: "BMEdit"
           path: dist
