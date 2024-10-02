@@ -39,6 +39,10 @@ namespace render
 		uint32_t iTrianglesNr { 0 }; // Count of triangles or elements
 		RenderTopology renderTopology { RenderTopology::RT_TRIANGLES }; // Topology of geometry buffer
 
+#ifdef QT_DEBUG
+		std::string debugGroupId {};
+#endif
+
 		// World params
 		glm::vec3 vPosition { .0f }; // World position
 		glm::mat4 mWorldTransform { 1.f }; // Converted and translated matrix (ready to use in OpenGL)

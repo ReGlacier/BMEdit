@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.17)
 project(Editor VERSION 1.0.0 LANGUAGES CXX)
 
+# --- Deps
+add_subdirectory(ThirdParty/RenderDoc)
+
 # --- Language standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -63,7 +66,7 @@ target_compile_definitions(Editor
 
 # --- Required GameLib & Qt6
 target_link_libraries(Editor PUBLIC Qt6::Widgets OpenGL::GL Qt6::OpenGL Qt6::OpenGLWidgets)
-target_link_libraries(Editor PRIVATE GameLib)
+target_link_libraries(Editor PRIVATE GameLib RenderDoc::AppInterface)
 target_link_libraries(Editor PRIVATE ${libzip_LIBRARIES} ${ZLIB_LIBRARIES} ${libsquish_LIBRARIES})
 target_include_directories(Editor PRIVATE ${ZLIB_INCLUDE_DIRS} ${libzip_INCLUDE_DIRS} ${libsquish_INCLUDE_DIRS})
 target_compile_definitions(Editor PRIVATE ${libzip_DEFINITIONS} ${libsquish_DEFINITIONS})

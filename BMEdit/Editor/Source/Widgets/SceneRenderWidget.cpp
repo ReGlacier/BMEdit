@@ -29,9 +29,57 @@
 #include <chrono>
 #include <set>
 
+#ifdef Q_OS_WINDOWS
+#	define WIN32_LEAN_AND_MEAN
+#	define NOMINMAX
+#	include <Windows.h>
+#	include <RenderDoc/renderdoc_app.h>
+#	include <QOpenGLContext>
+
+bool g_bShouldCaptureFrame = false;
+RENDERDOC_API_1_1_2* g_pRenderDoc = nullptr;
+#endif
+
+#ifdef QT_DEBUG
+#	include <QOpenGLExtraFunctions>
+#endif
+
 
 namespace widgets
 {
+	static render::Shader* g_pLastKnownShader = nullptr;
+
+	struct RenderState
+	{
+		bool bHasBlend = false;
+		bool bHasAlphaTest = false;
+		bool bHasFog = false;
+
+		gamelib::mat::MATBlendMode eBlendMode { gamelib::mat::MATBlendMode::BM_ADD };
+		gamelib::mat::MATCullMode eCullMode { gamelib::mat::MATCullMode::CM_DontCare };
+
+		std::array<uint32_t, render::TextureSlotId::kMaxTextureSlot> aTextures { 0 };
+
+		void reset()
+		{
+			bHasFog = false;
+			bHasBlend = false;
+			bHasAlphaTest = false;
+			eBlendMode = gamelib::mat::MATBlendMode::BM_ADD;
+			eCullMode = gamelib::mat::MATCullMode::CM_DontCare;
+
+			for (auto& tex : aTextures)
+			{
+				tex = std::numeric_limits<uint32_t>::max();
+			}
+		}
+
+		void set(QOpenGLFunctions_3_3_Core* glFuncs, const gamelib::mat::MATRenderState& state);
+		void apply(QOpenGLFunctions_3_3_Core* glFuncs) const;
+	};
+
+	static RenderState g_RenderState{};
+
 	// Here stored geom names (common) where editor should avoid any rendering (it's too expensive and unnecessary for us)
 	static const std::set<std::string_view> g_bannedObjectIds {
 	    "AdditionalResources", "AllLevels/mainsceneincludes.zip", "AllLevels/equipment.zip"
@@ -134,9 +182,34 @@ namespace widgets
 		format.setVersion(3, 3);
 		format.setProfile(QSurfaceFormat::CoreProfile);
 		setFormat(format);
+
+#ifdef Q_OS_WINDOWS
+		if (HMODULE pRenderDocMod = GetModuleHandleA("renderdoc.dll"))
+		{
+			auto RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(pRenderDocMod, "RENDERDOC_GetAPI");
+			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&g_pRenderDoc);
+			if (ret != 1)
+			{
+				g_pRenderDoc = nullptr;
+			}
+		}
+#endif
 	}
 
 	SceneRenderWidget::~SceneRenderWidget() noexcept = default;
+
+	void SceneRenderWidget::initializeGL()
+	{
+#ifdef Q_OS_WINDOWS
+		if (g_pRenderDoc)
+		{
+			g_pRenderDoc->SetActiveWindow(
+			    context()->nativeInterface<QNativeInterface::QWGLContext>()->nativeContext(),
+			    (void*)winId()
+			);
+		}
+#endif
+	}
 
 	void SceneRenderWidget::paintGL()
 	{
@@ -149,6 +222,12 @@ namespace widgets
 			qFatal("Could not obtain required OpenGL context version");
 			return;
 		}
+
+#ifdef Q_OS_WINDOWS
+		const bool bCaptureStarted = g_bShouldCaptureFrame;
+		g_bShouldCaptureFrame = false;
+		if (g_pRenderDoc && bCaptureStarted) g_pRenderDoc->StartFrameCapture(nullptr, nullptr);
+#endif
 
 		// Begin frame
 		const auto vp = getViewportSize();
@@ -206,6 +285,10 @@ namespace widgets
 			    // Prepare invalidated stuff
 			    doPrepareInvalidatedResources(funcs);
 
+			    // Reset render state
+			    g_RenderState.reset();
+			    g_RenderState.apply(funcs);
+
 			    // Render scene
 			    gamelib::scene::SceneObject* pRoot = nullptr;
 			    bool bIgnoreVisibility = false;
@@ -223,8 +306,7 @@ namespace widgets
 					}
 			    }
 
-			    if (!pRoot)
-				    return;
+			    if (!pRoot) break;
 
 			    if (m_renderList.empty())
 			    {
@@ -239,13 +321,17 @@ namespace widgets
 				    // 2 pass rendering: first render only non-alpha objects
 				    if (m_renderMode & RenderMode::RM_NON_ALPHA_OBJECTS)
 				    {
+					    beginDebugGroup("NON_ALPHA_OBJECTS");
 					    performRender(funcs, m_renderList, m_camera, onlyNonAlpha);
+					    endDebugGroup();
 				    }
 
 				    // then render only alpha objects
 				    if (m_renderMode & RenderMode::RM_ALPHA_OBJECTS)
 				    {
+					    beginDebugGroup("ALPHA_OBJECTS");
 					    performRender(funcs, m_renderList, m_camera, onlyAlpha);
+					    endDebugGroup();
 				    }
 
 				    // Submit stats
@@ -260,6 +346,13 @@ namespace widgets
 		    }
 		    break;
 		}
+
+#ifdef Q_OS_WINDOWS
+		if (g_pRenderDoc && bCaptureStarted) g_pRenderDoc->EndFrameCapture(nullptr, nullptr);
+#endif
+
+		if (g_pLastKnownShader) g_pLastKnownShader->unbind(funcs);
+		g_pLastKnownShader = nullptr;
 	}
 
 	void SceneRenderWidget::resizeGL(int w, int h)
@@ -276,6 +369,13 @@ namespace widgets
 
 	void SceneRenderWidget::keyPressEvent(QKeyEvent* event)
 	{
+#ifdef Q_OS_WINDOWS
+		if (event->key() == Qt::Key_F8)
+		{
+			g_bShouldCaptureFrame = true;
+		}
+#endif
+
 		if (m_pLevel)
 		{
 			render::CameraMovementMask movementMask {};
@@ -402,6 +502,11 @@ namespace widgets
 
 	void SceneRenderWidget::resetLevel()
 	{
+		// reset GPU caches & other optimisations
+		g_pLastKnownShader = nullptr;
+		g_RenderState.reset();
+
+		// drop resources
 		if (m_pLevel != nullptr)
 		{
 			m_resources = nullptr;
@@ -1378,6 +1483,9 @@ namespace widgets
 						boundingBoxEntry.iMeshIndex = 0;
 						boundingBoxEntry.iTrianglesNr = 0;
 						boundingBoxEntry.renderTopology = render::RenderTopology::RT_LINES;
+#ifdef QT_DEBUG
+						boundingBoxEntry.debugGroupId = "[BBOX] " + geom->getName();
+#endif
 
 						// World params
 						boundingBoxEntry.vPosition = vPosition;
@@ -1505,6 +1613,10 @@ namespace widgets
 
 					// Push or not?
 					if (!std::all_of(material.textures.begin(), material.textures.end(), [](const auto &v) -> bool { return v == kInvalidResource; })) {
+#ifdef QT_DEBUG
+						renderEntry.debugGroupId = "[Mesh " + std::to_string(iMeshIdx) + "/" + std::to_string(model.meshes.size()) + "] " + geom->getName();
+#endif
+
 						entries.emplace_back(renderEntry);
 					}
 				}
@@ -1533,80 +1645,6 @@ namespace widgets
 	{
 		glm::ivec2 viewResolution = getViewportSize();
 
-		auto applyRenderState = [](QOpenGLFunctions_3_3_Core* gapi, const gamelib::mat::MATRenderState& renderState)
-		{
-			// Enable or disable blending
-			if (renderState.isBlendEnabled()) {
-				gapi->glEnable(GL_BLEND);
-
-				// Set blend mode based on your enum values
-				switch (renderState.getBlendMode())
-				{
-				case gamelib::mat::MATBlendMode::BM_TRANS:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-				case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-				case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					gapi->glEnable(GL_BLEND);
-					break;
-				default:
-					// Do nothing
-					break;
-				}
-			} else {
-				gapi->glDisable(GL_BLEND);
-			}
-
-			// Enable or disable alpha testing
-			if (renderState.isAlphaTestEnabled()) {
-				gapi->glEnable(GL_ALPHA_TEST);
-			} else {
-				gapi->glDisable(GL_ALPHA_TEST);
-			}
-
-			// Enable or disable fog
-			if (renderState.isFogEnabled()) {
-				gapi->glEnable(GL_FOG);
-			} else {
-				gapi->glDisable(GL_FOG);
-			}
-
-#if 0
-			// Enable or disable depth offset (Z bias)
-			if (renderState.hasZBias()) {
-				gapi->glEnable(GL_POLYGON_OFFSET_FILL);
-				gapi->glPolygonOffset(2.0f, renderState.getZOffset());
-			} else {
-				gapi->glDisable(GL_POLYGON_OFFSET_FILL);
-			}
-#endif
-
-			// Set cull mode based on your enum values
-			switch (renderState.getCullMode())
-			{
-			case gamelib::mat::MATCullMode::CM_OneSided:
-				gapi->glCullFace(GL_BACK);
-				break;
-			case gamelib::mat::MATCullMode::CM_DontCare:
-			case gamelib::mat::MATCullMode::CM_TwoSided:
-				// please complete
-				gapi->glDisable(GL_CULL_FACE);
-				break;
-			}
-		};
-
 		static constexpr std::array<std::string_view, render::TextureSlotId::kMaxTextureSlot> g_aTextureKindToLocation {
 		    "i_uMaterial.mapDiffuse",
 		    "i_uMaterial.mapSpecularMask",
@@ -1622,26 +1660,40 @@ namespace widgets
 			if (!filter(entry))
 				continue; // skipped by filter
 
+#ifdef QT_DEBUG
+			const bool bStartGroup = !entry.debugGroupId.empty();
+			if (bStartGroup) beginDebugGroup(entry.debugGroupId);
+#endif
+
 			// Switch render state
-			applyRenderState(glFunctions, entry.material.renderState);
+			g_RenderState.set(glFunctions, entry.material.renderState);
 
 			// Activate material & setup parameters
 			render::Shader* shader = entry.material.pShader;
-			shader->bind(glFunctions);
+			bool bShaderChanged = false;
+
+			if (shader != g_pLastKnownShader)
+			{
+				if (g_pLastKnownShader) g_pLastKnownShader->unbind(glFunctions);
+				g_pLastKnownShader = shader;
+
+				if (g_pLastKnownShader) g_pLastKnownShader->bind(glFunctions);
+				bShaderChanged = true;
+			}
 
 			// Setup parameters (common)
-			shader->setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mWorldTransform);
-			shader->setUniform(glFunctions, ShaderConstants::kCameraProjection, m_camera.getProjection());
-			shader->setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getView());
-			shader->setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
+			g_pLastKnownShader->setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mWorldTransform);
+			g_pLastKnownShader->setUniform(glFunctions, ShaderConstants::kCameraProjection, m_camera.getProjection());
+			g_pLastKnownShader->setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getView());
+			g_pLastKnownShader->setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
 
 			// TODO: Need to move into constants
-			shader->setUniform(glFunctions, "i_uMaterial.v4DiffuseColor", entry.material.vDiffuseColor);
-			shader->setUniform(glFunctions, "i_uMaterial.gm_vZBiasOffset", entry.material.renderState.hasZBias() ? entry.material.gm_vZBiasOffset : glm::vec4(0.f));
-			shader->setUniform(glFunctions, "i_uMaterial.v4Opacity", entry.material.v4Opacity);
-			shader->setUniform(glFunctions, "i_uMaterial.v4Bias", entry.material.v4Bias);
-			shader->setUniform(glFunctions, "i_uMaterial.alphaREF", std::clamp(entry.material.iAlphaREF, 0, 255));
-			shader->setUniform(glFunctions, "i_uMaterial.fZOffset", entry.material.renderState.getZOffset());
+			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.v4DiffuseColor", entry.material.vDiffuseColor);
+			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.gm_vZBiasOffset", entry.material.renderState.hasZBias() ? entry.material.gm_vZBiasOffset : glm::vec4(0.f));
+			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.v4Opacity", entry.material.v4Opacity);
+			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.v4Bias", entry.material.v4Bias);
+			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.alphaREF", std::clamp(entry.material.iAlphaREF, 0, 255));
+			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.fZOffset", entry.material.renderState.getZOffset());
 
 			// Bind textures
 			for (int slotIdx = render::TextureSlotId::kMapDiffuse; slotIdx < render::TextureSlotId::kMaxTextureSlot; slotIdx++)
@@ -1651,9 +1703,17 @@ namespace widgets
 				if (glTexture == kInvalidResource)
 					continue;
 
-				glFunctions->glActiveTexture(GL_TEXTURE0 + slotIdx);
-				glFunctions->glBindTexture(GL_TEXTURE_2D, glTexture);
-				shader->setUniform(glFunctions, std::string(g_aTextureKindToLocation[slotIdx]), slotIdx);
+				if (g_RenderState.aTextures[slotIdx] != glTexture)
+				{
+					glFunctions->glActiveTexture(GL_TEXTURE0 + slotIdx);
+					glFunctions->glBindTexture(GL_TEXTURE_2D, glTexture);
+					g_RenderState.aTextures[slotIdx] = glTexture;
+				}
+
+				if (bShaderChanged)
+				{
+					g_pLastKnownShader->setUniform(glFunctions, std::string(g_aTextureKindToLocation[slotIdx]), slotIdx);
+				}
 			}
 
 			if (m_renderMode & RenderMode::RM_TEXTURE)
@@ -1668,15 +1728,9 @@ namespace widgets
 				glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
 
-			// Release stuff
-			for (int slotIdx = render::TextureSlotId::kMapDiffuse; slotIdx < render::TextureSlotId::kMaxTextureSlot; slotIdx++)
-			{
-				glFunctions->glActiveTexture(GL_TEXTURE0 + slotIdx);
-				glFunctions->glBindTexture(GL_TEXTURE_2D, 0);
-			}
-
-			// And it's done
-			shader->unbind(glFunctions);
+#ifdef QT_DEBUG
+			if (bStartGroup) endDebugGroup();
+#endif
 		}
 	}
 
@@ -2073,5 +2127,174 @@ namespace widgets
 			m_cameraInRooms.emplace_back(sRoom);
 		}
 #endif
+	}
+
+	void SceneRenderWidget::beginDebugGroup(std::string_view groupName)
+	{
+#ifdef QT_DEBUG
+		QOpenGLContext::currentContext()->extraFunctions()->glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, groupName.data());
+#endif
+	}
+
+	void SceneRenderWidget::endDebugGroup()
+	{
+#ifdef QT_DEBUG
+		QOpenGLContext::currentContext()->extraFunctions()->glPopDebugGroup();
+#endif
+	}
+
+	void RenderState::set(QOpenGLFunctions_3_3_Core* gapi, const gamelib::mat::MATRenderState &state)
+	{
+		if (state.isBlendEnabled() != bHasBlend)
+		{
+			bHasBlend = state.isBlendEnabled();
+
+			if (bHasBlend)
+			{
+				gapi->glEnable(GL_BLEND);
+
+				// Set blend mode based on your enum values
+				switch (eBlendMode)
+				{
+				case gamelib::mat::MATBlendMode::BM_TRANS:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+				case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+				case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					gapi->glEnable(GL_BLEND);
+					break;
+				default:
+					// Do nothing
+					break;
+				}
+			} else {
+				gapi->glDisable(GL_BLEND);
+			}
+		}
+
+		if (bHasAlphaTest != state.isAlphaTestEnabled())
+		{
+			bHasAlphaTest = state.isAlphaTestEnabled();
+
+			if (bHasAlphaTest) {
+				gapi->glEnable(GL_ALPHA_TEST);
+			} else {
+				gapi->glDisable(GL_ALPHA_TEST);
+			}
+		}
+
+		if (bHasFog != state.isFogEnabled())
+		{
+			bHasFog = state.isFogEnabled();
+
+			if (bHasFog) {
+				gapi->glEnable(GL_FOG);
+			} else {
+				gapi->glDisable(GL_FOG);
+			}
+		}
+
+		if (eCullMode != state.getCullMode())
+		{
+			eCullMode = state.getCullMode();
+
+			switch (eCullMode)
+			{
+				case gamelib::mat::MATCullMode::CM_OneSided:
+					gapi->glCullFace(GL_BACK);
+					break;
+				case gamelib::mat::MATCullMode::CM_DontCare:
+				case gamelib::mat::MATCullMode::CM_TwoSided:
+					// please complete
+					gapi->glDisable(GL_CULL_FACE);
+					break;
+			}
+		}
+	}
+
+	void RenderState::apply(QOpenGLFunctions_3_3_Core* gapi) const
+	{
+		if (bHasBlend)
+		{
+			gapi->glEnable(GL_BLEND);
+
+			// Set blend mode based on your enum values
+			switch (eBlendMode)
+			{
+				case gamelib::mat::MATBlendMode::BM_TRANS:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+				case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					break;
+				case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
+					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					break;
+				case gamelib::mat::MATBlendMode::BM_ADD:
+					gapi->glBlendFunc(GL_ONE, GL_ONE);
+					gapi->glEnable(GL_BLEND);
+					break;
+				default:
+					// Do nothing
+					break;
+			}
+		} else {
+			gapi->glDisable(GL_BLEND);
+		}
+
+		// Enable or disable alpha testing
+		if (bHasAlphaTest) {
+			gapi->glEnable(GL_ALPHA_TEST);
+		} else {
+			gapi->glDisable(GL_ALPHA_TEST);
+		}
+
+		// Enable or disable fog
+		if (bHasFog) {
+			gapi->glEnable(GL_FOG);
+		} else {
+			gapi->glDisable(GL_FOG);
+		}
+
+#if 0
+			// Enable or disable depth offset (Z bias)
+			if (renderState.hasZBias()) {
+				gapi->glEnable(GL_POLYGON_OFFSET_FILL);
+				gapi->glPolygonOffset(2.0f, renderState.getZOffset());
+			} else {
+				gapi->glDisable(GL_POLYGON_OFFSET_FILL);
+			}
+#endif
+
+		// Set cull mode based on your enum values
+		switch (eCullMode)
+		{
+			case gamelib::mat::MATCullMode::CM_OneSided:
+				gapi->glCullFace(GL_BACK);
+				break;
+			case gamelib::mat::MATCullMode::CM_DontCare:
+			case gamelib::mat::MATCullMode::CM_TwoSided:
+				// please complete
+				gapi->glDisable(GL_CULL_FACE);
+				break;
+		}
 	}
 }

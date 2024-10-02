@@ -133,6 +133,7 @@ namespace widgets
 		void onObjectMoved(gamelib::scene::SceneObject* sceneObject);
 
 	protected:
+		void initializeGL() override;
 		void paintGL() override;
 		void resizeGL(int w, int h) override;
 
@@ -164,6 +165,10 @@ namespace widgets
 		 * @param bRejectLastResult - pass true to reject current room and try to find a new one
 		 */
 		void updateCameraRoomAttachment(RenderStats& stats, bool bRejectLastResult = true);
+
+	private:
+		void beginDebugGroup(std::string_view groupName);
+		void endDebugGroup();
 
 	private:
 		// Data
