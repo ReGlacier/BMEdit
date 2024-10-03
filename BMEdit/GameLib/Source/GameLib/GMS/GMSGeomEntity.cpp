@@ -23,7 +23,7 @@ namespace gamelib::gms
 
 	uint32_t GMSGeomEntity::getColiBits() const
 	{
-		return static_cast<uint32_t>(m_coliBits);
+		return m_coliBits;
 	}
 
 	uint32_t GMSGeomEntity::getParentGeomIndex() const
@@ -79,10 +79,7 @@ namespace gamelib::gms
 		entity.m_unk18 = gmsBinaryReader->read<uint32_t, ZBio::Endianness::LE>();
 
 		// Read coliBits
-		entity.m_coliBits = gmsBinaryReader->read<uint8_t, ZBio::Endianness::LE>();
-		entity.m_unk1D = gmsBinaryReader->read<uint8_t, ZBio::Endianness::LE>();
-		entity.m_unk1E = gmsBinaryReader->read<uint8_t, ZBio::Endianness::LE>();
-		entity.m_unk1F = gmsBinaryReader->read<uint8_t, ZBio::Endianness::LE>();
+		entity.m_coliBits = gmsBinaryReader->read<uint32_t, ZBio::Endianness::LE>();
 
 		// Read unk20, 24, 28, 2C
 		entity.m_unk20 = gmsBinaryReader->read<uint32_t, ZBio::Endianness::LE>();

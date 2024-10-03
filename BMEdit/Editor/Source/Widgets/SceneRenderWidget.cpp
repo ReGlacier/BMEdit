@@ -49,6 +49,14 @@ namespace widgets
 {
 	static render::Shader* g_pLastKnownShader = nullptr;
 
+	static bool canDrawGeom(const gamelib::scene::SceneObject* pObject)
+	{
+		using CM = gamelib::gms::ECollisionMask;
+		constexpr uint32_t kExpectedToSeeMask = CM::COLIMASK_Sight | CM::COLIMASK_Hero | CM::COLIMASK_NPC | CM::COLIMASK_Background;
+
+		return pObject && (pObject->getGeomInfo().getColiBits() & kExpectedToSeeMask);
+	}
+
 	struct RenderState
 	{
 		bool bHasBlend = false;
@@ -1341,6 +1349,9 @@ namespace widgets
 					if (visitedObjects.contains(sObject.pObject.get()))
 						continue; // Skip because it's in render list already
 
+					if (!canDrawGeom(sObject.pObject.get()))
+						continue;
+
 					if (auto bbox = getGameObjectBoundingBox(sObject.pObject, true); bbox.has_value() && m_camera.canSeeObject(bbox.value()))
 					{
 						// Need to render it
@@ -1451,9 +1462,9 @@ namespace widgets
 			return;
 		}
 
-		// Don't draw invisible things
-		if (bInvisible)
-			return;
+		if (!bIgnoreVisibility)
+			if (bInvisible || !canDrawGeom(geom))
+				return;
 
 		if (g_bannedObjectIds.contains(std::string_view{geom->getName()}) || geom->getName().starts_with("CloneGroup_"))
 			return;
