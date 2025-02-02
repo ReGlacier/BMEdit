@@ -1438,7 +1438,7 @@ namespace widgets
 										break;
 									}
 
-									qWarning() << "Material refs to texture by path " << texture.getTexturePath() << " but it's not found in cache!";
+									qWarning() << "Material refs to texture by path " << QString::fromStdString(texture.getTexturePath()) << " but it's not found in cache!";
 								}
 								break;
 
@@ -1480,7 +1480,7 @@ namespace widgets
 						const auto& classes = Level->getLevelMaterials()->materialClasses;
 						const auto& matInstance = instances[mesh.material_id - 1];
 
-						qWarning() << "For Prim " << model.chunk << " not resolved texture reference. MaterialRef = " << meshMaterialId << "(Name: " << matInstance.getName() << "Parent: " << matInstance.getParentName() << ") TextureRef = " << meshTextureId;
+						qWarning() << "For Prim " << model.chunk << " not resolved texture reference. MaterialRef = " << meshMaterialId << "(Name: " << QString::fromStdString(matInstance.getName()) << "Parent: " << QString::fromStdString(matInstance.getParentName()) << ") TextureRef = " << meshTextureId;
 					}
 					else
 					{
