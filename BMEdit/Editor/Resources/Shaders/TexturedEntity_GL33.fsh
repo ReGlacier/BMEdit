@@ -1,38 +1,28 @@
-#version 330 core
-//
-// This file is a part of BMEdit project
-// Description: Basic shader to render textured entity
-//
-in vec2 g_TexCoord;
+#version 460 core
 
-struct Material
-{
-    // See Common.fx for details
-    // Common uniforms
-    vec4 v4DiffuseColor;
-    vec4 gm_vZBiasOffset;
-    vec4 v4Opacity;
-    vec4 v4Bias;
-    float fZOffset;
-    int alphaREF;
+#extension GL_ARB_bindless_texture : require
+#extension GL_ARB_gpu_shader_int64  : require
 
-    // Textures
-    sampler2D mapDiffuse;
-    sampler2D mapSpecularMask;
-    sampler2D mapEnvironment;
-    sampler2D mapReflectionMask;
-    sampler2D mapReflectionFallOff;
-    sampler2D mapIllumination;
-    sampler2D mapTranslucency;
+// SSBO textures
+layout(std430, binding = 1) buffer TexturesBuffer {
+    sampler2D textures[];
 };
 
-uniform Material i_uMaterial;
-
+// Texture parameter
+in vec2 g_TexCoord;
+in flat uint g_TexId;
 
 // Out
 out vec4 o_FragColor;
 
 void main()
 {
-    o_FragColor = texture(i_uMaterial.mapDiffuse, g_TexCoord);
+    if (g_TexId != 0)
+    {
+        // DronCode: In our case, we should reserve a few textures for error & unsupported materials view
+        //
+        o_FragColor = texture(textures[g_TexId - 1], g_TexCoord);
+    }
+    else discard;
+    //o_FragColor = vec4(g_TexCoord, 0.0, 1.0);
 }

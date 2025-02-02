@@ -59,6 +59,7 @@ namespace render
 		void setSensitivity(float sens);
 		void setViewport(int width, int height);
 		void setPosition(const glm::vec3& vPosition);
+		void setOrientation(const glm::quat& vOrientation);
 
 		// Movement
 		void handleKeyboardMovement(CameraMovementMask movementMask = CameraMovementMaskValues::CM_FORWARD, float dt = kDefaultDt);

@@ -210,7 +210,7 @@ namespace gamelib::scene
 
 	SceneObject::EVisitResult SceneObject::internalVisitChildObjects(const std::function<EVisitResult(const gamelib::scene::SceneObject::Ptr &)>& pred) const
 	{
-		for (const auto rChild : getChildren())
+		for (const auto& rChild : getChildren())
 		{
 			if (auto pChild = rChild.lock())
 			{

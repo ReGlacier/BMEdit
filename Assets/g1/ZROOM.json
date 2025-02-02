@@ -34,7 +34,8 @@
         },
         {
             "name": "property_12C",
-            "typename": "ZRawData"
+            "typename": "ZRawData",
+            "__comment": "Some data about tree, entries, etc"
         },
         {
             "name": "NotInRoomData",

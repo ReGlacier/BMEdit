@@ -1,5 +1,9 @@
 #include <Render/Camera.h>
 
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
 
 namespace render
 {
@@ -63,6 +67,17 @@ namespace render
 	void Camera::setPosition(const glm::vec3& vPosition)
 	{
 		m_vPosition = vPosition;
+		update();
+	}
+
+	void Camera::setOrientation(const glm::quat& vOrientation)
+	{
+		glm::vec3 f0 = vOrientation * glm::vec3(0.0f, 0.0f, -1.0f);
+		glm::vec3 forward = glm::normalize(f0);
+
+		m_fPitch = glm::degrees(asin(forward.y));
+		m_fYaw = glm::degrees(atan2(forward.z, forward.x));
+
 		update();
 	}
 

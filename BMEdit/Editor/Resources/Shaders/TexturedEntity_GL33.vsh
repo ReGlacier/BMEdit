@@ -1,62 +1,39 @@
-#version 330 core
-//
-// This file is a part of BMEdit project
-// Description: Basic shader to render textured entity
-//
+#version 460 core
+
+#extension GL_ARB_bindless_texture : require
+#extension GL_ARB_gpu_shader_int64  : require
+
+
+// SSBO transform data
+// Keep sync with same struct at BMEdit/Editor/Source/Widgets/SceneRenderWidget.cpp
+struct ObjectTransformDescription {
+    mat4 Matrix;    // CPU: Write, GPU: Read
+    vec4 BoundsMin; // CPU: Write, GPU: Read
+    vec4 BoundsMax; // CPU: Write, GPU: Read
+    vec4 Status;    // CPU: Read,  GPU: Write
+};
+
+layout(std430, binding = 0) buffer TransformBuffer {
+    ObjectTransformDescription objectTransformDescriptions[];
+};
 
 // Layout
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aUV;
-
-// Common
-struct Camera
-{
-    mat4  proj;
-    mat4  view;
-    ivec2 resolution;
-};
-
-struct Transform
-{
-    mat4 model;
-};
-
-struct Material
-{
-    // See Common.fx for details
-    // Common uniforms
-    vec4 v4DiffuseColor;
-    vec4 gm_vZBiasOffset;
-    vec4 v4Opacity;
-    vec4 v4Bias;
-    float fZOffset;
-    int alphaREF;
-
-    // Textures
-    sampler2D mapDiffuse;
-    sampler2D mapSpecularMask;
-    sampler2D mapEnvironment;
-    sampler2D mapReflectionMask;
-    sampler2D mapReflectionFallOff;
-    sampler2D mapIllumination;
-    sampler2D mapTranslucency;
-};
-
-uniform Material i_uMaterial;
+layout (location = 2) in uint aInTexId;
 
 // Uniforms
-uniform Camera i_uCamera;
-uniform Transform i_uTransform;
+uniform mat4 cameraProjView;
 
 // Out
 out vec2 g_TexCoord;
+out flat uint g_TexId;
 
 void main()
 {
-    vec4 vOut = i_uCamera.proj * i_uCamera.view * i_uTransform.model * vec4(aPos.x, aPos.y, aPos.z, 1.0);
-    vOut -= i_uMaterial.gm_vZBiasOffset;
-    vOut.z -= i_uMaterial.fZOffset;
+    vec4 vOut = cameraProjView * objectTransformDescriptions[gl_BaseInstance].Matrix * vec4(aPos.x, aPos.y, aPos.z, 1.0);
 
     gl_Position = vOut;
     g_TexCoord = aUV;
+    g_TexId = aInTexId;
 }

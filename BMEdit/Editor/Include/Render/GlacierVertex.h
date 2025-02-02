@@ -11,8 +11,7 @@ namespace render
 	{
 		glm::vec3 vPos {};
 		glm::vec2 vUV {};
-
-		static const VertexFormatDescription g_FormatDescription;
+		uint32_t  iTexIndex { 0u };
 	};
 
 	struct SimpleVertex

@@ -22,6 +22,11 @@ namespace gamelib::gms
 		COLIMASK_Hero = 64,
 		COLIMASK_Camera = 128,
 		COLIMASK_NPC = 256
+
+
+		/// That masks means that entity attached to some ZROOM and we've able to find room by some "hint"
+		/// 0x40040000
+		/// 0x40000000
 	};
 
 	class GMSGeomEntity

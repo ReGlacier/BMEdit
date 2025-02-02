@@ -121,35 +121,31 @@ void BMEditMainWindow::connectActions()
 	connect(ui->actionView_whole_scene, &QAction::triggered, this, [this] { ui->sceneGLView->setWorldViewMode(); });
 
 	// Modes
-	connect(ui->actionRenderMode_Texture, &QAction::toggled, this, [this](bool val) {
-		widgets::RenderModeFlags newMode = ui->sceneGLView->getRenderMode();
-
-		if (val)
-			newMode |= widgets::RenderMode::RM_TEXTURE;
-		else
-			newMode &= ~widgets::RenderMode::RM_TEXTURE;
-
-		ui->sceneGLView->setRenderMode(newMode);
-	});
-	connect(ui->actionRenderMode_Wireframe, &QAction::toggled, this, [this](bool val) {
-		widgets::RenderModeFlags newMode = ui->sceneGLView->getRenderMode();
-
-		if (val)
-			newMode |= widgets::RenderMode::RM_WIREFRAME;
-		else
-			newMode &= ~widgets::RenderMode::RM_WIREFRAME;
-
-		ui->sceneGLView->setRenderMode(newMode);
-	});
+//	connect(ui->actionRenderMode_Texture, &QAction::toggled, this, [this](bool val) {
+//		widgets::RenderModeFlags newMode = ui->sceneGLView->getRenderMode();
+//
+//		if (val)
+//			newMode |= widgets::RenderMode::RM_TEXTURE;
+//		else
+//			newMode &= ~widgets::RenderMode::RM_TEXTURE;
+//
+//		ui->sceneGLView->setRenderMode(newMode);
+//	});
+//	connect(ui->actionRenderMode_Wireframe, &QAction::toggled, this, [this](bool val) {
+//		widgets::RenderModeFlags newMode = ui->sceneGLView->getRenderMode();
+//
+//		if (val)
+//			newMode |= widgets::RenderMode::RM_WIREFRAME;
+//		else
+//			newMode &= ~widgets::RenderMode::RM_WIREFRAME;
+//
+//		ui->sceneGLView->setRenderMode(newMode);
+//	});
 	connect(ui->actionRenderMode_Portals, &QAction::toggled, this, [this](bool val) {
 		ui->sceneGLView->setShouldRenderPortals(val);
 	});
 	connect(ui->actionRenderMode_RenderRoomBoundingBoxes, &QAction::toggled, this, [this](bool val) {
 		ui->sceneGLView->setShouldRenderRoomBoundingBox(val);
-	});
-	connect(ui->sceneGLView, &widgets::SceneRenderWidget::worldSelectionChanged, this, [this](const std::vector<widgets::RayCastObjectDescription>& hitList) {
-		// On hit performed we need to react somehow
-		// TODO: Do something here
 	});
 }
 
@@ -608,18 +604,7 @@ void BMEditMainWindow::onSceneObjectPropertyChanged(const gamelib::scene::SceneO
 
 void BMEditMainWindow::onTextureChanged(uint32_t textureIndex)
 {
-	ui->sceneGLView->reloadTexture(textureIndex);
-}
-
-void BMEditMainWindow::onSceneFramePresented(const widgets::RenderStats& stats)
-{
-	const int iApproxFPS = static_cast<int>(std::floorf(1.f / stats.fFrameTime));
-
-	m_renderStatsLabel->setText(QString("ROOM: %1 | Visible objects: %2 | Rejected objects: %3 | FPS: %4")
-	                                .arg(stats.currentRoom)
-	                                .arg(stats.allowedObjects)
-	                                .arg(stats.rejectedObjects)
-	                                .arg(iApproxFPS));
+//	ui->sceneGLView->reloadTexture(textureIndex);
 }
 
 void BMEditMainWindow::dragEnterEvent(QDragEnterEvent *pEvent)
@@ -846,7 +831,6 @@ void BMEditMainWindow::initSceneTree()
 
 	connect(ui->sceneGLView, &widgets::SceneRenderWidget::resourcesReady, this, &BMEditMainWindow::onLevelAssetsLoaded);
 	connect(ui->sceneGLView, &widgets::SceneRenderWidget::resourceLoadFailed, this, &BMEditMainWindow::onLevelAssetsLoadFailed);
-	connect(ui->sceneGLView, &widgets::SceneRenderWidget::frameReady, this, &BMEditMainWindow::onSceneFramePresented);
 }
 
 void BMEditMainWindow::initProperties()

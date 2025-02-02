@@ -1,13 +1,20 @@
 #include <Widgets/SceneRenderWidget.h>
+#include <Editor/TextureProcessor.h>
+
 #include <QOpenGLVersionFunctionsFactory>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_5_Core>
+#include <QOpenGLShaderProgram>
+#include <QSharedPointer>
 #include <QOpenGLContext>
+#include <QMessageBox>
 #include <QBuffer>
 #include <QDebug>
 #include <QImage>
 #include <QFile>
+
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <GameLib/TEX/TEXEntry.h>
 #include <GameLib/PRP/PRPObjectExtractor.h>
@@ -18,9 +25,7 @@
 #include <Render/ShaderConstants.h>
 #include <Render/GlacierVertex.h>
 #include <Render/GLResource.h>
-#include <Render/Texture.h>
 #include <Render/Shader.h>
-#include <Render/Model.h>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -29,157 +34,235 @@
 #include <chrono>
 #include <set>
 
-#ifdef Q_OS_WINDOWS
-#	define WIN32_LEAN_AND_MEAN
-#	define NOMINMAX
-#	include <Windows.h>
-#	include <RenderDoc/renderdoc_app.h>
-#	include <QOpenGLContext>
 
-bool g_bShouldCaptureFrame = false;
-RENDERDOC_API_1_1_2* g_pRenderDoc = nullptr;
-#endif
+#ifdef BMEDIT_DEBUG
+void BMEdit_OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+	Q_UNUSED(length);
+	Q_UNUSED(userParam);
 
-#ifdef QT_DEBUG
-#	include <QOpenGLExtraFunctions>
+	QString sourceStr;
+	switch (source) {
+		case GL_DEBUG_SOURCE_API:             sourceStr = "API"; break;
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   sourceStr = "Window System"; break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER: sourceStr = "Shader Compiler"; break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY:     sourceStr = "Third Party"; break;
+		case GL_DEBUG_SOURCE_APPLICATION:     sourceStr = "Application"; break;
+		case GL_DEBUG_SOURCE_OTHER:           sourceStr = "Other"; break;
+	}
+
+	QString typeStr;
+	switch (type) {
+		case GL_DEBUG_TYPE_ERROR:               typeStr = "Error"; break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeStr = "Deprecated Behavior"; break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  typeStr = "Undefined Behavior"; break;
+		case GL_DEBUG_TYPE_PORTABILITY:         typeStr = "Portability"; break;
+		case GL_DEBUG_TYPE_PERFORMANCE:         return; //typeStr = "Performance"; break;
+		case GL_DEBUG_TYPE_MARKER:              typeStr = "Marker"; break;
+		case GL_DEBUG_TYPE_PUSH_GROUP:          typeStr = "Push Group"; break;
+		case GL_DEBUG_TYPE_POP_GROUP:           typeStr = "Pop Group"; break;
+		case GL_DEBUG_TYPE_OTHER:               typeStr = "Other"; break;
+	}
+
+	QString severityStr;
+	switch (severity) {
+		case GL_DEBUG_SEVERITY_HIGH:         severityStr = "High"; break;
+		case GL_DEBUG_SEVERITY_MEDIUM:       severityStr = "Medium"; break;
+		case GL_DEBUG_SEVERITY_LOW:          severityStr = "Low"; break;
+		case GL_DEBUG_SEVERITY_NOTIFICATION: return; // No need to see this spam later
+	}
+
+	qDebug() << "[DEBUG_BUILD] OpenGL Message:"
+	         << "\nSource:" << sourceStr
+	         << "\nType:" << typeStr
+	         << "\nSeverity:" << severityStr
+	         << "\nMessage:" << message
+	         << "\nID:" << id;
+}
 #endif
 
 
 namespace widgets
 {
-	static render::Shader* g_pLastKnownShader = nullptr;
+	int32_t GetSceneObjectPrimitiveID(const gamelib::Level* pLevel, const gamelib::scene::SceneObject* pObject);
 
-	static bool canDrawGeom(const gamelib::scene::SceneObject* pObject)
+	struct IndirectRenderDrawCommand
 	{
-		using CM = gamelib::gms::ECollisionMask;
-		constexpr uint32_t kExpectedToSeeMask = CM::COLIMASK_Sight | CM::COLIMASK_Hero | CM::COLIMASK_NPC | CM::COLIMASK_Background;
-
-		return pObject && (pObject->getGeomInfo().getColiBits() & kExpectedToSeeMask);
-	}
-
-	struct RenderState
-	{
-		bool bHasBlend = false;
-		bool bHasAlphaTest = false;
-		bool bHasFog = false;
-
-		gamelib::mat::MATBlendMode eBlendMode { gamelib::mat::MATBlendMode::BM_ADD };
-		gamelib::mat::MATCullMode eCullMode { gamelib::mat::MATCullMode::CM_DontCare };
-
-		std::array<uint32_t, render::TextureSlotId::kMaxTextureSlot> aTextures { 0 };
-
-		void reset()
-		{
-			bHasFog = false;
-			bHasBlend = false;
-			bHasAlphaTest = false;
-			eBlendMode = gamelib::mat::MATBlendMode::BM_ADD;
-			eCullMode = gamelib::mat::MATCullMode::CM_DontCare;
-
-			for (auto& tex : aTextures)
-			{
-				tex = std::numeric_limits<uint32_t>::max();
-			}
-		}
-
-		void set(QOpenGLFunctions_3_3_Core* glFuncs, const gamelib::mat::MATRenderState& state);
-		void apply(QOpenGLFunctions_3_3_Core* glFuncs) const;
+		GLuint count;
+		GLuint instanceCount;
+		GLuint firstIndex;
+		GLuint baseVertex;
+		GLuint baseInstance;
 	};
 
-	static RenderState g_RenderState{};
+	struct GLExtFunctions
+	{
+		using Ptr = std::unique_ptr<GLExtFunctions>;
 
-	// Here stored geom names (common) where editor should avoid any rendering (it's too expensive and unnecessary for us)
-	static const std::set<std::string_view> g_bannedObjectIds {
-	    "AdditionalResources", "AllLevels/mainsceneincludes.zip", "AllLevels/equipment.zip"
+		explicit GLExtFunctions(QOpenGLContext* pContext);
+		[[nodiscard]] bool IsAllFunctionsArePresentedAndSupported() const;
+
+		typedef GLuint64 (*PFNGLGETTEXTUREHANDLEARBPROC)(GLuint texture);
+		typedef void     (*PFNGLMAKETEXTUREHANDLERESIDENTARBPROC)(GLuint64 handle);
+		typedef void     (*PFNGLMAKETEXTUREHANDLENONRESIDENTARBPROC)(GLuint64 handle);
+
+		PFNGLGETTEXTUREHANDLEARBPROC             glGetTextureHandleARB             = nullptr;
+		PFNGLMAKETEXTUREHANDLERESIDENTARBPROC    glMakeTextureHandleResidentARB    = nullptr;
+		PFNGLMAKETEXTUREHANDLENONRESIDENTARBPROC glMakeTextureHandleNonResidentARB = nullptr;
 	};
 
-	bool RayCastObjectDescription::operator<(const widgets::RayCastObjectDescription& another) const
+	GLExtFunctions::GLExtFunctions(QOpenGLContext *pContext)
 	{
-		if (another.ePrio == ePrio)
-		{
-			if (std::fabsf(another.fRayOriginDistance - fRayOriginDistance) <= std::numeric_limits<float>::epsilon())
-			{
-				return false; // They are completely same (except object itself, but who cares?)
-			}
-
-			return fRayOriginDistance < another.fRayOriginDistance;
-		}
-
-		return static_cast<int>(ePrio) < static_cast<int>(another.ePrio);
+		glGetTextureHandleARB = reinterpret_cast<PFNGLGETTEXTUREHANDLEARBPROC>(pContext->getProcAddress("glGetTextureHandleARB"));
+		glMakeTextureHandleResidentARB = reinterpret_cast<PFNGLMAKETEXTUREHANDLERESIDENTARBPROC>(pContext->getProcAddress("glMakeTextureHandleResidentARB"));
+		glMakeTextureHandleNonResidentARB = reinterpret_cast<PFNGLMAKETEXTUREHANDLENONRESIDENTARBPROC>(pContext->getProcAddress("glMakeTextureHandleNonResidentARB"));
 	}
 
-	using namespace render;
-
-	struct SceneRenderWidget::GLResources
+	bool GLExtFunctions::IsAllFunctionsArePresentedAndSupported() const
 	{
-		std::vector<Texture> m_textures {};
-		std::vector<Shader> m_shaders {};
-		std::vector<Model> m_models {};
-		std::unordered_map<uint32_t, size_t> m_modelsCache {};  /// primitive index to model index in m_models
-		std::unordered_map<gamelib::scene::SceneObject*, glm::mat4> m_modelTransformCache {}; /// transformations cache
-		std::unordered_map<std::string, GLuint> m_textureNameToGL {}; /// name of texture to it's OpenGL resource id
-		std::unordered_map<uint32_t, GLuint> m_textureIndexToGL {}; /// index of texture to it's OpenGL resource id
-		std::unordered_set<uint32_t> m_invalidatedTextures; /// Set of textures who need to be reloaded on next frame
-		GLuint m_iGLDebugTexture { 0 };
-		GLuint m_iGLMissingTexture { 0 };
-		GLuint m_iGLUnsupportedMaterialTexture { 0 };
-		size_t m_iTexturedShaderIdx = 0;
-		size_t m_iGizmoShaderIdx = 0;
+		if (!glGetTextureHandleARB) return false;
+		if (!glMakeTextureHandleResidentARB) return false;
+		if (!glMakeTextureHandleNonResidentARB) return false;
 
-		GLResources() {}
-		~GLResources() {}
+		return true;
+	}
 
-		void discard(QOpenGLFunctions_3_3_Core* gapi)
+	using GLFunctions = QOpenGLFunctions_4_5_Core;
+
+#define ENCODE_MESH_IDX(modelId, meshId) ((static_cast<uint64_t>(modelId) << 32) | static_cast<uint64_t>(meshId))
+#define DECODE_MODEL_ID(encoded) (static_cast<uint32_t>((encoded) >> 32))
+#define DECODE_MESH_ID(encoded) (static_cast<uint32_t>((encoded) & 0xFFFFFFFF))
+
+	struct MeshInfo
+	{
+		uint32_t indexOffset = 0;
+		uint32_t indexCount = 0;
+		gamelib::mat::MATRenderState renderState {
+		    "GENERATED",
+		    true,
+		    true,
+		    true,
+		    true,
+		    false,
+		    1.0f,
+		    0.f,
+		    255,
+		    gamelib::mat::MATCullMode::CM_DontCare,
+		    gamelib::mat::MATBlendMode::BM_ADD,
+		    {}};
+	};
+
+	/**
+	 * A memory aligned (by 0x10) bbox definition
+	 */
+	struct BoundingBoxDef
+	{
+		glm::vec4 vMin { 0.f };
+		glm::vec4 vMax { 0.f };
+
+		BoundingBoxDef() = default;
+		BoundingBoxDef(const glm::vec3& min, const glm::vec3& max) : vMin(min, 0.f), vMax(max, 0.f) {}
+		explicit BoundingBoxDef(const gamelib::BoundingBox& gbb) : vMin(gbb.min, 0.f), vMax(gbb.max, 0.f) {}
+		BoundingBoxDef& operator=(const gamelib::BoundingBox& gbb)
 		{
-			// Destroy textures
-			{
-				for (auto& texture : m_textures)
-				{
-					texture.discard(gapi);
-				}
-
-				m_textures.clear();
-			}
-
-			// Destroy shaders
-			{
-				for (auto& shader : m_shaders)
-				{
-					shader.discard(gapi);
-				}
-
-				m_shaders.clear();
-			}
-
-			// Destroy models
-			{
-				for (auto& model : m_models)
-				{
-					model.discard(gapi);
-				}
-
-				m_models.clear();
-			}
-
-			// Empty cache
-			m_modelsCache.clear();
-			m_modelTransformCache.clear();
-			m_textureNameToGL.clear();
-			m_textureIndexToGL.clear();
-			m_invalidatedTextures.clear();
-
-			// Release refs
-			m_iGLDebugTexture = 0u;
-			m_iGLMissingTexture = 0u;
-			m_iGLUnsupportedMaterialTexture = 0u;
-			m_iTexturedShaderIdx = 0u;
-			m_iGizmoShaderIdx = 0u;
+			vMin = glm::vec4(gbb.min, 0.f);
+			vMax = glm::vec4(gbb.max, 0.f);
+			return *this;
 		}
 
-		[[nodiscard]] bool hasResources() const
+		BoundingBoxDef& operator=(gamelib::BoundingBox&& gbb)
 		{
-			return !m_textures.empty() || !m_shaders.empty() || !m_models.empty();
+			vMin = glm::vec4(gbb.min, 0.f); gbb.min = glm::vec3(0.f);
+			vMax = glm::vec4(gbb.max, 0.f); gbb.max = glm::vec3(0.f);
+			return *this;
 		}
+
+		[[nodiscard]] gamelib::BoundingBox AsBounds() const { return gamelib::BoundingBox(vMin, vMax); }
+	};
+
+
+	/**
+	 * @brief This structure holds render data remains to only current game level
+	 */
+	struct SceneRenderWidget::RenderContext
+	{
+		RenderContext(GLFunctions* pGLFunctions, GLExtFunctions* pExtFunctions, gamelib::Level* pGameLevel);
+		~RenderContext();
+
+		void setup();
+		bool buildTextureCache();
+		bool buildGeometryBatch();
+		bool buildTransformCache();
+		void syncTransforms();
+
+		/// --- Data -------------------
+		GLFunctions* GL       = nullptr;
+		GLExtFunctions* GLExt = nullptr;
+		gamelib::Level* Level = nullptr;
+
+		// Materials
+		QMap<uint64_t, MeshInfo> Meshes;  // Information about meshes (each PrimId aka Model is a bunch of meshes)
+		QMap<int32_t, uint32_t> ModelToMeshesCount; // Contains information about amount of meshes inside model (helper for Meshes storage) ; primId to amount of meshes
+		QVector<GLuint> TexturesCache;  // Original textures pool
+		QVector<GLuint64> ResidentialTextures;  // A vector if resident texture handles (passed to SSBO)
+		QMap<QString, uint32_t> NamedResidentialTextures; // Name to texture index in ResidentialTextures
+		QMap<uint32_t, uint32_t> GlacierTextureIndexToResidentialTextureHandle; // Glacier Texture Index to index in ResidentialTextures
+
+		// BoundingBoxes
+		QMap<int32_t, gamelib::BoundingBox> BoundingBoxes; // Non transformed & in local space bboxes (vMin & vMax) ; primId to bbox
+
+		// Geometry mega batch
+		GLuint MainGeometryVAO = 0;
+		GLuint MainGeometryVBO = 0;
+		GLuint MainGeometryEBO = 0;
+		uint32_t MainGeometryVertexCapacity = 400'000;
+		uint32_t MainGeometryIndexCapacity = 400'000;
+
+		// Transforms
+		struct ObjectTransformDescription {
+			glm::mat4 Matrix    {  1.f };  /// CPU: Write  GPU: Read
+			glm::vec4 BoundsMin { -1.f };  /// CPU: Write  GPU: Read
+			glm::vec4 BoundsMax {  1.f };  /// CPU: Write  GPU: Read
+			glm::vec4 Status    {  0.f };  /// CPU: ReadWrite GPU: Write | X - Is Visible (GPU), Y - PrimitiveID (CPU), Z, W - unused
+		};
+
+		QVector<ObjectTransformDescription> Transforms; // Linear memory chunk to store all transforms directly. There are will be copied to GPU SSBO
+		QVector<BoundingBoxDef> WorldBoundingBoxes; // A cached world space bounding boxes. Indexing same to Transforms
+		QMap<gamelib::scene::SceneObject*, uint32_t> ObjectToTransformIndex;
+
+		uint32_t SSBOMaxCapacity = 0;
+		GLuint TransformSSBO = 0;
+		GLuint TexturesSSBO = 0;
+
+		// Indirect renderer
+		// Indirect buffer contains all draw commands but executed only by DrawGroup's
+		GLuint IndirectDrawBuffer = 0;
+		uint32_t IndirectDrawCommandsCapacity = 100'000;
+		QVector<IndirectRenderDrawCommand> Commands {};
+		std::ptrdiff_t IndirectDrawNonTransparentCommands = 0;
+		uint32_t IndirectDrawNonTransparentCommandsCount = 0;
+		std::ptrdiff_t IndirectDrawTransparentCommands = 0;
+		uint32_t IndirectDrawTransparentCommandsCount = 0;
+	};
+
+	struct SceneRenderWidget::RenderCommon
+	{
+		RenderCommon(GLFunctions* pGLFunctions, GLExtFunctions::Ptr&& pGLExtFunctions);
+		~RenderCommon();
+
+		void setup();
+
+		/// --- Data -------------------
+		enum EUniformID { U_CAMERA_PROJ_VIEW = 0, MAX_UNIFORM_INDEX };
+
+		QSharedPointer<QOpenGLShaderProgram> DefaultShader = nullptr;
+		QSharedPointer<QOpenGLShaderProgram> CullingShader = nullptr;
+		GLuint DefaultShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
+		GLuint CullingShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
+
+		GLFunctions* GL = nullptr;
+		GLExtFunctions::Ptr GLExt = nullptr;
+		uint32_t MaxSSBOCapacity = 0;
 	};
 
 	SceneRenderWidget::SceneRenderWidget(QWidget *parent, Qt::WindowFlags f) : QOpenGLWidget(parent, f)
@@ -187,180 +270,89 @@ namespace widgets
 		QSurfaceFormat format;
 		format.setDepthBufferSize(24);
 		format.setStencilBufferSize(8);
-		format.setVersion(3, 3);
+		format.setVersion(4, 6);
 		format.setProfile(QSurfaceFormat::CoreProfile);
-		setFormat(format);
 
-#ifdef Q_OS_WINDOWS
-		if (HMODULE pRenderDocMod = GetModuleHandleA("renderdoc.dll"))
-		{
-			auto RENDERDOC_GetAPI = (pRENDERDOC_GetAPI)GetProcAddress(pRenderDocMod, "RENDERDOC_GetAPI");
-			int ret = RENDERDOC_GetAPI(eRENDERDOC_API_Version_1_1_2, (void **)&g_pRenderDoc);
-			if (ret != 1)
-			{
-				g_pRenderDoc = nullptr;
-			}
-		}
+#ifdef BMEDIT_DEBUG
+		// Enable debug context for debug build
+		qDebug() << "[DEBUG BUILD] Scene renderer will enable DebugContext!";
+
+		format.setOption(QSurfaceFormat::DebugContext);
 #endif
+
+		setFormat(format);
 	}
 
 	SceneRenderWidget::~SceneRenderWidget() noexcept = default;
 
 	void SceneRenderWidget::initializeGL()
 	{
-#ifdef Q_OS_WINDOWS
-		if (g_pRenderDoc)
-		{
-			g_pRenderDoc->SetActiveWindow(
-			    context()->nativeInterface<QNativeInterface::QWGLContext>()->nativeContext(),
-			    (void*)winId()
-			);
-		}
+		// Build common resources
+		m_pCommon = std::make_unique<RenderCommon>(
+		    QOpenGLVersionFunctionsFactory::get<GLFunctions>(QOpenGLContext::currentContext()),
+			std::make_unique<GLExtFunctions>(QOpenGLContext::currentContext())
+		);
+
+		// Setup OpenGL debug context if we've in debug
+#ifdef BMEDIT_DEBUG
+		m_pCommon->GL->glEnable(GL_DEBUG_OUTPUT);
+		m_pCommon->GL->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		m_pCommon->GL->glDebugMessageCallback(BMEdit_OpenGLMessageCallback, nullptr);
+		m_pCommon->GL->glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+
+		qDebug() << "[DEBUG BUILD] Attached OpenGL message listener";
 #endif
+
+		// Check requirements
+		if (!SceneRenderWidget::checkRenderRequirements())
+		{
+			std::terminate(); // dies here
+			return;
+		}
+
+		// Check ext
+		if (!m_pCommon->GLExt->IsAllFunctionsArePresentedAndSupported())
+		{
+			QMessageBox::critical(nullptr,
+			                      "GPU compatibility failure",
+			                      QString("Your GPU does not support one ore more required functions"));
+
+			std::terminate();
+			return;
+		}
+
+		m_pCommon->setup();
+
+		qDebug() << "Base render stubs are inited";
 	}
 
 	void SceneRenderWidget::paintGL()
 	{
-		RenderStats renderStats {};
+		if (!m_pLevel) return; // Do nothing when level not presented yet
+		if (m_eLoaderState == ELevelLoadState::LLS_FAILED_TO_LOAD) return; // Don't render anything
 
-		auto renderStartTime = std::chrono::high_resolution_clock::now();
-
-		auto funcs = QOpenGLVersionFunctionsFactory::get<QOpenGLFunctions_3_3_Core>(QOpenGLContext::currentContext());
-		if (!funcs) {
-			qFatal("Could not obtain required OpenGL context version");
-			return;
-		}
-
-#ifdef Q_OS_WINDOWS
-		const bool bCaptureStarted = g_bShouldCaptureFrame;
-		g_bShouldCaptureFrame = false;
-		if (g_pRenderDoc && bCaptureStarted) g_pRenderDoc->StartFrameCapture(nullptr, nullptr);
-#endif
-
-		// Begin frame
-		const auto vp = getViewportSize();
-		funcs->glViewport(0, 0, vp.x, vp.y);
-		funcs->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		funcs->glClearColor(0.15f, 0.2f, 0.45f, 1.0f);
-
-		// Z-Buffer testing
-		funcs->glEnable(GL_DEPTH_TEST);
-
-		// Blending
-		funcs->glEnable(GL_BLEND);
-		funcs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		// NOTE: Before render anything we need to look at material and check MATRenderState.
-		//       If it's applied we need to setup OpenGL into correct state to make perfect rendering
-		switch (m_eState)
+		if (m_eLoaderState == ELevelLoadState::LLS_READY)
 		{
-			case ELevelState::LS_NONE:
+			if (m_bRenderListDirty)
 			{
-				if (m_pLevel) {
-					// Create base for resources
-					assert(m_resources == nullptr && "Leaked resources");
-					m_resources = std::make_unique<GLResources>();
+				// Generate new commands
+				updateViewLists();
+				generateDrawCommands();
+			}
 
-				    // Run process
-				    m_eState = ELevelState::LS_LOAD_TEXTURES;
-			    } else if (m_resources && m_resources->hasResources()) {
-				    m_resources->discard(funcs);
-			    }
-		    }
-		    break;
-			case ELevelState::LS_LOAD_TEXTURES:
-		    {
-			    doLoadTextures(funcs);
-		    }
-		    break;
-			case ELevelState::LS_LOAD_GEOMETRY:
-		    {
-			    doLoadGeometry(funcs);
-		    }
-		    break;
-			case ELevelState::LS_COMPILE_SHADERS:
-		    {
-			    doCompileShaders(funcs);
-		    }
-		    break;
-		    case ELevelState::LS_RESET_CAMERA_STATE:
-		    {
-			    doResetCameraState(funcs);
-		    }
-			break;
-			case ELevelState::LS_READY:
-		    {
-			    // Prepare invalidated stuff
-			    doPrepareInvalidatedResources(funcs);
+			if (m_bTransformsDirty)
+			{
+				m_pContext->syncTransforms();
+				m_bTransformsDirty = false;
+			}
 
-			    // Reset render state
-			    g_RenderState.reset();
-			    g_RenderState.apply(funcs);
-
-			    // Render scene
-			    gamelib::scene::SceneObject* pRoot = nullptr;
-			    bool bIgnoreVisibility = false;
-
-			    if (m_eViewMode == EViewMode::VM_WORLD_VIEW)
-			    {
-				    pRoot = m_pLevel->getSceneObjects()[0].get();
-				}
-			    else if (m_eViewMode == EViewMode::VM_GEOM_PREVIEW)
-			    {
-				    if (m_pSceneObjectToView)
-				    {
-						bIgnoreVisibility = true;
-						pRoot = m_pSceneObjectToView;
-					}
-			    }
-
-			    if (!pRoot) break;
-
-			    if (m_renderList.empty())
-			    {
-				    collectRenderList(m_camera, pRoot, m_renderList, renderStats, bIgnoreVisibility);
-			    }
-
-			    if (!m_renderList.empty())
-			    {
-				    auto onlyNonAlpha = [](const render::RenderEntry& entry) -> bool { return !entry.material.renderState.isAlphaTestEnabled() && !entry.material.renderState.isBlendEnabled(); };
-				    auto onlyAlpha = [](const render::RenderEntry& entry) -> bool { return entry.material.renderState.isAlphaTestEnabled() || entry.material.renderState.isBlendEnabled(); };
-
-				    // 2 pass rendering: first render only non-alpha objects
-				    if (m_renderMode & RenderMode::RM_NON_ALPHA_OBJECTS)
-				    {
-					    beginDebugGroup("NON_ALPHA_OBJECTS");
-					    performRender(funcs, m_renderList, m_camera, onlyNonAlpha);
-					    endDebugGroup();
-				    }
-
-				    // then render only alpha objects
-				    if (m_renderMode & RenderMode::RM_ALPHA_OBJECTS)
-				    {
-					    beginDebugGroup("ALPHA_OBJECTS");
-					    performRender(funcs, m_renderList, m_camera, onlyAlpha);
-					    endDebugGroup();
-				    }
-
-				    // Submit stats
-				    if (!m_renderList.empty())
-				    {
-					    auto renderEndTime = std::chrono::high_resolution_clock::now();
-					    std::chrono::duration<float> elapsed = renderEndTime - renderStartTime;
-					    renderStats.fFrameTime = elapsed.count();
-					    emit frameReady(renderStats);
-				    }
-			    }
-		    }
-		    break;
+			// Perform commands
+			drawScene();
 		}
-
-#ifdef Q_OS_WINDOWS
-		if (g_pRenderDoc && bCaptureStarted) g_pRenderDoc->EndFrameCapture(nullptr, nullptr);
-#endif
-
-		if (g_pLastKnownShader) g_pLastKnownShader->unbind(funcs);
-		g_pLastKnownShader = nullptr;
+		else if (m_eLoaderState == ELevelLoadState::LLS_NONE)
+		{
+			loadLevelImpl();
+		}
 	}
 
 	void SceneRenderWidget::resizeGL(int w, int h)
@@ -370,20 +362,10 @@ namespace widgets
 
 		// Update projection
 		m_camera.setViewport(w, h);
-
-		// Because our list of visible objects could be changed here (???)
-		invalidateRenderList();
 	}
 
 	void SceneRenderWidget::keyPressEvent(QKeyEvent* event)
 	{
-#ifdef Q_OS_WINDOWS
-		if (event->key() == Qt::Key_F8)
-		{
-			g_bShouldCaptureFrame = true;
-		}
-#endif
-
 		if (m_pLevel)
 		{
 			render::CameraMovementMask movementMask {};
@@ -413,14 +395,17 @@ namespace widgets
 				movementMask |= render::CameraMovementMaskValues::CM_SPEEDUP_MOD;
 			}
 
-			if ((movementMask & CM_FORWARD) && (movementMask & CM_BACKWARD)) movementMask &= ~(CM_FORWARD | CM_BACKWARD);
-			if ((movementMask & CM_LEFT) && (movementMask & CM_RIGHT)) movementMask &= ~(CM_LEFT | CM_RIGHT);
+			if ((movementMask & render::CameraMovementMaskValues::CM_FORWARD) && (movementMask & render::CameraMovementMaskValues::CM_BACKWARD))
+				movementMask &= ~(render::CameraMovementMaskValues::CM_FORWARD | render::CameraMovementMaskValues::CM_BACKWARD);
 
-			if (movementMask > 0 && movementMask != (CM_SPEEDUP_MOD))
+			if ((movementMask & render::CameraMovementMaskValues::CM_LEFT) && (movementMask & render::CameraMovementMaskValues::CM_RIGHT))
+				movementMask &= ~(render::CameraMovementMaskValues::CM_LEFT | render::CameraMovementMaskValues::CM_RIGHT);
+
+			if (movementMask > 0 && movementMask != (render::CameraMovementMaskValues::CM_SPEEDUP_MOD))
 			{
 				m_camera.handleKeyboardMovement(movementMask /* dt */);
+				m_bRenderListDirty = true; // moved
 
-				invalidateRenderList();
 				repaint();
 			}
 		}
@@ -456,8 +441,10 @@ namespace widgets
 			const float kMinMovement = 0.001f;
 			if (std::fabsf(xOffset - kMinMovement) > std::numeric_limits<float>::epsilon() || std::fabsf(yOffset - kMinMovement) > std::numeric_limits<float>::epsilon())
 			{
-				invalidateRenderList();
 				m_camera.processMouseMovement(xOffset, yOffset /* dt */);
+
+				// Moved
+				m_bRenderListDirty = true;
 			}
 		}
 
@@ -471,18 +458,7 @@ namespace widgets
 
 		if (event->button() == Qt::MouseButton::RightButton && !m_pLevel->getSceneObjects().empty())
 		{
-			// Begin ray cast
-			const auto vMouseClickPos = event->position();
-
-			// If no rooms on level we should use ROOT as initial point (not recommended in MOST cases)
-			// Two step raycast: 1 - to room bbox (allow to run ray from room)
-			//                   2 - to in-room objects
-
-//			auto result = performRayCastToScene(vMouseClickPos, (!m_pLastRoom && m_rooms.empty()) ? m_pLevel->getSceneObjects()[0] : nullptr);
-//			if (!result.empty())
-//			{
-//				emit worldSelectionChanged(result);
-//			}
+			// RayCast
 		}
 	}
 
@@ -498,54 +474,40 @@ namespace widgets
 	{
 		if (m_pLevel != pLevel)
 		{
-			m_resources = nullptr;
-			m_eState = ELevelState::LS_NONE;
+			// Drop previously loaded level
+			resetLevel();
+
+			// Store a new data
 			m_pLevel = pLevel;
 			m_bFirstMouseQuery = true;
-			invalidateRenderList();
+			m_eLoaderState = ELevelLoadState::LLS_NONE;
+
 			resetViewMode();
-			resetRenderMode();
 		}
 	}
 
 	void SceneRenderWidget::resetLevel()
 	{
-		// reset GPU caches & other optimisations
-		g_pLastKnownShader = nullptr;
-		g_RenderState.reset();
-
 		// drop resources
-		if (m_pLevel != nullptr)
-		{
-			m_resources = nullptr;
-			m_eState = ELevelState::LS_NONE;
-			m_pLevel = nullptr;
-			m_bFirstMouseQuery = true;
-			invalidateRenderList();
-			resetViewMode();
-			resetRenderMode();
-			repaint();
-		}
+		m_pLevel = nullptr;
+		m_bFirstMouseQuery = true;
+		m_pContext = nullptr; // Drop level resources here
+		m_eLoaderState = ELevelLoadState::LLS_NONE;
+
+		resetViewMode();
+		repaint();
 	}
 
 	void SceneRenderWidget::setGeomViewMode(gamelib::scene::SceneObject* sceneObject)
 	{
 		assert(sceneObject != nullptr);
 
-		if (sceneObject != m_pSceneObjectToView)
-		{
-			m_eViewMode = EViewMode::VM_GEOM_PREVIEW;
-			m_pSceneObjectToView = sceneObject;
-			invalidateRenderList();
-			repaint();
-		}
+		// Focus on obj
 	}
 
 	void SceneRenderWidget::setWorldViewMode()
 	{
-		m_eViewMode = EViewMode::VM_WORLD_VIEW;
-		m_pSceneObjectToView = nullptr;
-		invalidateRenderList();
+		// Unfocus
 		repaint();
 	}
 
@@ -562,43 +524,10 @@ namespace widgets
 		auto flags = sceneObject->getGeomInfo().getGeomFlags();
 		bool isBit4Set = flags & (1 << 4);
 
-		if (m_pSelectedSceneObject != sceneObject && sceneObject != nullptr)
-		{
-			m_pSelectedSceneObject = sceneObject;
-			invalidateRenderList();
-			repaint();
-		}
 	}
 
 	void SceneRenderWidget::resetSelectedObject()
 	{
-		if (m_pSelectedSceneObject != nullptr)
-		{
-			m_pSelectedSceneObject = nullptr;
-
-			if (m_pLevel)
-			{
-				invalidateRenderList();
-				repaint();
-			}
-		}
-	}
-
-	RenderModeFlags SceneRenderWidget::getRenderMode() const
-	{
-		return m_renderMode;
-	}
-
-	void SceneRenderWidget::setRenderMode(RenderModeFlags renderMode)
-	{
-		m_renderMode = renderMode;
-		repaint();
-	}
-
-	void SceneRenderWidget::resetRenderMode()
-	{
-		m_renderMode = RenderMode::RM_DEFAULT;
-		repaint();
 	}
 
 	void SceneRenderWidget::moveCameraTo(const glm::vec3& position)
@@ -607,15 +536,8 @@ namespace widgets
 			return;
 
 		m_camera.setPosition(position);
+		m_bRenderListDirty = true;
 		repaint();
-	}
-
-	void SceneRenderWidget::reloadTexture(uint32_t textureIndex)
-	{
-		if (!m_pLevel)
-			return;
-
-		m_resources->m_invalidatedTextures.insert(textureIndex);
 	}
 
 	bool SceneRenderWidget::shouldRenderPortals() const
@@ -646,31 +568,221 @@ namespace widgets
 		}
 	}
 
-	int32_t SceneRenderWidget::getGameObjectPrimitiveId(const gamelib::scene::SceneObject::Ptr& pObject) const
+	void SceneRenderWidget::onRedrawRequested()
 	{
-		if (!pObject) return 0;
-
-		return getGameObjectPrimitiveId(pObject.get());
+		if (m_pLevel)
+			repaint();
 	}
 
-	int32_t SceneRenderWidget::getGameObjectPrimitiveId(const gamelib::scene::SceneObject* pObject) const
+	void SceneRenderWidget::onObjectMoved(gamelib::scene::SceneObject *sceneObject)
 	{
+		// Impl
+		if (m_pContext)
+		{
+			if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(sceneObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end())
+			{
+				const glm::mat4 mWorld = sceneObject->getWorldTransform();
+				m_pContext->Transforms[*objectToIndexIt].Matrix = mWorld;
+
+				const auto primId = GetSceneObjectPrimitiveID(m_pLevel, sceneObject);
+				if (primId)
+				{
+					// Update world bounding boxes
+					const auto worldBBox = gamelib::BoundingBox::toWorld(m_pContext->BoundingBoxes[primId], mWorld);
+					m_pContext->WorldBoundingBoxes[*objectToIndexIt] = worldBBox;
+					m_pContext->Transforms[*objectToIndexIt].BoundsMin = glm::vec4(worldBBox.min, 1.f);
+					m_pContext->Transforms[*objectToIndexIt].BoundsMax = glm::vec4(worldBBox.max, 1.f);
+				}
+
+				m_bTransformsDirty = true; // NOTE: Maybe we should upload only part?
+			}
+		}
+	}
+
+	bool SceneRenderWidget::checkRenderRequirements() const
+	{
+		Q_ASSERT(m_pCommon != nullptr);
+
+		// #0: Print debug stuff
+#ifdef BMEDIT_DEBUG
+		const auto vendor = std::string((const char*)m_pCommon->GL->glGetString(GL_VENDOR));
+		const auto renderer = std::string((const char*)m_pCommon->GL->glGetString(GL_RENDERER));
+		const auto version = std::string((const char*)m_pCommon->GL->glGetString(GL_VERSION));
+		const auto glslVersion = std::string((const char*)m_pCommon->GL->glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+		qDebug() << "OpenGL Vendor: " << vendor;
+		qDebug() << "OpenGL Renderer: " << renderer;
+		qDebug() << "OpenGL Version: " << version;
+		qDebug() << "GLSL Version: " << glslVersion;
+#endif
+
+		// #0: Check OpenGL version (at least 4.6 is required)
+		GLint glMajorVersion, glMinorVersion;
+		m_pCommon->GL->glGetIntegerv(GL_MAJOR_VERSION, &glMajorVersion);
+		m_pCommon->GL->glGetIntegerv(GL_MINOR_VERSION, &glMinorVersion);
+		qDebug() << "OpenGL Version: " << QString("%1.%2").arg(glMajorVersion).arg(glMinorVersion);
+
+		if (glMajorVersion < 4 || glMinorVersion < 6)
+		{
+			QMessageBox::critical(nullptr,
+			                      "GPU compatibility failure",
+			                      QString("Your GPU does not support OpenGL 4.6, only OpenGL %1.%2 supported")
+			                          .arg(glMajorVersion)
+			                          .arg(glMinorVersion));
+			return false;
+		}
+
+		// #1 : Bindless support
+		const bool bHasBindlessTextures = QOpenGLContext::currentContext()->hasExtension("GL_ARB_bindless_texture");
+		if (!bHasBindlessTextures)
+		{
+			QMessageBox::critical(nullptr,
+			                      "GPU compatibility failure",
+			                      QString("Your GPU must support GL_ARB_bindless_texture extension, but it doesn't. Please, contact BMEdit developers about this"));
+			return false;
+		}
+
+		// #1.1: Check how much textures we've able to use as bindless. Required at least 2000 to fit any level
+		// Here the catch: no way to detect is it possible to allocate N residential textures or not. We will try to do it at load level stage
+		// #1.2: DSA - supported by OpenGL 4.6 core profile. Don't need to check anything
+
+		// #2: For indirect draw we need to have GL_ARB_draw_indirect at least!
+		const bool bHasIndirectDraw = QOpenGLContext::currentContext()->hasExtension("GL_ARB_draw_indirect");
+
+		if (!bHasIndirectDraw)
+		{
+			QMessageBox::critical(nullptr,
+			                      "GPU compatibility failure",
+			                      QString("Your GPU does not support indirect rendering. At least OpenGL 4.5 required"));
+
+			return false;
+		}
+
+		// #3: For rendering we need to use SSBO
+		GLint maxSSBOSize = 0;
+		m_pCommon->GL->glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxSSBOSize);
+
+		constexpr int kMinSSBOEntries = 128;
+		constexpr int kMaxSSBOEntries = 128'000;
+
+		if (maxSSBOSize < kMinSSBOEntries * sizeof(glm::mat4))
+		{
+			QMessageBox::critical(nullptr, "GPU compatibility failure", "Your GPU has too small SSBO buffer size");
+			return false;
+		}
+
+		m_pCommon->MaxSSBOCapacity = std::min(kMaxSSBOEntries, static_cast<int>(maxSSBOSize / sizeof(glm::mat4)));
+		qDebug() << "GPU: Detected SSBO buffer size is " << maxSSBOSize << " bytes. It will fit at least "
+		         << (maxSSBOSize / sizeof(glm::mat4)) << " mat4x4 instances, but we will use only " << m_pCommon->MaxSSBOCapacity;
+
+		return true;
+	}
+
+	void SceneRenderWidget::loadLevelImpl()
+	{
+		Q_ASSERT(m_pLevel != nullptr);  // WTF #1
+		Q_ASSERT(m_pCommon != nullptr); // WTF #2
+		Q_ASSERT(m_eLoaderState == ELevelLoadState::LLS_NONE);
+
+		if (m_eLoaderState != ELevelLoadState::LLS_NONE)
+			return;
+
+		m_eLoaderState = ELevelLoadState::LLS_LOADING;
+
+		if (!m_pContext)
+		{
+			m_pContext = std::make_unique<RenderContext>(
+			    QOpenGLVersionFunctionsFactory::get<GLFunctions>(QOpenGLContext::currentContext()),
+			    m_pCommon->GLExt.get(),
+			    m_pLevel);
+
+			m_pContext->SSBOMaxCapacity = m_pCommon->MaxSSBOCapacity;
+			Q_ASSERT(m_pContext->SSBOMaxCapacity > 0);
+
+			m_pContext->setup();
+		}
+
+		Q_ASSERT(m_pContext != nullptr); // WTF #3
+
+		// Ok, now we've ready to upload all textures to GPU
+		// Just load all textures and make them residential to use bindless textures during rendering process
+		if (!m_pContext->buildTextureCache())
+		{
+			m_eLoaderState = ELevelLoadState::LLS_FAILED_TO_LOAD;
+			QMessageBox::critical(this, "GPU issue", "Unable to create textures cache or make them bindless. Failed to load level, check log for details");
+			emit resourceLoadFailed("Unable to create a textures cache for this level");
+			return;
+		}
+
+		if (!m_pContext->buildGeometryBatch())
+		{
+			m_eLoaderState = ELevelLoadState::LLS_FAILED_TO_LOAD;
+			QMessageBox::critical(this, "GPU issue", "Unable to create geometry batch for this level");
+			emit resourceLoadFailed("Unable to create geometry batch for this level");
+			return;
+		}
+
+		if (!m_pContext->buildTransformCache())
+		{
+			m_eLoaderState = ELevelLoadState::LLS_FAILED_TO_LOAD;
+			QMessageBox::critical(this, "GPU issue", "Unable to create transforms cache");
+			emit resourceLoadFailed("Unable to create transforms cache for this level");
+			return;
+		}
+
+		qDebug() << "Scene resources are ready";
+
+		// Move camera to player position (find ZHitman3 instance on scene, move & rotate camera)
+		m_pContext->Level->forEachObjectOfTypeWithInheritance("ZHitman3", [this](const gamelib::scene::SceneObject::Ptr& pPlayerGround) -> bool {
+			auto pPlayer = pPlayerGround->getParent().lock();
+			Q_ASSERT(pPlayer != nullptr);
+
+			const glm::vec3 vPosition = pPlayer->getPosition();
+			const glm::mat4 mMatrix = pPlayer->getWorldTransform();
+
+			glm::vec3 vScale, vTranslation, vSkew;
+			glm::vec4 vPerspective;
+			glm::quat vOrientation;
+			glm::decompose(mMatrix, vScale, vOrientation, vTranslation, vSkew, vPerspective);
+
+			const auto transformIndex = m_pContext->ObjectToTransformIndex[pPlayerGround.get()];
+			gamelib::BoundingBox worldBoundingBox = m_pContext->WorldBoundingBoxes[transformIndex].AsBounds();
+
+			auto [fWidth, fDepth, fHeight] = worldBoundingBox.getDimensions();
+
+			// Move camera to position
+			const glm::vec3 vCameraPos = pPlayer->getPosition() + glm::vec3(-1.5f * fWidth, 1.2f * fDepth, 0.f);
+			m_camera.setPosition(vCameraPos);
+			m_camera.setOrientation(vOrientation);
+
+			qDebug() << "Move camera to player position (" << vCameraPos.x << vCameraPos.y << vCameraPos.z << ")";
+			return false; // break on first found player
+		});
+
+		m_bRenderListDirty = true;
+		m_eLoaderState = ELevelLoadState::LLS_READY;
+		emit resourcesReady();
+	}
+
+	int32_t GetSceneObjectPrimitiveID(const gamelib::Level* pLevel, const gamelib::scene::SceneObject* pObject)
+	{
+		if (!pLevel) return 0;
 		if (!pObject) return 0;
 
-		if (pObject->isInheritedOf("ZItem")) // Need support of item ammo & item container here
+		if (pObject->isInheritedOf("ZItem"))
 		{
-			//ZItems has no PrimId. Instead of this they are refs to another geom by path
-			auto rItemTemplatePath = pObject->getProperties().getObject<std::string>("rItemTemplate");
-			const auto pItemTemplate = m_pLevel->getSceneObjectByGEOMREF(rItemTemplatePath);
+			// ZItem refs to another scene object
+			auto rItemTemplate = pObject->getProperties().getObject<std::string>("rItemTemplate");
+			const auto pItemTemplate = pLevel->getSceneObjectByGEOMREF(rItemTemplate);
 
 			if (pItemTemplate)
 			{
 				gamelib::scene::SceneObject::Ptr pItem = nullptr;
 
 				// Item found by path. That's cool! But this is not an item, for item need to ask Ground... object inside
-				for (const auto& childRef : pItemTemplate->getChildren())
+				for (const auto& rChild : pItemTemplate->getChildren())
 				{
-					if (auto child = childRef.lock(); child && child->getName().starts_with("Ground"))
+					if (auto child = rChild.lock(); child && child->getName().starts_with("Ground"))
 					{
 						pItem = child;
 						break;
@@ -688,1624 +800,879 @@ namespace widgets
 		return pObject->getProperties().getObject<int32_t>("PrimId", 0);
 	}
 
-	glm::mat4 SceneRenderWidget::getGameObjectTransform(const gamelib::scene::SceneObject::Ptr& pObject) const
+	int32_t GetSceneObjectPrimitiveID(const gamelib::Level* pLevel, const gamelib::scene::SceneObject::Ptr& pObject)
 	{
-		if (!pObject) return glm::mat4(1.f);
-		return getGameObjectTransform(pObject.get());
+		return GetSceneObjectPrimitiveID(pLevel, pObject.get());
 	}
 
-	glm::mat4 SceneRenderWidget::getGameObjectTransform(const gamelib::scene::SceneObject* pObject) const
+	bool CanSeeObject(const gamelib::scene::SceneObject* pObject)
 	{
-		if (auto it = m_resources->m_modelTransformCache.find(const_cast<gamelib::scene::SceneObject*>(pObject)); it != m_resources->m_modelTransformCache.end())
-		{
-			return it->second;
-		}
-		else
-		{
-			glm::mat4 mWorldTransform = pObject->getWorldTransform();
-			m_resources->m_modelTransformCache[const_cast<gamelib::scene::SceneObject*>(pObject)] = mWorldTransform;
-			return mWorldTransform;
-		}
+		if (!pObject) return false;
 
-		// idk)
-		return glm::mat4(1.f);
+#if 0
+		using CM = gamelib::gms::ECollisionMask;
+		constexpr uint32_t kExpectedToSeeMask = CM::COLIMASK_Sight | CM::COLIMASK_Hero | CM::COLIMASK_NPC | CM::COLIMASK_Background;
+
+		// Check for preset
+		if (!(pObject->getGeomInfo().getColiBits() & kExpectedToSeeMask))
+			return false;
+#endif
+
+		// Check for 'banned' props
+		if (pObject->getName() == "AdditionalResources" || pObject->getName() == "AllLevels/mainsceneincludes.zip" || pObject->getName() == "AllLevels/equipment.zip")
+			return false;
+
+		return true;
 	}
 
-	std::optional<gamelib::BoundingBox> SceneRenderWidget::getGameObjectBoundingBox(const gamelib::scene::SceneObject::Ptr& pObject, bool bWorldTransform) const
+	bool CanSeeObject(const gamelib::scene::SceneObject::Ptr& pObject)
 	{
-		if (!pObject) return std::nullopt;
-		return getGameObjectBoundingBox(pObject.get(), bWorldTransform);
+		return CanSeeObject(pObject.get());
 	}
 
-	std::optional<gamelib::BoundingBox> SceneRenderWidget::getGameObjectBoundingBox(const gamelib::scene::SceneObject* pObject, bool bWorldTransform) const
+	bool IsObjectACollisionArea(const gamelib::scene::SceneObject::Ptr& pObject)
 	{
-		if (!pObject) return std::nullopt;
+		Q_ASSERT(pObject != nullptr);
 
-		auto primId = getGameObjectPrimitiveId(pObject);
-		if (primId == 0)
+		if (auto parent = pObject->getParent().lock(); parent && parent->getType()->getName() == "ZROOM" && parent->getName() == pObject->getName())
 		{
-			return std::nullopt;
+			return true;
 		}
 
-		const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
-		if (bWorldTransform)
-		{
-			glm::mat4 mWorldTransform = getGameObjectTransform(pObject);
-			return gamelib::BoundingBox::toWorld(model.boundingBox, mWorldTransform);
-		}
-
-		return model.boundingBox;
+		return false;
 	}
 
-	std::vector<RayCastObjectDescription> SceneRenderWidget::performRayCastToScene(const QPointF& screenSpace, const gamelib::scene::SceneObject::Ptr& pStartObject) const
+	void SceneRenderWidget::updateViewLists()
 	{
-		render::Ray sRay = m_camera.getRayFromScreen(static_cast<float>(screenSpace.x()),
-		                                             static_cast<float>(screenSpace.y()));
-		std::vector<RayCastObjectDescription> collectedObjects {};
+		Q_ASSERT(m_pLevel != nullptr);
+		Q_ASSERT(m_bRenderListDirty); // expected to have dirty draw list before
+		Q_ASSERT(m_pCommon);
+		Q_ASSERT(m_pCommon->CullingShader);
 
-		gamelib::scene::SceneObject* pRoot = pStartObject.get();
+		m_pCommon->CullingShader->bind();
 
-		// Need to find intersects with this thing. Need to visit only current room
-		if (pRoot)
+		// Enable SSBO
+		m_pContext->GL->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_pContext->TransformSSBO); // Only transforms
+
+		// Upload camera data
+		m_pCommon->DefaultShader->setUniformValue(static_cast<GLint>(m_pCommon->DefaultShaderUniformLocations[RenderCommon::EUniformID::U_CAMERA_PROJ_VIEW]),
+		                                          QMatrix4x4(glm::value_ptr(m_camera.getProjView())).transposed());
+
+		GLuint workGroupSize = 64;
+		GLuint numGroups = (m_pContext->Transforms.size() + workGroupSize - 1) / workGroupSize;
+
+		m_pCommon->GL->glDispatchCompute(numGroups, 1, 1);
+		m_pCommon->GL->glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	}
+
+	void SceneRenderWidget::generateDrawCommands()
+	{
+		Q_ASSERT(m_pLevel != nullptr);
+		Q_ASSERT(m_bRenderListDirty); // expected to have dirty draw list before
+
+		struct RenderEntity
 		{
-			using R = gamelib::scene::SceneObject::EVisitResult;
+			uint32_t startIndex { 0 };
+			uint32_t indicesCount { 0 };
+			uint32_t transformIndex { 0 };
+			bool bIsTransparent { false };
+			glm::vec3 position { 0.f };
+		};
 
-			static EObjectPriority s_CurrentPrio = EObjectPriority::EP_STATIC_OBJECT;
+		// Clear commands
+		m_pContext->Commands.clear();
 
-			auto hitObjVisitor = [&sRay, &collectedObjects, this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-				if (auto bbox = getGameObjectBoundingBox(pObject); bbox.has_value())
+		// Collect drawables
+		QList<RenderEntity> aNonTransparentObjects {};
+		QList<RenderEntity> aTransparentObjects {};
+		int iAcceptedEntries = 0;
+
+#if 0
+		if (!m_pLevel->getSceneObjects().empty())
+		{
+			auto DrawVisitor = [this, &aNonTransparentObjects, &aTransparentObjects, &iAcceptedEntries](const gamelib::scene::SceneObject::Ptr& Object) -> gamelib::scene::SceneObject::EVisitResult {
+				using VR = gamelib::scene::SceneObject::EVisitResult;
+
+				const bool bInvisible = Object->getProperties().getObject<bool>("Invisible", false);
+				const auto vPosition  = Object->getPosition();
+				auto primId = GetSceneObjectPrimitiveID(m_pLevel, Object);
+
+				if (const auto& n = Object->getType()->getName(); n == "ZSHADOWMESHOBJ" || n == "ZBOUND" || n == "ZLIGHT" || n == "ZENVIRONMENT" || n == "ZOMNILIGHT" || n == "ZSPOTLIGHT" || n == "ZSPOTLIGHTSQUARE")
 				{
-					// Need to exclude objects where bbox origin is inside
-					if (sRay.intersect(bbox.value(), false))
+					// Do not draw us & our children
+					return VR::VR_NEXT;
+				}
+
+				if (!m_bIgnoreVisibility)
+				{
+					if (bInvisible)
 					{
-						auto& obj = collectedObjects.emplace_back();
-						obj.ePrio = s_CurrentPrio;
-						obj.pObject = pObject;
-						obj.fRayOriginDistance = glm::distance(sRay.vOrigin, pObject->getPosition());
-						return R::VR_NEXT;
+						return VR::VR_NEXT;
 					}
 				}
 
-				return R::VR_CONTINUE;
+				// Is it drawable?
+				if (!primId)
+				{
+					return VR::VR_CONTINUE;
+				}
+
+				// Check that our 'object' is not a collision box
+				if (IsObjectACollisionArea(Object))
+				{
+					return VR::VR_NEXT; // Do not render collision meshes
+				}
+
+				// Check is it visible
+				const auto transformIndex = m_pContext->ObjectToTransformIndex[Object.get()];
+				gamelib::BoundingBox worldBoundingBox = m_pContext->WorldBoundingBoxes[transformIndex].AsBounds();
+
+				if (!m_camera.canSeeObject(worldBoundingBox))
+				{
+					// Not in view
+					return VR::VR_NEXT;
+				}
+
+				// Here we need to store all MESHES, not MODELS
+				const auto meshesCount = m_pContext->ModelToMeshesCount[primId];
+
+				for (int32_t i = 0; i < meshesCount; i++)
+				{
+					if (auto it = m_pContext->Meshes.find(ENCODE_MESH_IDX(primId, i)); it != m_pContext->Meshes.end())
+					{
+						const bool bIsTransparent = it->renderState.isBlendEnabled();
+						QList<RenderEntity>& toInsert = bIsTransparent ? aTransparentObjects : aNonTransparentObjects;
+
+						RenderEntity& renderEntity    = toInsert.emplace_back();
+						renderEntity.bIsTransparent   = bIsTransparent;
+						renderEntity.startIndex       = it->indexOffset;
+						renderEntity.indicesCount     = it->indexCount;
+						renderEntity.transformIndex   = transformIndex;
+
+						// It's really weird, but at this point I don't know actual position of this mesh in the world.
+						// Anyway, world bounding box is still good point to understand relative to camera position.
+						renderEntity.position = worldBoundingBox.getCenter();
+
+						++iAcceptedEntries;
+					}
+				}
+
+				return VR::VR_CONTINUE;
 			};
 
-			// Hit dynamic (not implemented yet)
-			s_CurrentPrio = EObjectPriority::EP_DYNAMIC_OBJECT; // Now dynamic objects
-			// TODO: Iterate over dynamic objects and check collision with them
-
-			// Hit static
-			s_CurrentPrio = EObjectPriority::EP_STATIC_OBJECT; // Now static objects
-			pRoot->visitChildren(hitObjVisitor);
-
-			// Sort hit list by distance to camera
-			std::sort(collectedObjects.begin(), collectedObjects.end());
-
-			return collectedObjects;
+			m_pLevel->getSceneObjects()[0]->visitChildren(DrawVisitor);
 		}
+#endif
 
-		return collectedObjects;
-	}
+		m_pCommon->GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_pContext->TransformSSBO);
+		auto* ptr = reinterpret_cast<RenderContext::ObjectTransformDescription*>(m_pCommon->GL->glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY));
+		if (ptr)
+		{
+			for (int i = 0; i < m_pContext->Transforms.size(); ++i)
+			{
+				auto& objectDescription = ptr[i];
+				const bool bIsVisible = static_cast<bool>(objectDescription.Status.x > 0.5f);
 
-	void SceneRenderWidget::onRedrawRequested()
-	{
-		if (m_pLevel)
-			repaint();
-	}
+				if (!bIsVisible)
+				{
+					continue;
+				}
 
-	void SceneRenderWidget::onObjectMoved(gamelib::scene::SceneObject* sceneObject)
-	{
-		if (!sceneObject || !m_pLevel || !m_resources)
+				// Here we need to store all MESHES, not MODELS
+				auto primId = static_cast<int32_t>(objectDescription.Status.y);
+				const auto meshesCount = m_pContext->ModelToMeshesCount[primId];
+
+				for (int32_t j = 0; j < meshesCount; j++)
+				{
+					if (auto it = m_pContext->Meshes.find(ENCODE_MESH_IDX(primId, j)); it != m_pContext->Meshes.end())
+					{
+						const bool bIsTransparent = it->renderState.isBlendEnabled();
+						QList<RenderEntity>& toInsert = bIsTransparent ? aTransparentObjects : aNonTransparentObjects;
+
+						RenderEntity& renderEntity    = toInsert.emplace_back();
+						renderEntity.bIsTransparent   = bIsTransparent;
+						renderEntity.startIndex       = it->indexOffset;
+						renderEntity.indicesCount     = it->indexCount;
+						renderEntity.transformIndex   = i; //transformIndex;
+
+						// It's really weird, but at this point I don't know actual position of this mesh in the world.
+						// Anyway, world bounding box is still good point to understand relative to camera position.
+						renderEntity.position = gamelib::BoundingBox(objectDescription.BoundsMin, objectDescription.BoundsMax).getCenter();
+
+						++iAcceptedEntries;
+					}
+				}
+			}
+
+			m_pCommon->GL->glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+		}
+		else
+		{
+			qWarning() << "Failed to map SSBO TransformSSBO";
 			return;
-
-
-		// Invalidate self
-		m_resources->m_modelTransformCache[sceneObject] = sceneObject->getWorldTransform();
-
-		// Visit limited subtree
-		int iDepth = 2;  // max 2 objects, otherwise it's better to make full invalidation (in case when user wants to move some huge object)
-		sceneObject->visitChildren([this, &iDepth](const gamelib::scene::SceneObject::Ptr& pObject) -> gamelib::scene::SceneObject::EVisitResult {
-			// Update transform
-			m_resources->m_modelTransformCache[pObject.get()] = pObject->getWorldTransform();
-
-			--iDepth;
-			return iDepth > 0 ? gamelib::scene::SceneObject::EVisitResult::VR_CONTINUE  // Go deeper
-			                  : gamelib::scene::SceneObject::EVisitResult::VR_STOP_ALL; // Out of limit
-		});
-
-		invalidateRenderList();  //TODO: Need invalidate only object, not whole list!
-		repaint();
-	}
-
-#define LEVEL_SAFE_CHECK() \
-		if (!m_pLevel) \
-		{ \
-			m_eState = ELevelState::LS_NONE; \
-			if (m_resources) \
-			{ \
-				m_resources->discard(glFunctions); \
-			} \
-			return; \
 		}
 
-	void SceneRenderWidget::doLoadTextures(QOpenGLFunctions_3_3_Core* glFunctions)
-	{
-		LEVEL_SAFE_CHECK()
-
-		// Do it at once
-		// TODO: Optimize and load "chunk by chunk"
-		for (const auto& texture : m_pLevel->getSceneTextures()->entries)
+		// Sor
+		auto SortPred = [this](const RenderEntity& a, const RenderEntity& b)
 		{
-			// TODO: Support mip levels here?
-			if (texture.m_mipLevels.empty())
-			{
-				// create null texture
-				m_resources->m_textures.emplace_back();
-				qWarning() << "Failed to load texture #" << texture.m_index << ". Reason: no mip levels (empty texture)";
-				continue;
-			}
+			const float fADistanceToCamera = glm::length(m_camera.getPosition() - a.position);
+			const float fBDistanceToCamera = glm::length(m_camera.getPosition() - b.position);
 
-			// Ok, texture is ok - load it
-			Texture newTexture {};
-
-			if (!newTexture.setup(glFunctions, texture))
-			{
-				m_resources->m_textures.emplace_back();
-				qWarning() << "Failed to load texture #" << texture.m_index << ". Reason: setup failed";
-				continue;
-			}
-
-			// Precache debug texture if it's not precached yet
-			static constexpr const char* kGlacierMissingTex = "_Glacier/Missing_01";
-			static constexpr const char* kWorldColiTex = "_TEST/Worldcoli";
-
-			if (m_resources->m_iGLDebugTexture == 0 && texture.m_fileName.has_value() && (texture.m_fileName.value() == kGlacierMissingTex || texture.m_fileName.value() == kWorldColiTex))
-			{
-				m_resources->m_iGLDebugTexture = newTexture.texture;
-			}
-
-			// Update cache
-			if (newTexture.texPath.has_value())
-			{
-				m_resources->m_textureNameToGL[newTexture.texPath.value()] = newTexture.texture;
-			}
-
-			if (newTexture.index.has_value())
-			{
-				m_resources->m_textureIndexToGL[newTexture.index.value()] = newTexture.texture;
-			}
-
-			// Save texture
-			m_resources->m_textures.emplace_back(newTexture);
-		}
-
-		// And load extra textures (render specific)
-		auto uploadQImageToGPU = [](QOpenGLFunctions_3_3_Core* gapi, const QImage& image) -> GLuint
-		{
-			GLuint textureId;
-			gapi->glGenTextures(1, &textureId);
-			gapi->glBindTexture(GL_TEXTURE_2D, textureId);
-			gapi->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.constBits());
-
-			gapi->glGenerateMipmap(GL_TEXTURE_2D);
-			gapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			gapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			gapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-			gapi->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-			gapi->glBindTexture(GL_TEXTURE_2D, 0);
-
-			return textureId;
+			return fADistanceToCamera > fBDistanceToCamera;
 		};
 
+		std::sort(aTransparentObjects.begin(), aTransparentObjects.end(), SortPred);
+		std::sort(aNonTransparentObjects.begin(), aNonTransparentObjects.end(), SortPred);
+
+		// Generate draw commands
+		// Non Transparent
+		m_pContext->IndirectDrawNonTransparentCommands = static_cast<std::ptrdiff_t>(m_pContext->Commands.size());
+		m_pContext->IndirectDrawNonTransparentCommandsCount = static_cast<uint32_t>(aNonTransparentObjects.size());
+		for (const auto& renderEntity : aNonTransparentObjects)
 		{
-			QImage missingTextureImage = QImage(":/bmedit/mtl_missing_texture.png").convertToFormat(QImage::Format_RGBA8888, Qt::AutoColor);
-
-			auto& missingTexture = m_resources->m_textures.emplace_back();
-			missingTexture.texture = uploadQImageToGPU(glFunctions, missingTextureImage);
-			missingTexture.width = missingTextureImage.width();
-			missingTexture.height = missingTextureImage.height();
-
-			m_resources->m_iGLMissingTexture = missingTexture.texture;
+			auto& drawCommand = m_pContext->Commands.emplace_back();
+			drawCommand.count = renderEntity.indicesCount;
+			drawCommand.instanceCount = 1;
+			drawCommand.firstIndex = renderEntity.startIndex;
+			drawCommand.baseVertex = 0;
+			drawCommand.baseInstance = renderEntity.transformIndex;
 		}
 
+		// Transparent
+		m_pContext->IndirectDrawTransparentCommands = static_cast<std::ptrdiff_t>(m_pContext->Commands.size());
+		m_pContext->IndirectDrawTransparentCommandsCount = static_cast<uint32_t>(aTransparentObjects.size());
+		for (const auto& renderEntity : aTransparentObjects)
 		{
-			QImage unsupportedMaterialTextureImage = QImage(":/bmedit/mtl_unsupported.png").convertToFormat(QImage::Format_RGBA8888, Qt::AutoColor);
-
-			auto& unsupportedMaterial = m_resources->m_textures.emplace_back();
-			unsupportedMaterial.texture = uploadQImageToGPU(glFunctions, unsupportedMaterialTextureImage);
-			unsupportedMaterial.width = unsupportedMaterialTextureImage.width();
-			unsupportedMaterial.height = unsupportedMaterialTextureImage.height();
-
-			m_resources->m_iGLUnsupportedMaterialTexture = unsupportedMaterial.texture;
+			auto& drawCommand = m_pContext->Commands.emplace_back();
+			drawCommand.count = renderEntity.indicesCount;
+			drawCommand.instanceCount = 1;
+			drawCommand.firstIndex = renderEntity.startIndex;
+			drawCommand.baseVertex = 0;
+			drawCommand.baseInstance = renderEntity.transformIndex;
 		}
 
-		// It's done
-		qDebug() << "All textures (" << m_pLevel->getSceneTextures()->entries.size() << ") are loaded and ready to be used";
-		m_eState = ELevelState::LS_LOAD_GEOMETRY;
-		repaint(); // call to force jump into next state
+		// Send commands to GPU
+		m_pContext->GL->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_pContext->IndirectDrawBuffer);
+
+		if (m_pContext->Commands.size() > m_pContext->IndirectDrawCommandsCapacity)
+		{
+			qDebug() << "Increase Indirect draw buffer size from " << m_pContext->IndirectDrawCommandsCapacity << " to " << m_pContext->Commands.size();
+			m_pContext->IndirectDrawCommandsCapacity = m_pContext->Commands.size();
+			m_pContext->GL->glBufferData(GL_DRAW_INDIRECT_BUFFER, static_cast<GLsizeiptr>(m_pContext->Commands.size() * sizeof(IndirectRenderDrawCommand)), m_pContext->Commands.data(), GL_DYNAMIC_DRAW);
+		}
+		else
+		{
+			m_pContext->GL->glBufferSubData(GL_DRAW_INDIRECT_BUFFER, 0, static_cast<GLsizeiptr>(m_pContext->Commands.size() * sizeof(IndirectRenderDrawCommand)), m_pContext->Commands.data());
+		}
+
+		m_pContext->GL->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+		// Finished
+		m_bRenderListDirty = false;
 	}
 
-	void SceneRenderWidget::doLoadGeometry(QOpenGLFunctions_3_3_Core* glFunctions)
+	void SceneRenderWidget::drawScene()
 	{
-		LEVEL_SAFE_CHECK()
+		Q_ASSERT(m_pLevel != nullptr);
+		Q_ASSERT(!m_bRenderListDirty);
 
-		// TODO: Optimize and load "chunk by chunk"
-		for (const auto& model : m_pLevel->getLevelGeometry()->primitives.models)
+		if (m_pContext->Commands.isEmpty() || (!m_pContext->IndirectDrawTransparentCommandsCount && !m_pContext->IndirectDrawNonTransparentCommandsCount))
+			 return; // Do nothing
+
+		// Set viewport
+		m_pCommon->GL->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		m_pCommon->GL->glClearColor(0.f, 0.f, 0.15f, 1.f);
+		m_pCommon->GL->glViewport(0, 0, width(), height());
+		m_pCommon->GL->glEnable(GL_DEPTH_TEST);
+
+		// Wireframe (for debug)
+		//m_pCommon->GL->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		// Enable shader
+		m_pCommon->DefaultShader->bind();
+
+		// Enable VAO
+		m_pContext->GL->glBindVertexArray(m_pContext->MainGeometryVAO);
+
+		// Enable SSBO
+		m_pContext->GL->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_pContext->TransformSSBO); // Store transforms at #0 slot
+		m_pContext->GL->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_pContext->TexturesSSBO);  // Store textures at #1 slot
+
+		// Upload camera data
+		m_pCommon->DefaultShader->setUniformValue(static_cast<GLint>(m_pCommon->DefaultShaderUniformLocations[RenderCommon::EUniformID::U_CAMERA_PROJ_VIEW]),
+		                                          QMatrix4x4(glm::value_ptr(m_camera.getProjView())).transposed());
+
+		// Enable indirect
+		m_pContext->GL->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_pContext->IndirectDrawBuffer);
+
+		// Stage #1: Compute shader calculate visibility list & generate commands buffer
+		// Stage #2: Pre-Z pass culling
+		// TODO: Impl me
+		// Stage #3: Non-Transparent commands
+		if (m_pContext->IndirectDrawNonTransparentCommandsCount > 0)
 		{
+			m_pContext->GL->glDepthMask(GL_TRUE);
+			m_pContext->GL->glDisable(GL_BLEND);
+
+			m_pContext->GL->glMultiDrawElementsIndirect(GL_TRIANGLES,
+			                                            GL_UNSIGNED_INT,
+			                                            (const void *) (m_pContext->IndirectDrawNonTransparentCommands * sizeof(IndirectRenderDrawCommand)),
+			                                            static_cast<GLint>(m_pContext->IndirectDrawNonTransparentCommandsCount),
+			                                            0 /* stride */);
+		}
+		// Stage #4: Gizmo (not implemented yet)
+		// Stage #5: Transparent commands
+		if (m_pContext->IndirectDrawTransparentCommandsCount)
+		{
+			m_pContext->GL->glDepthMask(GL_TRUE);
+			m_pContext->GL->glEnable(GL_BLEND);
+			m_pContext->GL->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+			m_pContext->GL->glMultiDrawElementsIndirect(GL_TRIANGLES,
+			                                            GL_UNSIGNED_INT,
+			                                            (const void *) (m_pContext->IndirectDrawTransparentCommands * sizeof(IndirectRenderDrawCommand)),
+			                                            static_cast<GLint>(m_pContext->IndirectDrawTransparentCommandsCount),
+			                                            0 /* stride */);
+		}
+	}
+
+	/// ------------------------------ RenderContext
+	SceneRenderWidget::RenderContext::RenderContext(GLFunctions* pGLFunctions, GLExtFunctions* pExtFunctions, gamelib::Level* pGameLevel)
+	    : GL(pGLFunctions), Level(pGameLevel), GLExt(pExtFunctions)
+	{
+	}
+
+	SceneRenderWidget::RenderContext::~RenderContext()
+	{
+		GL->glDeleteBuffers(1, &MainGeometryVBO);
+		MainGeometryVBO = 0;
+
+		GL->glDeleteBuffers(1, &MainGeometryEBO);
+		MainGeometryEBO = 0;
+
+		GL->glDeleteVertexArrays(1, &MainGeometryVAO);
+		MainGeometryVAO = 0;
+
+		GL->glDeleteBuffers(1, &TransformSSBO);
+		TransformSSBO = 0;
+
+		GL->glDeleteBuffers(1, &TexturesSSBO);
+		TexturesSSBO = 0;
+
+		GL->glDeleteBuffers(1, &IndirectDrawBuffer);
+		IndirectDrawBuffer=  0;
+
+		if (!TexturesCache.empty())
+		{
+			GL->glDeleteTextures(static_cast<GLsizei>(TexturesCache.size()), TexturesCache.data());
+			TexturesCache.clear();
+		}
+	}
+
+	void SceneRenderWidget::RenderContext::setup()
+	{
+		// Create mega batch
+		GL->glGenVertexArrays(1, &MainGeometryVAO);
+		GL->glGenBuffers(1, &MainGeometryVBO);
+		GL->glGenBuffers(1, &MainGeometryEBO);
+
+		// Setup VAO
+		GL->glBindVertexArray(MainGeometryVAO);
+
+		// Setup VBO
+		GL->glBindBuffer(GL_ARRAY_BUFFER, MainGeometryVBO);
+		GL->glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(MainGeometryVertexCapacity * sizeof(render::GlacierVertex)), nullptr, GL_DYNAMIC_DRAW);
+
+		// Setup EBO
+		GL->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, MainGeometryEBO);
+		GL->glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(MainGeometryIndexCapacity * sizeof(unsigned int)), nullptr, GL_DYNAMIC_DRAW);
+
+		// Enable vertex attributes
+		GL->glEnableVertexAttribArray(0);
+		GL->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(render::GlacierVertex), nullptr); // Position
+
+		GL->glEnableVertexAttribArray(1);
+		GL->glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(render::GlacierVertex), (void*)(sizeof(float) * 3)); // UV
+
+		GL->glEnableVertexAttribArray(2);
+		GL->glVertexAttribIPointer(2, 2, GL_UNSIGNED_INT, sizeof(render::GlacierVertex), (void*)(sizeof(float) * 5)); // Texture Index
+
+		GL->glBindVertexArray(0);
+
+		// Transform SSBO
+		GL->glGenBuffers(1, &TransformSSBO);
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, TransformSSBO);
+		GL->glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(SSBOMaxCapacity * sizeof(ObjectTransformDescription)), nullptr, GL_DYNAMIC_DRAW);
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		// Texture SSBO
+		GL->glGenBuffers(1, &TexturesSSBO);
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, TexturesSSBO);
+		GL->glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(SSBOMaxCapacity * sizeof(uint64_t)), nullptr, GL_DYNAMIC_DRAW);
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		// Indirect renderer
+		GL->glGenBuffers(1, &IndirectDrawBuffer);
+		GL->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, IndirectDrawBuffer);
+		GL->glBufferData(GL_DRAW_INDIRECT_BUFFER, static_cast<GLsizeiptr>(IndirectDrawCommandsCapacity * sizeof(IndirectRenderDrawCommand)), nullptr, GL_DYNAMIC_DRAW);
+		GL->glBindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+
+		// Reserve commands list
+		Commands.reserve(IndirectDrawCommandsCapacity);
+
+		// Checks
+		Q_ASSERT(MainGeometryVAO != 0);
+		Q_ASSERT(MainGeometryVBO != 0);
+		Q_ASSERT(MainGeometryEBO != 0);
+		Q_ASSERT(TransformSSBO != 0);
+		Q_ASSERT(TexturesSSBO != 0);
+		Q_ASSERT(IndirectDrawBuffer != 0);
+		Q_ASSERT(IndirectDrawCommandsCapacity > 0);
+	}
+
+	bool SceneRenderWidget::RenderContext::buildTextureCache()
+	{
+		Q_ASSERT(TexturesCache.empty());
+
+		const auto& Textures = Level->getSceneTextures()->entries;
+		if (Textures.empty())
+		{
+			return false; // Cuz no empty TEX allowed to be here!
+		}
+
+		// Create cache
+		TexturesCache.resize(static_cast<qsizetype>(Textures.size()));
+		ResidentialTextures.reserve(static_cast<qsizetype>(Textures.size()));
+
+		// Create textures
+		GL->glCreateTextures(GL_TEXTURE_2D, static_cast<GLsizei>(Textures.size()), TexturesCache.data());
+
+		int iTextureIndex = 0;
+		for (const auto& Texture : Textures)
+		{
+			// Decompress texture & store image
+			uint16_t w{0}, h{0};
+			std::unique_ptr<std::uint8_t[]> decompressedMemBlk = editor::TextureProcessor::decompressRGBA(Texture, w, h, 0);
+			if (!decompressedMemBlk)
+			{
+				qWarning() << "Failed to decompress texture #" << Texture.m_index << "(" << Texture.m_width << ";" << Texture.m_height << ")";
+				Q_ASSERT(false);
+				return false;
+			}
+
+			// Get current index
+			const int iCurrentTexture = iTextureIndex;
+			++iTextureIndex;
+
+			const auto texID = TexturesCache[iCurrentTexture];
+
+			GL->glTextureStorage2D(texID, 1, GL_RGBA8, w, h);
+			GL->glTextureSubImage2D(texID, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, decompressedMemBlk.get());
+			GL->glGenerateTextureMipmap(texID);
+			GL->glTextureParameteri(texID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			GL->glTextureParameteri(texID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			GL->glTextureParameteri(texID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			GL->glTextureParameteri(texID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			// Make texture residential
+			GLuint64 handle = GLExt->glGetTextureHandleARB(TexturesCache[iCurrentTexture]);
+			GLExt->glMakeTextureHandleResidentARB(handle);
+
+			// Store into SSBO
+			ResidentialTextures.emplace_back(handle);
+
+			// Store cache
+			if (Texture.m_fileName.has_value())
+			{
+				// Store as named too
+				NamedResidentialTextures[QString::fromStdString(Texture.m_fileName.value())] = static_cast<uint32_t>(ResidentialTextures.size() - 1);
+			}
+
+			// Store glacier based cache
+			GlacierTextureIndexToResidentialTextureHandle[Texture.m_index] = static_cast<uint32_t>(ResidentialTextures.size() - 1);
+		}
+
+		// Fill textures cache
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, TexturesSSBO);
+		GL->glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, static_cast<GLsizeiptr>(sizeof(uint64_t) * ResidentialTextures.size()), ResidentialTextures.data());
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		return true;
+	}
+
+	bool SceneRenderWidget::RenderContext::buildGeometryBatch()
+	{
+		// It's more hard task: we need to store ALL geometry entries into 1 single geometry batch, normalize vertices & fix UVs
+		Q_ASSERT(Level != nullptr);
+		Q_ASSERT(Level->getLevelGeometry() != nullptr);
+
+		// Activate geometry buffer (cuz we will upload geometry here)
+		GL->glBindVertexArray(MainGeometryVAO);
+		GL->glBindBuffer(GL_ARRAY_BUFFER, MainGeometryVBO);
+		GL->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, MainGeometryEBO);
+
+		// Global vertices & indices pool
+		QVector<render::GlacierVertex> aVertices {};
+		QVector<uint32_t> aIndices {};
+
+		for (const auto& model : Level->getLevelGeometry()->primitives.models)
+		{
+			// Store primId to meshes count
+			ModelToMeshesCount.insert(static_cast<int32_t>(model.chunk), static_cast<uint32_t>(model.meshes.size()));
+
+			// Then check meshes availability
 			if (model.meshes.empty())
 			{
 				// create null model
-				m_resources->m_models.emplace_back();
 				qWarning() << "Failed to load model of chunk " << model.chunk << ". Reason: no meshes (empty model)";
 				continue;
 			}
 
-			Model& glModel = m_resources->m_models.emplace_back();
-			glModel.chunkId = model.chunk;
-			glModel.boundingBox = gamelib::BoundingBox(model.boundingBox.vMin, model.boundingBox.vMax);
+			// Store bbox
+			BoundingBoxes.insert(static_cast<int32_t>(model.chunk), gamelib::BoundingBox(model.boundingBox.vMin, model.boundingBox.vMax));
 
-			// And create mesh for bounding box
-			glModel.setupBoundingBox(glFunctions);
+			// Here we need to allocate space for our 'mesh'
+			int32_t meshIdx = 0;
 
-			// Store cache
-			m_resources->m_modelsCache[model.chunk] = m_resources->m_models.size() - 1;
+			// Cuz I did it a few times at least
+			struct DontForgetToIncrementAValue
+			{
+				int32_t* pInt = nullptr;
 
-			// Lookup mesh
-			int meshIdx = 0;
+				explicit DontForgetToIncrementAValue(int32_t* ptr) : pInt(ptr) {}
+
+				~DontForgetToIncrementAValue() {
+					Q_ASSERT(pInt != nullptr);
+					(*pInt)++;
+				}
+			};
+
+
 			for (const auto& mesh : model.meshes)
 			{
+				DontForgetToIncrementAValue dummy { &meshIdx }; // Please, don't forget it!
+
 				if (mesh.vertices.empty())
 				{
 					// create empty mesh
-					glModel.meshes.emplace_back();
-					qWarning() << "Failed to load mesh #" << meshIdx << " of model at chunk " << model.chunk << ". Reason: no meshes (empty model)";
-					++meshIdx;
+					qWarning() << "Failed to load mesh at chunk " << model.chunk << ". Reason: no meshes (empty model)";
 					continue;
 				}
 
-				// Convert vertices & indices to single memory chunk
-				std::vector<GlacierVertex> vertices;
-				std::vector<std::uint16_t> indices;
+				// Detect mesh texture
+				uint32_t meshTexture = 0u;
+				bool bTextureResolved = false;
 
-				vertices.resize(mesh.vertices.size());
-				indices.reserve(mesh.indices.size() * 3); // each 'index' subject contains three values
+				const auto meshMaterialId = mesh.material_id;
+				const auto meshTextureId = mesh.textureId;
 
+				MeshInfo& meshInfo = *Meshes.insert(ENCODE_MESH_IDX(static_cast<int32_t>(model.chunk), meshIdx), {});
+
+				if (meshMaterialId > 0)
+				{
+					// It has own material
+					// Use material (for meshes)
+					// First of all we need to know that 'shadows' and other things must be filtered here
+					const auto& instances = Level->getLevelMaterials()->materialInstances;
+					const auto& classes = Level->getLevelMaterials()->materialClasses;
+					const auto& matInstance = instances[mesh.material_id - 1];
+
+					// Store material based data
+					{
+						for (const auto& binder : matInstance.getBinders())
+						{
+							bool bRenderStateSaved = false;
+
+							for (const auto& state : binder.renderStates)
+							{
+								if (!state.isEnabled())
+									continue;
+
+								meshInfo.renderState = state;
+								bRenderStateSaved = true;
+								break;
+							}
+
+							if (bRenderStateSaved)
+								break;
+						}
+					}
+
+					// Here we need to find 'color' texture. In most cases we able to use matDiffuse as color texture
+					for (const auto& binder : matInstance.getBinders())
+					{
+						if (bTextureResolved)
+							break;
+
+						for (const auto& texture : binder.textures)
+						{
+							if (bTextureResolved)
+								break;
+
+							switch (texture.getPresentedTextureSources())
+							{
+								case gamelib::mat::PresentedTextureSource::PTS_NOTHING:
+									break;  // Nothing
+
+								case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID:
+								{
+									// Only texture id
+								    if (auto it = GlacierTextureIndexToResidentialTextureHandle.find(texture.getTextureId()); it != GlacierTextureIndexToResidentialTextureHandle.end())
+									{
+									    meshTexture = (*it) + 1;
+										bTextureResolved = true;
+										break;
+									}
+
+									qWarning() << "Material refs to texture " << texture.getTextureId() << " but it's not found in cache!";
+								}
+								break;
+
+								case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH:
+								{
+									// Only path
+									if (auto it = NamedResidentialTextures.find(QString::fromStdString(texture.getTexturePath())); it != NamedResidentialTextures.end())
+									{
+									    meshTexture = (*it) + 1;
+										bTextureResolved = true;
+										break;
+									}
+
+									qWarning() << "Material refs to texture by path " << texture.getTexturePath() << " but it's not found in cache!";
+								}
+								break;
+
+								default:
+								{
+									// Bad case! Undefined behaviour!
+									Q_ASSERT_X(false, __FILE__, "Impossible case!");
+									break;
+								}
+							}
+						}
+					}
+				}
+
+				if (!bTextureResolved && meshTextureId > 0)
+				{
+					// It's ZWINPIC or UI stuff
+					// Use texture here (for sprites). Need to find that texture in loaded textures list
+					if (auto it = GlacierTextureIndexToResidentialTextureHandle.find(mesh.textureId); it != GlacierTextureIndexToResidentialTextureHandle.end())
+					{
+						meshTexture = (*it) + 1;
+						bTextureResolved = true;
+					}
+					else
+					{
+						qWarning() << "No texture found by texture index " << mesh.textureId;
+					}
+				}
+				// otherwise no texture and no need to normalize that texture somehow
+
+				// Save base vertex
+				auto baseVertex = aVertices.size();
+
+				if (!bTextureResolved)
+				{
+					if (meshMaterialId > 0)
+					{
+						const auto& instances = Level->getLevelMaterials()->materialInstances;
+						const auto& classes = Level->getLevelMaterials()->materialClasses;
+						const auto& matInstance = instances[mesh.material_id - 1];
+
+						qWarning() << "For Prim " << model.chunk << " not resolved texture reference. MaterialRef = " << meshMaterialId << "(Name: " << matInstance.getName() << "Parent: " << matInstance.getParentName() << ") TextureRef = " << meshTextureId;
+					}
+					else
+					{
+						qWarning() << "For Prim " << model.chunk << " not resolved texture reference. MaterialRef = " << meshMaterialId << "TextureRef = " << meshTextureId;
+					}
+				}
+
+				// Compose geometry
 				for (int i = 0; i < mesh.vertices.size(); i++)
 				{
-					vertices[i].vPos = mesh.vertices[i];
+					auto& vertex = aVertices.emplace_back();
+					vertex.vPos = mesh.vertices[i];
+					vertex.iTexIndex = meshTexture;
 
 					if (mesh.uvs.empty())
 					{
-						vertices[i].vUV = glm::vec2(.0f); // TODO: Idk what I should do here...
+						vertex.vUV = glm::vec2(.0f);
 					}
 					else
 					{
-						vertices[i].vUV = mesh.uvs[i];
+						vertex.vUV = mesh.uvs[i];
 					}
 				}
 
-				for (const auto& [a,b,c] : mesh.indices)
+				// Save base index
+				auto baseIndex = aIndices.size();
+
+				// Calculate indices
+				if (!mesh.indices.empty())
 				{
-					indices.emplace_back(a);
-					indices.emplace_back(b);
-					indices.emplace_back(c);
+					// Indexed geometry should be converted to global indexed geometry
+					meshInfo.indexOffset = baseIndex;
+					meshInfo.indexCount = mesh.indices.size() * 3;
+
+					for (const auto& [a, b, c] : mesh.indices)
+					{
+						aIndices.emplace_back(baseVertex + static_cast<uint32_t>(a));
+						aIndices.emplace_back(baseVertex + static_cast<uint32_t>(b));
+						aIndices.emplace_back(baseVertex + static_cast<uint32_t>(c));
+					}
 				}
-
-				// And upload it to GPU
-				Mesh& glMesh = glModel.meshes.emplace_back();
-				glMesh.trianglesCount = mesh.trianglesCount;
-				glMesh.variationId = mesh.variationId;
-
-				if (!glMesh.setup(glFunctions, GlacierVertex::g_FormatDescription, vertices, indices, false))
+				else
 				{
-					qWarning() << "Failed to upload mesh #" << meshIdx << " of model at chunk " << model.chunk << ". Reason: failed to upload resource to GPU!";
-					++meshIdx;
-					continue;
-				}
+					// Non-indexed geometry should be converted to indexed
+					Q_ASSERT(mesh.vertices.size() % 3 == 0);
 
-				// Precache color texture
-				glMesh.materialId = mesh.material_id;
+					meshInfo.indexOffset = baseIndex;
+					meshInfo.indexCount = mesh.vertices.size();
 
-				if (glMesh.materialId > 0)
-				{
-					// Use material (for meshes)
-					// First of all we need to know that 'shadows' and other things must be filtered here
-					const auto& instances = m_pLevel->getLevelMaterials()->materialInstances;
-					const auto& classes = m_pLevel->getLevelMaterials()->materialClasses;
-					const auto& matInstance = instances[mesh.material_id - 1];
-
-					if (const auto& parentName = matInstance.getParentName(); parentName == "StaticShadow" || parentName == "StaticShadowTextureShadow" || matInstance.getName().find("AlwaysInShadow") != std::string::npos)
+					for (size_t i = 0; i < mesh.vertices.size(); ++i)
 					{
-						// Shadows - do not use texturing (and don't show for now)
-						glMesh.glTextureId = kInvalidResource;
-					}
-					else if (parentName == "Bad")
-					{
-						// Use 'bad' debug texture
-						glMesh.glTextureId = m_resources->m_iGLUnsupportedMaterialTexture;
-					}
-					else
-					{
-						bool bTextureFound = false;
-
-						// Here we need to find 'color' texture. In most cases we able to use matDiffuse as color texture
-						for (const auto& binder : matInstance.getBinders())
-						{
-							if (bTextureFound)
-								break;
-
-							for (const auto& texture : binder.textures)
-							{
-								if (texture.getName() == "mapDiffuse" && (texture.getTextureId() != 0 || !texture.getTexturePath().empty()))
-								{
-									// And find texture in textures pool
-									for (const auto& textureResource : m_resources->m_textures)
-									{
-										switch (texture.getPresentedTextureSources())
-										{
-											case gamelib::mat::PresentedTextureSource::PTS_NOTHING:
-											    continue;  // Nothing
-
-										    case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID:
-										    {
-											    // Only texture id
-											    if (textureResource.index.has_value() && textureResource.index.value() == texture.getTextureId())
-											    {
-												    // Good
-												    glMesh.glTextureId = textureResource.texture;
-												    bTextureFound = true;
-												    break;
-											    }
-										    }
-											break;
-										    case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH:
-										    {
-											    // Only path
-											    if (textureResource.texPath.has_value() && textureResource.texPath.value() == texture.getTexturePath())
-											    {
-												    // Good
-												    glMesh.glTextureId = textureResource.texture;
-												    bTextureFound = true;
-												    break;
-											    }
-										    }
-											break;
-										    default:
-										    {
-											    // Bad case! Undefined behaviour!
-											    assert(false && "Impossible case!");
-											    continue;
-										    }
-										}
-									}
-
-									if (!bTextureFound)
-									{
-										// Use error texture
-										glMesh.glTextureId = m_resources->m_iGLMissingTexture;
-									}
-
-									// But mark us as 'found'
-									bTextureFound = true;
-
-									// Done
-									break;
-								}
-							}
-						}
-
-						// For debug only
-//						if (glMesh.glTextureId == kInvalidResource)
-//						{
-//							glMesh.glTextureId = m_resources->m_iGLMissingTexture;
-//						}
+						aIndices.emplace_back(baseVertex + static_cast<uint32_t>(i));
 					}
 				}
-				else if (mesh.textureId > 0)
-				{
-					// Use texture here (for sprites). Need to find that texture in loaded textures list
-					for (const auto& texture : m_resources->m_textures)
-					{
-						if (texture.index.has_value() && texture.index.value() == mesh.textureId)
-						{
-							glMesh.glTextureId = texture.texture;
-							break;
-						}
-					}
-				}
-				// Otherwise no texture. So, we will render only bounding box (if it needed)
-
-				// Next mesh
-				++meshIdx;
 			}
 		}
 
-		// Then load rooms cache
-		buildRoomCache(glFunctions);
-
-		qDebug() << "All models (" << m_pLevel->getLevelGeometry()->primitives.models.size() << ") are loaded & ready to use!";
-		m_eState = ELevelState::LS_COMPILE_SHADERS;
-		repaint(); // call to force jump into next state
-	}
-
-	void SceneRenderWidget::doCompileShaders(QOpenGLFunctions_3_3_Core* glFunctions)
-	{
-		LEVEL_SAFE_CHECK()
-
-		// Load shaders from resources
-		QFile coloredEntityVertexShader(":/bmedit/mtl_colored_gl33.vsh");
-		QFile coloredEntityFragmentShader(":/bmedit/mtl_colored_gl33.fsh");
-		QFile texturedEntityVertexShader(":/bmedit/mtl_textured_gl33.vsh");
-		QFile texturedEntityFragmentShader(":/bmedit/mtl_textured_gl33.fsh");
-
-		coloredEntityVertexShader.open(QIODevice::ReadOnly);
-		coloredEntityFragmentShader.open(QIODevice::ReadOnly);
-		texturedEntityVertexShader.open(QIODevice::ReadOnly);
-		texturedEntityFragmentShader.open(QIODevice::ReadOnly);
-
-		const std::string texturedEntityVertexShaderSource = texturedEntityVertexShader.readAll().toStdString();
-		const std::string texturedEntityFragmentShaderSource = texturedEntityFragmentShader.readAll().toStdString();
-		const std::string coloredEntityVertexShaderSource = coloredEntityVertexShader.readAll().toStdString();
-		const std::string coloredEntityFragmentShaderSource = coloredEntityFragmentShader.readAll().toStdString();
-
-		if (texturedEntityVertexShaderSource.empty())
+		// Upload geometry
+		auto ResizeOrUpdateGLBuffer = [this](GLenum target, uint32_t currentSize, uint32_t& capacity, size_t elementSize, const void* data)
 		{
-			emit resourceLoadFailed(QString("Failed to compile shaders (textured:vertex): no embedded asset found."));
-			return;
-		}
-
-		if (texturedEntityFragmentShaderSource.empty())
-		{
-			emit resourceLoadFailed(QString("Failed to compile shaders (textured:fragment): no embedded asset found."));
-			return;
-		}
-
-		if (coloredEntityVertexShaderSource.empty())
-		{
-			emit resourceLoadFailed(QString("Failed to compile shaders (colored:vertex): no embedded asset found."));
-			return;
-		}
-
-		if (coloredEntityFragmentShaderSource.empty())
-		{
-			emit resourceLoadFailed(QString("Failed to compile shaders (colored:fragment): no embedded asset found."));
-			return;
-		}
-
-		// Compile shaders
-		std::string compileError;
-		{
-			Shader texturedShader;
-
-			if (!texturedShader.compile(glFunctions, texturedEntityVertexShaderSource, texturedEntityFragmentShaderSource, compileError))
+			if (currentSize > capacity)
 			{
-				m_pLevel = nullptr;
-				m_eState = ELevelState::LS_NONE;
-
-				emit resourceLoadFailed(QString("Failed to compile shaders (textured): %1").arg(QString::fromStdString(compileError)));
-				return;
-			}
-
-			m_resources->m_shaders.emplace_back(texturedShader);
-			m_resources->m_iTexturedShaderIdx = m_resources->m_shaders.size() - 1;
-		}
-
-		{
-			Shader gizmoShader;
-			if (!gizmoShader.compile(glFunctions, coloredEntityVertexShaderSource, coloredEntityFragmentShaderSource, compileError))
-			{
-				m_pLevel = nullptr;
-				m_eState = ELevelState::LS_NONE;
-
-				emit resourceLoadFailed(QString("Failed to compile shaders (colored): %1").arg(QString::fromStdString(compileError)));
-				return;
-			}
-
-			m_resources->m_shaders.emplace_back(gizmoShader);
-			m_resources->m_iGizmoShaderIdx = m_resources->m_shaders.size() - 1;
-		}
-
-		qDebug() << "Shaders (" << m_resources->m_shaders.size() << ") compiled and ready to use!";
-		m_eState = ELevelState::LS_RESET_CAMERA_STATE;
-		repaint(); // call to force jump into next state
-	}
-
-	void SceneRenderWidget::doResetCameraState(QOpenGLFunctions_3_3_Core* glFunctions)
-	{
-		LEVEL_SAFE_CHECK()
-
-		// ----------------------------------------------------------
-		// Ok, first of all let's try to find where located ZPlayer of ZHitman3 object
-		gamelib::scene::SceneObject::Ptr player = nullptr;
-
-		m_pLevel->forEachObjectOfType("ZHitman3", [&player](const gamelib::scene::SceneObject::Ptr& sceneObject) -> bool {
-			player = sceneObject;
-			return true;
-		});
-
-		if (player)
-		{
-			// Ok, level contains player. Let's take his room and move camera to player
-			const auto iPrimId = getGameObjectPrimitiveId(player);
-			const auto vPlayerPosition = player->getParent().lock()->getPosition();
-			glm::vec3 vCameraPosition = vPlayerPosition;
-
-			// In theory, we need to put camera around player, not in player. So we need to have bounding box of player to correct camera position
-			if (iPrimId != 0 && m_resources->m_modelsCache.contains(iPrimId))
-			{
-				const auto& sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
-				glm::vec3 vCenter = sBoundingBox.getCenter();
-				vCenter.y += 1.5f * vCenter.y;
-
-				vCameraPosition += vCenter;
-			}
-
-			m_camera.setPosition(vCameraPosition);
-			qDebug() << "Move camera to object " << QString::fromStdString(player->getName()) << " at (" << vCameraPosition.x << ';' << vCameraPosition.y << ';' <<  vCameraPosition.z << ")";
-		}
-		else
-		{
-			// Bad for us, player not found. Need to put camera somewhere else
-			qDebug() << "No player on scene. Camera moved to (0;0;0)";
-			m_camera.setPosition(glm::vec3(0.f));
-		}
-
-		// ----------------------------------------------------------
-		emit resourcesReady();
-
-		m_eState = ELevelState::LS_READY; // Done!
-		repaint(); // call to force jump into next state
-	}
-
-	void SceneRenderWidget::doPrepareInvalidatedResources(QOpenGLFunctions_3_3_Core* glFunctions)
-	{
-		LEVEL_SAFE_CHECK()
-
-		if (!m_resources->m_invalidatedTextures.empty())
-		{
-			for (auto& texture : m_resources->m_textures)
-			{
-				if (texture.index.has_value() && m_resources->m_invalidatedTextures.contains(texture.index.value()))
-				{
-					const uint32_t textureIndex = texture.index.value();
-
-					// Unload texture
-					texture.discard(glFunctions);
-
-					// Load texture (need to find actual entry in global textures pool... bruh)
-					const auto& allTextures = m_pLevel->getSceneTextures()->entries;
-					auto it = std::find_if(allTextures.begin(), allTextures.end(), [textureIndex](const gamelib::tex::TEXEntry& ent) -> bool {
-						return ent.m_index == textureIndex;
-					});
-
-					if (it != allTextures.end())
-					{
-						// Erase cache
-						if (it->m_fileName.has_value())
-						{
-							m_resources->m_textureNameToGL.erase(it->m_fileName.value());
-						}
-						m_resources->m_textureIndexToGL.erase(it->m_index);
-
-						// Reload
-						if (texture.setup(glFunctions, *it))
-						{
-							// Update cache
-							if (texture.texPath.has_value())
-							{
-								m_resources->m_textureNameToGL[texture.texPath.value()] = texture.texture;
-							}
-
-							if (texture.index.has_value())
-							{
-								m_resources->m_textureIndexToGL[texture.index.value()] = texture.texture;
-							}
-
-							// Done
-							qDebug() << "Texture #" << textureIndex << " reloaded!";
-						}
-						else
-						{
-							qWarning() << "Failed to update texture #" << textureIndex;
-						}
-					}
-
-					// Validated
-					m_resources->m_invalidatedTextures.erase(textureIndex);
-				}
-			}
-		}
-	}
-
-	glm::ivec2 SceneRenderWidget::getViewportSize() const
-	{
-		return { QWidget::width(), QWidget::height() };
-	}
-
-	void SceneRenderWidget::collectRenderList(const render::Camera& camera, const gamelib::scene::SceneObject* pRootGeom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility)
-	{
-		if (!m_pLevel || m_pLevel->getSceneObjects().empty())
-		{
-			return;
-		}
-
-		// Update room
-		updateCameraRoomAttachment(stats);
-
-		if (pRootGeom != m_pLevel->getSceneObjects()[0].get())
-		{
-			// Render from specific node (no performance optimisations here)
-			collectRenderEntriesIntoRenderList(pRootGeom, entries, stats, bIgnoreVisibility);
-		}
-		else
-		{
-			// Try to render
-			std::set<const gamelib::scene::SceneObject*> visitedObjects {};
-
-			for (const auto& pRoom : m_cameraInRooms)
-			{
-				for (const SeebleObject& sObject : pRoom->vObjects)
-				{
-					if (visitedObjects.contains(sObject.pObject.get()))
-						continue; // Skip because it's in render list already
-
-					if (!canDrawGeom(sObject.pObject.get()))
-						continue;
-
-					if (auto bbox = getGameObjectBoundingBox(sObject.pObject, true); bbox.has_value() && m_camera.canSeeObject(bbox.value()))
-					{
-						// Need to render it
-						collectRenderEntriesIntoRenderList(sObject.pObject.get(), entries, stats, bIgnoreVisibility, true);
-
-						visitedObjects.insert(sObject.pObject.get());
-					}
-				}
-			}
-		}
-
-		// Add debug stuff
-		if (m_bRenderPortals || m_bRenderRoomBoundingBox)
-		{
-			for (const auto &sRoomDef : m_rooms)
-			{
-				if (sRoomDef.mExitsDebugModel && m_bRenderPortals)
-				{
-					for (const auto &sMesh : sRoomDef.mExitsDebugModel->meshes)
-					{
-						render::RenderEntry &exitPlaneRenderEntry = entries.emplace_back();
-
-						// Render params
-						exitPlaneRenderEntry.iPrimitiveId = 0;
-						exitPlaneRenderEntry.iMeshIndex = 0;
-						exitPlaneRenderEntry.iTrianglesNr = 0;
-						exitPlaneRenderEntry.renderTopology = sMesh.renderTopology.value_or(render::RenderTopology::RT_TRIANGLES);
-
-						// World params
-						exitPlaneRenderEntry.vPosition = glm::vec3(.0f);
-						exitPlaneRenderEntry.mWorldTransform = glm::mat4(1.f);
-						exitPlaneRenderEntry.mLocalOriginalTransform = glm::mat3(1.f);
-						exitPlaneRenderEntry.pMesh = const_cast<render::Mesh *>(&sMesh);
-
-						// Material
-						render::RenderEntry::Material &material = exitPlaneRenderEntry.material;
-						constexpr float kOpacity = 0.1f;
-						material.vDiffuseColor = sMesh.defaultColor.value_or(glm::vec4(1.f, 1.f, 0.f, kOpacity));
-						material.renderState = gamelib::mat::MATRenderState("#BMEDIT/OPACITY_AREA",
-						                                                    true, true, true, false, false,
-						                                                    kOpacity,
-						                                                    0.f,
-						                                                    255,
-						                                                    gamelib::mat::MATCullMode::CM_DontCare,
-						                                                    gamelib::mat::MATBlendMode::BM_ADD,
-						                                                    gamelib::mat::MATValU());
-						material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
-					}
-				}
-
-				if (sRoomDef.mBBoxModel && m_bRenderRoomBoundingBox)
-				{
-					for (const auto &sMesh : sRoomDef.mBBoxModel->meshes)
-					{
-						render::RenderEntry &lineRenderEntry = entries.emplace_back();
-
-						// Render params
-						lineRenderEntry.iPrimitiveId = 0;
-						lineRenderEntry.iMeshIndex = 0;
-						lineRenderEntry.iTrianglesNr = 0;
-						lineRenderEntry.renderTopology = sMesh.renderTopology.value_or(render::RenderTopology::RT_LINES);
-
-						// World params
-						lineRenderEntry.vPosition = glm::vec3(.0f);
-						lineRenderEntry.mWorldTransform = glm::mat4(1.f);
-						lineRenderEntry.mLocalOriginalTransform = glm::mat3(1.f);
-						lineRenderEntry.pMesh = const_cast<render::Mesh *>(&sMesh);
-
-						// Material
-						render::RenderEntry::Material &material = lineRenderEntry.material;
-						constexpr float kOpacity = 0.1f;
-						material.vDiffuseColor = sMesh.defaultColor.value_or(glm::vec4(1.f, 0.f, 0.f, kOpacity));
-						material.renderState = gamelib::mat::MATRenderState("#BMEDIT/OPACITY_AREA",
-						                                                    true, true, true, false, false,
-						                                                    kOpacity,
-						                                                    0.f,
-						                                                    255,
-						                                                    gamelib::mat::MATCullMode::CM_DontCare,
-						                                                    gamelib::mat::MATBlendMode::BM_ADD,
-						                                                    gamelib::mat::MATValU());
-						material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
-					}
-				}
-			}
-		}
-
-		// Post sorting
-		entries.sort([&camera](const render::RenderEntry& a, const render::RenderEntry& b) -> bool {
-			// Check distance to camera
-			const float fADistanceToCamera = glm::length(camera.getPosition() - a.vPosition);
-			const float fBDistanceToCamera = glm::length(camera.getPosition() - b.vPosition);
-
-			return fADistanceToCamera > fBDistanceToCamera;
-		});
-	}
-
-	void SceneRenderWidget::collectRenderEntriesIntoRenderList(const gamelib::scene::SceneObject* geom, render::RenderEntriesList& entries, RenderStats& stats, bool bIgnoreVisibility, bool bBreakOnChild) // NOLINT(*-no-recursion)
-	{
-		const bool bInvisible = geom->getProperties().getObject<bool>("Invisible", false);
-		const auto vPosition  = geom->getPosition();
-		auto primId = getGameObjectPrimitiveId(geom);
-
-		// Calculate object world space bounding box and check that this bbox is visible by out camera
-
-		if (const auto& n = geom->getType()->getName(); n == "ZSHADOWMESHOBJ" || n == "ZBOUND" || n == "ZLIGHT" || n == "ZENVIRONMENT" || n == "ZOMNILIGHT" || n == "ZSPOTLIGHT" || n == "ZSPOTLIGHTSQUARE")
-		{
-			// Do not draw us & our children
-			return;
-		}
-
-		if (!bIgnoreVisibility)
-			if (bInvisible || !canDrawGeom(geom))
-				return;
-
-		if (g_bannedObjectIds.contains(std::string_view{geom->getName()}) || geom->getName().starts_with("CloneGroup_"))
-			return;
-
-		// Check that our 'object' is not a collision box
-		if (auto parent = geom->getParent().lock(); parent && parent->getType()->getName() == "ZROOM" && parent->getName() == geom->getName())
-			return; // Do not render collision meshes
-
-		// Check that object could be rendered by any way
-		if (primId != 0 && m_resources->m_modelsCache.contains(primId))
-		{
-			glm::mat4 mWorldTransform = getGameObjectTransform(geom);
-
-			// Get model
-			const Model& model = m_resources->m_models[m_resources->m_modelsCache[primId]];
-			gamelib::BoundingBox modelWorldBoundingBox = gamelib::BoundingBox::toWorld(model.boundingBox, mWorldTransform);
-
-			if (m_camera.canSeeObject(glm::vec3(modelWorldBoundingBox.min), glm::vec3(modelWorldBoundingBox.max))) {
-				// Add bounding box to render list
-				{
-					if (geom == m_pSelectedSceneObject && model.boundingBoxMesh.has_value()) {
-						// Need to add mesh
-						render::RenderEntry &boundingBoxEntry = entries.emplace_back();
-
-						// Render params
-						boundingBoxEntry.iPrimitiveId = 0;
-						boundingBoxEntry.iMeshIndex = 0;
-						boundingBoxEntry.iTrianglesNr = 0;
-						boundingBoxEntry.renderTopology = render::RenderTopology::RT_LINES;
-#ifdef QT_DEBUG
-						boundingBoxEntry.debugGroupId = "[BBOX] " + geom->getName();
-#endif
-
-						// World params
-						boundingBoxEntry.vPosition = vPosition;
-						boundingBoxEntry.mWorldTransform = mWorldTransform;
-						boundingBoxEntry.mLocalOriginalTransform = geom->getOriginalTransform();
-						boundingBoxEntry.pMesh = const_cast<render::Mesh *>(&model.boundingBoxMesh.value());
-
-						// Material
-						render::RenderEntry::Material &material = boundingBoxEntry.material;
-						material.vDiffuseColor = glm::vec4(0.f, 0.f, 1.f, 1.f);
-						material.pShader = &m_resources->m_shaders[m_resources->m_iGizmoShaderIdx];
-					}
-				}
-
-				// increase allowed objects count
-				stats.allowedObjects++;
-
-				// Add each 'mesh' into render list
-				for (int iMeshIdx = 0; iMeshIdx < model.meshes.size(); iMeshIdx++) {
-					const auto &mesh = model.meshes[iMeshIdx];
-
-					if (mesh.materialId == 0)
-						continue;// Unable to render (ZWINPIC!)
-
-					// Filter by 'MeshVariantId'
-					const auto requiredVariationId = geom->getProperties().getObject<std::int32_t>("MeshVariantId", 0);
-					if (requiredVariationId != mesh.variationId) {
-						continue;
-					}
-
-					// And store entry to renderer
-					render::RenderEntry renderEntry = {};
-
-					// Render params
-					renderEntry.iPrimitiveId = primId;
-					renderEntry.iMeshIndex = iMeshIdx;
-					renderEntry.iTrianglesNr = mesh.trianglesCount;
-					renderEntry.renderTopology = render::RenderTopology::RT_TRIANGLES;
-
-					// World params
-					renderEntry.vPosition = vPosition;
-					renderEntry.mWorldTransform = mWorldTransform;
-					renderEntry.mLocalOriginalTransform = geom->getOriginalTransform();
-					renderEntry.pMesh = const_cast<render::Mesh *>(&mesh);
-
-					// Material
-					render::RenderEntry::Material &material = renderEntry.material;
-
-					const auto &instances = m_pLevel->getLevelMaterials()->materialInstances;
-					const auto &matInstance = instances[mesh.materialId - 1];
-
-					// Store parameters
-					material.id = mesh.materialId;
-					material.sInstanceMatName = matInstance.getName();
-					material.sBaseMatClass = matInstance.getParentName();
-
-					if (!matInstance.getBinders().empty()) {
-						const auto &binder = matInstance.getBinders()[0];// NOTE: In future I'll rewrite this place, but for now it's enough
-
-						// Store parameters
-						// TODO: Need collect all parameters here
-
-						// Store render state
-						if (!binder.renderStates.empty()) {
-							// TODO: In future we need to learn how to use multiple render states (if there are able to be 'multiple')
-							material.renderState = binder.renderStates[0];
-						}
-
-						if (!material.renderState.isEnabled())
-						{
-							// unable to see disabled material instance
-							continue;
-						}
-
-						// Resolve & store textures
-						std::fill(material.textures.begin(), material.textures.end(), kInvalidResource);
-
-						for (const auto &texture : binder.textures) {
-							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_NOTHING)
-								continue;// No texture at all
-
-							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID_AND_PATH) {
-								assert(false && "Idk how to handle this");
-								continue;
-							}
-
-							const auto &kind = texture.getName();
-
-							int textureSlotId = render::TextureSlotId::kMaxTextureSlot;
-
-#define MATCH_TEXTURE_KIND(mode, modeName) if (kind == modeName) { textureSlotId = mode; }
-							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapDiffuse, "mapDiffuse")
-							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapSpecularMask, "mapSpecularMask")
-							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapEnvironment, "mapEnvironment")
-							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapReflectionMask, "mapReflectionMask")
-							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapReflectionFallOff, "mapReflectionFallOff")
-							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapIllumination, "mapIllumination")
-							MATCH_TEXTURE_KIND(render::TextureSlotId::kMapTranslucency, "mapTranslucency")
-#undef MATCH_TEXTURE_KIND
-
-							if (textureSlotId == render::TextureSlotId::kMaxTextureSlot)
-								continue;
-
-							// Now we need to find texture instance and associate it
-							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID) {
-								// Lookup in cache by texture id
-								if (auto it = m_resources->m_textureIndexToGL.find(texture.getTextureId()); it != m_resources->m_textureIndexToGL.end()) {
-									material.textures[textureSlotId] = it->second;
-									break;
-								}
-							}
-
-							if (texture.getPresentedTextureSources() == gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH) {
-								// Lookup in cache by texture path
-								if (auto it = m_resources->m_textureNameToGL.find(texture.getTexturePath()); it != m_resources->m_textureNameToGL.end()) {
-									material.textures[textureSlotId] = it->second;
-									break;
-								}
-							}
-						}
-					}
-
-					// Store shader
-					material.pShader = &m_resources->m_shaders[m_resources->m_iTexturedShaderIdx];
-
-					// Push or not?
-					if (!std::all_of(material.textures.begin(), material.textures.end(), [](const auto &v) -> bool { return v == kInvalidResource; })) {
-#ifdef QT_DEBUG
-						renderEntry.debugGroupId = "[Mesh " + std::to_string(iMeshIdx) + "/" + std::to_string(model.meshes.size()) + "] " + geom->getName();
-#endif
-
-						entries.emplace_back(renderEntry);
-					}
-				}
+				capacity = currentSize;
+				GL->glBufferData(target, static_cast<GLsizeiptr>(elementSize * capacity), data, GL_DYNAMIC_DRAW);
 			}
 			else
 			{
-				// Increase rejected objects
-				stats.rejectedObjects++;
+				GL->glBufferSubData(target, 0, static_cast<GLsizeiptr>(elementSize * currentSize), data);
 			}
-		}
-
-		if (bBreakOnChild)
-			return;
-
-		// Visit others
-		for (const auto& child : geom->getChildren())
-		{
-			if (auto g = child.lock())
-			{
-				collectRenderEntriesIntoRenderList(g.get(), entries, stats, bIgnoreVisibility);
-			}
-		}
-	}
-
-	void SceneRenderWidget::performRender(QOpenGLFunctions_3_3_Core* glFunctions, const render::RenderEntriesList& entries, const render::Camera& camera, const std::function<bool(const render::RenderEntry&)>& filter)
-	{
-		glm::ivec2 viewResolution = getViewportSize();
-
-		static constexpr std::array<std::string_view, render::TextureSlotId::kMaxTextureSlot> g_aTextureKindToLocation {
-		    "i_uMaterial.mapDiffuse",
-		    "i_uMaterial.mapSpecularMask",
-		    "i_uMaterial.mapEnvironment",
-		    "i_uMaterial.mapReflectionMask",
-		    "i_uMaterial.mapReflectionFallOff",
-		    "i_uMaterial.mapIllumination",
-		    "i_uMaterial.mapTranslucency"
 		};
 
-		for (const auto& entry : entries)
-		{
-			if (!filter(entry))
-				continue; // skipped by filter
+		// Upload
+		ResizeOrUpdateGLBuffer(GL_ARRAY_BUFFER, aVertices.size(), MainGeometryVertexCapacity, sizeof(render::GlacierVertex), aVertices.data());
+		ResizeOrUpdateGLBuffer(GL_ELEMENT_ARRAY_BUFFER, aIndices.size(), MainGeometryIndexCapacity, sizeof(uint32_t), aIndices.data());
 
-#ifdef QT_DEBUG
-			const bool bStartGroup = !entry.debugGroupId.empty();
-			if (bStartGroup) beginDebugGroup(entry.debugGroupId);
-#endif
+		qDebug() << "Latest gl error: " << GL->glGetError();
+		qDebug() << "Total vertices usage: " << aVertices.size();
+		qDebug() << "Total indices usage: " << aIndices.size();
 
-			// Switch render state
-			g_RenderState.set(glFunctions, entry.material.renderState);
+		// Unbind
+		GL->glBindVertexArray(0);
+		GL->glBindBuffer(GL_ARRAY_BUFFER, 0);
+		GL->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-			// Activate material & setup parameters
-			render::Shader* shader = entry.material.pShader;
-			bool bShaderChanged = false;
-
-			if (shader != g_pLastKnownShader)
-			{
-				if (g_pLastKnownShader) g_pLastKnownShader->unbind(glFunctions);
-				g_pLastKnownShader = shader;
-
-				if (g_pLastKnownShader) g_pLastKnownShader->bind(glFunctions);
-				bShaderChanged = true;
-			}
-
-			// Setup parameters (common)
-			g_pLastKnownShader->setUniform(glFunctions, ShaderConstants::kModelTransform, entry.mWorldTransform);
-			g_pLastKnownShader->setUniform(glFunctions, ShaderConstants::kCameraProjection, m_camera.getProjection());
-			g_pLastKnownShader->setUniform(glFunctions, ShaderConstants::kCameraView, m_camera.getView());
-			g_pLastKnownShader->setUniform(glFunctions, ShaderConstants::kCameraResolution, viewResolution);
-
-			// TODO: Need to move into constants
-			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.v4DiffuseColor", entry.material.vDiffuseColor);
-			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.gm_vZBiasOffset", entry.material.renderState.hasZBias() ? entry.material.gm_vZBiasOffset : glm::vec4(0.f));
-			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.v4Opacity", entry.material.v4Opacity);
-			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.v4Bias", entry.material.v4Bias);
-			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.alphaREF", std::clamp(entry.material.iAlphaREF, 0, 255));
-			g_pLastKnownShader->setUniform(glFunctions, "i_uMaterial.fZOffset", entry.material.renderState.getZOffset());
-
-			// Bind textures
-			for (int slotIdx = render::TextureSlotId::kMapDiffuse; slotIdx < render::TextureSlotId::kMaxTextureSlot; slotIdx++)
-			{
-				const auto& glTexture = entry.material.textures[slotIdx];
-
-				if (glTexture == kInvalidResource)
-					continue;
-
-				if (g_RenderState.aTextures[slotIdx] != glTexture)
-				{
-					glFunctions->glActiveTexture(GL_TEXTURE0 + slotIdx);
-					glFunctions->glBindTexture(GL_TEXTURE_2D, glTexture);
-					g_RenderState.aTextures[slotIdx] = glTexture;
-				}
-
-				if (bShaderChanged)
-				{
-					g_pLastKnownShader->setUniform(glFunctions, std::string(g_aTextureKindToLocation[slotIdx]), slotIdx);
-				}
-			}
-
-			if (m_renderMode & RenderMode::RM_TEXTURE)
-			{
-				entry.pMesh->render(glFunctions, entry.renderTopology);
-			}
-
-			if (m_renderMode & RenderMode::RM_WIREFRAME)
-			{
-				glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				entry.pMesh->render(glFunctions, entry.renderTopology);
-				glFunctions->glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			}
-
-#ifdef QT_DEBUG
-			if (bStartGroup) endDebugGroup();
-#endif
-		}
+		return true;
 	}
 
-	void SceneRenderWidget::invalidateRenderList()
+	bool SceneRenderWidget::RenderContext::buildTransformCache()
 	{
-		m_renderList.clear();
+		// Here we need to visit whole scene object by object (in hierarchy order)
+		Q_ASSERT(Level != nullptr);
+		Q_ASSERT(!Level->getSceneObjects().empty());
+
+		auto Visitor = [this](const gamelib::scene::SceneObject::Ptr& pObject) -> gamelib::scene::SceneObject::EVisitResult {
+			using VR = gamelib::scene::SceneObject::EVisitResult;
+			const auto primId = GetSceneObjectPrimitiveID(Level, pObject);
+
+			// Store transform & association
+			const glm::mat4 mWorld = pObject->getWorldTransform();
+			ObjectTransformDescription& transformDescription = Transforms.emplace_back();
+			transformDescription.Matrix = mWorld;
+			transformDescription.Status.x = 0.f;
+			transformDescription.Status.y = static_cast<float>(primId);
+			transformDescription.Status.z = transformDescription.Status.w = 0.f;
+
+			// Store bounding box
+			gamelib::BoundingBox worldBBox = primId ? gamelib::BoundingBox::toWorld(BoundingBoxes[primId], mWorld) : gamelib::BoundingBox();
+			WorldBoundingBoxes.emplace_back(worldBBox); // Store empty bbox if no primId presented at all
+
+			// Store bounds
+			transformDescription.BoundsMin = glm::vec4(worldBBox.min, 1.f);
+			transformDescription.BoundsMax = glm::vec4(worldBBox.max, 1.f);
+
+			// Store identity
+			ObjectToTransformIndex[pObject.get()] = (Transforms.size() - 1);
+
+			// Go deeper cuz in few cases we have situation when "drawable inside drawable"
+			return VR::VR_CONTINUE;
+		};
+
+		Level->getSceneObjects()[0]->visitChildren(Visitor);
+		if (Transforms.isEmpty())
+			return false;
+
+		// Upload transforms to GPU
+		syncTransforms();
+		return true;
 	}
 
-	void SceneRenderWidget::computeRoomBoundingBox(RoomDef& d)
+	void SceneRenderWidget::RenderContext::syncTransforms()
 	{
-		using R = gamelib::scene::SceneObject::EVisitResult;
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, TransformSSBO);
+		GL->glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, static_cast<GLsizeiptr>(sizeof(ObjectTransformDescription) * Transforms.size()), Transforms.data());
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	}
 
-		if (auto pRoom = d.rRoom.lock())
+	/// ------------------------------ RenderCommon
+	SceneRenderWidget::RenderCommon::RenderCommon(widgets::GLFunctions *pGLFunctions, GLExtFunctions::Ptr&& pGLExtFunctions)
+	    : GL(pGLFunctions), GLExt(std::move(pGLExtFunctions))
+	{
+	}
+
+	SceneRenderWidget::RenderCommon::~RenderCommon()
+	{
+	}
+
+	void SceneRenderWidget::RenderCommon::setup()
+	{
+		auto GetContents = [](const QString& path) -> QString {
+			QFile file(path);
+			file.open(QIODevice::ReadOnly);
+
+			auto res = file.readAll();
+			file.close();
+
+			return res;
+		};
+
+		auto CollectUniforms = [](uint32_t* cache, QOpenGLShaderProgram* pShaderProg)
 		{
-			// First of all we need try to lookup for 'CollisionMesh'. It has same name to room and be an STDOBJ
-			const auto& children = pRoom->getChildren();
-			gamelib::scene::SceneObject* pCollisionMesh = nullptr;
-			pRoom->visitChildren([&pCollisionMesh, sTargetName = pRoom->getName()](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-				if (pObject->getName() == sTargetName/* && pObject->getType()->getName() == "ZSTDOBJ"*/)
-				{
-					pCollisionMesh = pObject.get();
-					return R::VR_STOP_ALL;
-				}
+			cache[EUniformID::U_CAMERA_PROJ_VIEW] = pShaderProg->uniformLocation("cameraProjView");
 
-				return R::VR_NEXT; // Do not go deeper
-			});
+			qDebug() << "Collected";
+		};
 
-			if (pCollisionMesh)
+		{
+			DefaultShader.reset(new QOpenGLShaderProgram(nullptr));
+			DefaultShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Vertex, GetContents(":/bmedit/mtl_textured_gl33.vsh"));
+			DefaultShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Fragment, GetContents(":/bmedit/mtl_textured_gl33.fsh"));
+			if (!DefaultShader->link())
 			{
-				auto iPrimId = getGameObjectPrimitiveId(pCollisionMesh);
-				if (iPrimId != 0)
-				{
-					// Nice, collision mesh was found! Just use it as source for bbox of ZROOM
-					auto sBoundingBox = m_resources->m_models[m_resources->m_modelsCache[iPrimId]].boundingBox;
-					d.vBoundingBox = gamelib::BoundingBox::toWorld(sBoundingBox, pCollisionMesh->getWorldTransform());
-					d.eBoundingBoxSource = RoomDef::EBoundingBoxSource::BBS_ROOM_COLLISION_MESH;
-					return;
-				}
-			}
-
-			// Ok, let's try to find all ZBOUND objects and make BoundingBox
-			gamelib::BoundingBox sTempBbox {};
-			int iZBoundObjsFound = 0;
-			pRoom->visitChildren([this, &sTempBbox, &iZBoundObjsFound](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-				if (pObject && pObject->getType()->getName() == "ZBOUND")
-				{
-					if (auto bbox = getGameObjectBoundingBox(pObject.get()); bbox.has_value())
-					{
-						++iZBoundObjsFound;
-						sTempBbox.expand(bbox.value());
-					}
-				}
-
-				return R::VR_NEXT; // Never go inside
-			});
-
-			if (iZBoundObjsFound > 0)
-			{
-				d.vBoundingBox = sTempBbox;
-				d.eBoundingBoxSource = RoomDef::EBoundingBoxSource::BBS_ZBOUNDS_AUTO_EXPAND;
+				QMessageBox::critical(nullptr, "Render error", "Failed to link DefaultShader!");
 				return;
 			}
 
-			// Old and hard way: just collect all visible objects with bboxes and combine them all into 1 single big bbox
-			bool bBboxInited = false;
-
-			pRoom->visitChildren([&](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-				if (!pObject)
-					return R::VR_NEXT;
-
-				if (auto bbox = getGameObjectBoundingBox(pObject.get()); bbox.has_value())
-				{
-					if (!bBboxInited)
-					{
-						bBboxInited = true;
-						d.vBoundingBox = bbox.value();
-					}
-					else
-					{
-						d.vBoundingBox.expand(bbox.value());
-					}
-
-					return R::VR_NEXT;
-				}
-
-				return R::VR_CONTINUE;
-			});
-
-			d.eBoundingBoxSource = RoomDef::EBoundingBoxSource::BBS_AUTO_ROOM_EXPAND;
-		}
-	}
-
-	void SceneRenderWidget::buildRoomCache(QOpenGLFunctions_3_3_Core* glFunctions)
-	{
-		using R = gamelib::scene::SceneObject::EVisitResult;
-
-		// clear caches
-		m_rooms.clear();
-		m_cameraInRooms.clear();
-
-		// Save pointer to  BUF file
-		const auto bufFileView = m_pLevel->getStaticBuffer();
-
-		// Now we need to find ZGROUP who ends by _LOCATIONS and lookup from this ZGROUP inside
-		auto locationsIt = std::find_if(
-		    m_pLevel->getSceneObjects().begin(),
-		    m_pLevel->getSceneObjects().end(),
-		    [](const gamelib::scene::SceneObject::Ptr& pObject) -> bool {
-			    return pObject && pObject->getName().ends_with("_LOCATIONS.zip");
-		    });
-
-		if (locationsIt != m_pLevel->getSceneObjects().end())
-		{
-			// we've able to use standard workflow
-			// Find ZROOMs
-			const gamelib::scene::SceneObject::Ptr& pNewRoot = *locationsIt;
-
-			pNewRoot->visitChildren([this, bufFileView](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-				if (!pObject)
-				{
-					return R::VR_STOP_ALL;
-				}
-
-				if (pObject->getType()->getName() == "ZROOM")
-				{
-					// Add and go next, do not go inside
-					auto& room = m_rooms.emplace_back();
-					room.rRoom = pObject;
-
-					//room.eLocation
-					static const std::map<std::string, RoomDef::ELocation> s_LocNameToKind {
-					    { "eBOTH", RoomDef::ELocation::eBOTH },
-					    { "eINSIDE", RoomDef::ELocation::eINSIDE },
-					    { "eOUTSIDE", RoomDef::ELocation::eOUTSIDE },
-					    { "eUNDEFINED", RoomDef::ELocation::eUNDEFINED }
-					};
-					const auto sLocation = pObject->getProperties().getObject<std::string>("Location", "");
-
-					if (auto it = s_LocNameToKind.find(sLocation); it != s_LocNameToKind.end())
-					{
-						room.eLocation = it->second;
-					}
-					else
-					{
-						room.eLocation = RoomDef::ELocation::eUNDEFINED;
-						assert(false && "Unknown room type, room will be ignored in optimisations loop");
-					}
-
-					//room.iExitsCount, room.ExitOffsets (Precache room exit boxes)
-					const auto iExistsCount = pObject->getProperties().getObject<std::int32_t>("iExitsCount", 0);
-					const auto iExistsOffset = pObject->getProperties().getObject<std::int32_t>("ExitOffsets", 0);
-					if (iExistsCount > 0 && iExistsOffset > 0)
-					{
-						room.aExists.reserve(iExistsCount);
-
-						// Take a slice of data
-						constexpr auto kEntrySize = static_cast<int64_t>(sizeof(gamelib::gms::room::ZRoomExit));
-						const auto roomExists = bufFileView.slice(iExistsOffset, kEntrySize * iExistsCount);
-
-						for (int i = 0; i < iExistsCount; i++)
-						{
-							const auto exit = roomExists.slice((i * kEntrySize), kEntrySize);
-							auto& exitDef = room.aExists.emplace_back();
-							gamelib::gms::room::ZRoomExit::deserialize(exitDef, exit);
-						}
-					}
-
-					//room.iNeighboursCount, room.NeighborsOffset
-					const auto iNeighboursCount = pObject->getProperties().getObject<std::int32_t>("iNeighboursCount", 0);
-					const auto iNeighborsOffset = pObject->getProperties().getObject<std::int32_t>("NeighborsOffset", 0);
-					if (iNeighboursCount > 0 && iNeighborsOffset > 0)
-					{
-						room.aNeighbours.reserve(iNeighboursCount);
-
-						constexpr auto kEntrySize = static_cast<int64_t>(sizeof(gamelib::gms::room::ZRoomNeighbor));
-						const auto roomNeighbours = bufFileView.slice(iNeighborsOffset, kEntrySize * iNeighboursCount);
-
-						for (int i = 0; i < iNeighboursCount; i++)
-						{
-							const auto neighbour = roomNeighbours.slice((i * kEntrySize), kEntrySize);
-							auto& neighbourDef = room.aNeighbours.emplace_back();
-							gamelib::gms::room::ZRoomNeighbor::deserialize(neighbourDef, neighbour);
-						}
-					}
-
-					// Compute room dimensions
-					computeRoomBoundingBox(room);
-
-					// Collect objects list (all visible objects from room + dynamics from scene)
-					pObject->visitChildren([&room, this](const gamelib::scene::SceneObject::Ptr& pObj) -> R {
-						if (pObj->is("ZROOM")) return R::VR_CONTINUE;
-
-						if (auto bbox = getGameObjectBoundingBox(pObj); bbox.has_value())
-						{
-							SeebleObject& sObject = room.vObjects.emplace_back();
-							sObject.pObject = pObj;
-							sObject.ePrio = EObjectPriority::EP_STATIC_OBJECT;
-							return R::VR_NEXT; // Go to next
-						}
-						return R::VR_CONTINUE; // go deeper
-					});
-
-					return R::VR_NEXT;
-				}
-
-				// Go deep inside
-				return R::VR_CONTINUE;
-			});
-		}
-		else
-		{
-			// No rooms found. Need to generate 1 big room
-			RoomDef& sVirtualRoom = m_rooms.emplace_back();
-
-			// Use really huge bbox (FLT32_MIN;FLT32_MIN;FLT32_MIN) (FLT32_MAX; FLT32_MAX; FLT32_MAX)
-			sVirtualRoom.vBoundingBox = gamelib::BoundingBox(
-			    glm::vec3(
-			        std::numeric_limits<float>::min(),
-			        std::numeric_limits<float>::min(),
-			        std::numeric_limits<float>::min()
-				),
-			    glm::vec3(
-			        std::numeric_limits<float>::max(),
-			        std::numeric_limits<float>::max(),
-			        std::numeric_limits<float>::max()
-				)
-			);
-
-			// Set location & flags
-			sVirtualRoom.eLocation = RoomDef::ELocation::eUNDEFINED;
-			sVirtualRoom.bIsVirtualBigRoom = true;
-
-			// Collect objects
-			m_pLevel->getSceneObjects()[0]->visitChildren([&sVirtualRoom, this](const gamelib::scene::SceneObject::Ptr& pObj) -> R {
-				if (pObj->is("ZROOM")) return R::VR_CONTINUE;
-
-				if (auto bbox = getGameObjectBoundingBox(pObj); bbox.has_value())
-				{
-					SeebleObject& sObject = sVirtualRoom.vObjects.emplace_back();
-					sObject.pObject = pObj;
-					sObject.ePrio = EObjectPriority::EP_STATIC_OBJECT; // Idk, but in this case all objects are STATIC
-					return R::VR_NEXT; // Go to next
-				}
-
-				return R::VR_CONTINUE; // go deeper
-			});
+			// Make cache
+			CollectUniforms(&DefaultShaderUniformLocations[0], DefaultShader.get());
 		}
 
-		if (m_rooms.size() > 1 && !m_rooms.begin()->bIsVirtualBigRoom)
 		{
-			// Visit all objects before any rooms
-			m_pLevel->getSceneObjects()[0]->visitChildren([this](const gamelib::scene::SceneObject::Ptr& pObject) -> R {
-				if (pObject->getName() == "Scar!scar")
-				{
-					printf("DEBUG\n");
-				}
-				if (pObject->isInheritedOf("ZROOM")) return R::VR_NEXT; // Skip current branch
-
-				if (auto rBBOX = getGameObjectBoundingBox(pObject, true); rBBOX.has_value())
-				{
-					// Need to find in which room this subject should be
-					for (auto& sRoom : m_rooms)
-					{
-						if (sRoom.vBoundingBox.intersect(rBBOX.value()))
-						{
-							// Nice, save here
-							SeebleObject& sObject = sRoom.vObjects.emplace_back();
-							sObject.pObject = pObject;
-							sObject.ePrio = EObjectPriority::EP_DYNAMIC_OBJECT; // mark as dynamic
-
-							// break; // DronCode: Need to fix global bboxes before work with it.
-						}
-					}
-
-					// Skip subtree (no visible inside)
-					return R::VR_NEXT;
-				} // skipped, no real reason to handle invisible object (but object could be visible after prop changed. be aware)
-
-				return R::VR_CONTINUE; // go deeper
-			});
-		}
-
-		// Upload debug geom
-		for (auto& room : m_rooms)
-		{
-			if (!room.aExists.empty())
+		    CullingShader.reset(new QOpenGLShaderProgram(nullptr));
+			CullingShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Compute, GetContents(":/bmedit/culling.csh"));
+			if (!CullingShader->link())
 			{
-				room.mExitsDebugModel = std::make_unique<render::Model>();
-
-				for (const auto& sExit : room.aExists)
-				{
-					gamelib::Plane sPlane { sExit.v0, sExit.v1, sExit.v2, sExit.v3 };
-
-					// Plane
-					{
-						auto& exitMesh = room.mExitsDebugModel->meshes.emplace_back();
-						exitMesh.glTextureId = render::kInvalidResource;
-						exitMesh.materialId = 0;
-						exitMesh.renderTopology = RenderTopology::RT_TRIANGLES;
-
-						std::vector<render::SimpleVertex> aVertices;
-						std::vector<uint16_t> aIndices;
-
-						sPlane.toTriangles(std::back_inserter(aVertices), std::back_inserter(aIndices));
-
-						exitMesh.setup(glFunctions, render::SimpleVertex::g_FormatDescription, aVertices, aIndices, false);
-					}
-
-					// Normal vector direction
-					{
-						auto& exitMeshNormalView = room.mExitsDebugModel->meshes.emplace_back();
-						exitMeshNormalView.glTextureId = render::kInvalidResource;
-						exitMeshNormalView.materialId = 0;
-						exitMeshNormalView.renderTopology = RenderTopology::RT_LINES;
-						exitMeshNormalView.defaultColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-
-						const float kVecLength = sPlane.getSize() * 0.2f; //20% of size
-
-						std::vector<render::SimpleVertex> aVertices {
-						    sPlane.getCenter(),
-						    sPlane.getCenter() + (sPlane.getNormal() * kVecLength),
-						    sPlane.getCenter() - (sPlane.getNormal() * kVecLength)
-						};
-
-						std::vector<uint16_t> aIndices { 0, 1, 0, 2 };
-
-						exitMeshNormalView.setup(glFunctions, render::SimpleVertex::g_FormatDescription, aVertices, aIndices, false);
-					}
-				}
+				QMessageBox::critical(nullptr, "Render error", "Failed to link CullingShader!");
+				return;
 			}
 
-			// Add bounding box model
-			{
-				room.mBBoxModel = std::make_unique<render::Model>();
-
-				auto& bboxMesh = room.mBBoxModel->meshes.emplace_back();
-				bboxMesh.glTextureId = render::kInvalidResource;
-				bboxMesh.materialId = 0;
-				bboxMesh.renderTopology = RenderTopology::RT_LINES;
-
-				std::vector<render::SimpleVertex> aVertices;
-				std::vector<uint16_t> aIndices;
-
-				room.vBoundingBox.toLines(std::back_inserter(aVertices), std::back_inserter(aIndices));
-				bboxMesh.setup(glFunctions, render::SimpleVertex::g_FormatDescription, aVertices, aIndices, false);
-			}
-		}
-	}
-
-	void SceneRenderWidget::updateCameraRoomAttachment(RenderStats& stats, bool bRejectLastResult)
-	{
-		m_cameraInRooms.clear();
-
-		for (const auto& sRoom : m_rooms)
-		{
-			if (sRoom.vBoundingBox.contains(m_camera.getPosition()))
-			{
-				m_cameraInRooms.emplace_back(&sRoom);
-			}
+			// Make cache
+			CollectUniforms(&CullingShaderUniformLocations[0], CullingShader.get());
 		}
 
-#if 0
-		/**
-		 * Here is a place from hell. We need to know in which room camera and what rooms we can see from this place.
-		 *
-		 * First:
-		 * 		IDK how to solve
-		 *
-		 * Second:
-		 * 		Each room has "exits" and "neighbours". We just need to  check what planes we can see from this room and this pos + dir (camera)
-		 */
-		std::list<const RoomDef*> roomCandidates {};
-
-		for (const auto& sRoom : m_rooms)
-		{
-			if (sRoom.vBoundingBox.contains(m_camera.getPosition()))
-			{
-				roomCandidates.emplace_back(&sRoom);
-			}
-		}
-
-		if (roomCandidates.empty())
-			return;
-
-		roomCandidates.sort([](const RoomDef* a, const RoomDef* b) { return a->eLocation < b->eLocation; });
-
-		RoomDef::ELocation currentLocation = (*roomCandidates.begin())->eLocation;
-
-		for (const auto& sRoom : roomCandidates)
-		{
-			if (sRoom->eLocation != currentLocation)
-				continue;
-
-			m_cameraInRooms.emplace_back(sRoom);
-		}
-#endif
-	}
-
-	void SceneRenderWidget::beginDebugGroup(std::string_view groupName)
-	{
-#ifdef QT_DEBUG
-		QOpenGLContext::currentContext()->extraFunctions()->glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1, groupName.data());
-#endif
-	}
-
-	void SceneRenderWidget::endDebugGroup()
-	{
-#ifdef QT_DEBUG
-		QOpenGLContext::currentContext()->extraFunctions()->glPopDebugGroup();
-#endif
-	}
-
-	void RenderState::set(QOpenGLFunctions_3_3_Core* gapi, const gamelib::mat::MATRenderState &state)
-	{
-		if (state.isBlendEnabled() != bHasBlend)
-		{
-			bHasBlend = state.isBlendEnabled();
-
-			if (bHasBlend)
-			{
-				gapi->glEnable(GL_BLEND);
-
-				// Set blend mode based on your enum values
-				switch (eBlendMode)
-				{
-				case gamelib::mat::MATBlendMode::BM_TRANS:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-				case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-				case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					gapi->glEnable(GL_BLEND);
-					break;
-				default:
-					// Do nothing
-					break;
-				}
-			} else {
-				gapi->glDisable(GL_BLEND);
-			}
-		}
-
-		if (bHasAlphaTest != state.isAlphaTestEnabled())
-		{
-			bHasAlphaTest = state.isAlphaTestEnabled();
-
-			if (bHasAlphaTest) {
-				gapi->glEnable(GL_ALPHA_TEST);
-			} else {
-				gapi->glDisable(GL_ALPHA_TEST);
-			}
-		}
-
-		if (bHasFog != state.isFogEnabled())
-		{
-			bHasFog = state.isFogEnabled();
-
-			if (bHasFog) {
-				gapi->glEnable(GL_FOG);
-			} else {
-				gapi->glDisable(GL_FOG);
-			}
-		}
-
-		if (eCullMode != state.getCullMode())
-		{
-			eCullMode = state.getCullMode();
-
-			switch (eCullMode)
-			{
-				case gamelib::mat::MATCullMode::CM_OneSided:
-					gapi->glCullFace(GL_BACK);
-					break;
-				case gamelib::mat::MATCullMode::CM_DontCare:
-				case gamelib::mat::MATCullMode::CM_TwoSided:
-					// please complete
-					gapi->glDisable(GL_CULL_FACE);
-					break;
-			}
-		}
-	}
-
-	void RenderState::apply(QOpenGLFunctions_3_3_Core* gapi) const
-	{
-		if (bHasBlend)
-		{
-			gapi->glEnable(GL_BLEND);
-
-			// Set blend mode based on your enum values
-			switch (eBlendMode)
-			{
-				case gamelib::mat::MATBlendMode::BM_TRANS:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-				case gamelib::mat::MATBlendMode::BM_TRANS_ON_OPAQUE:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					break;
-				case gamelib::mat::MATBlendMode::BM_TRANSADD_ON_OPAQUE:
-					gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD_BEFORE_TRANS:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD_ON_OPAQUE:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case gamelib::mat::MATBlendMode::BM_ADD:
-					gapi->glBlendFunc(GL_ONE, GL_ONE);
-					gapi->glEnable(GL_BLEND);
-					break;
-				default:
-					// Do nothing
-					break;
-			}
-		} else {
-			gapi->glDisable(GL_BLEND);
-		}
-
-		// Enable or disable alpha testing
-		if (bHasAlphaTest) {
-			gapi->glEnable(GL_ALPHA_TEST);
-		} else {
-			gapi->glDisable(GL_ALPHA_TEST);
-		}
-
-		// Enable or disable fog
-		if (bHasFog) {
-			gapi->glEnable(GL_FOG);
-		} else {
-			gapi->glDisable(GL_FOG);
-		}
-
-#if 0
-			// Enable or disable depth offset (Z bias)
-			if (renderState.hasZBias()) {
-				gapi->glEnable(GL_POLYGON_OFFSET_FILL);
-				gapi->glPolygonOffset(2.0f, renderState.getZOffset());
-			} else {
-				gapi->glDisable(GL_POLYGON_OFFSET_FILL);
-			}
-#endif
-
-		// Set cull mode based on your enum values
-		switch (eCullMode)
-		{
-			case gamelib::mat::MATCullMode::CM_OneSided:
-				gapi->glCullFace(GL_BACK);
-				break;
-			case gamelib::mat::MATCullMode::CM_DontCare:
-			case gamelib::mat::MATCullMode::CM_TwoSided:
-				// please complete
-				gapi->glDisable(GL_CULL_FACE);
-				break;
-		}
+		qDebug() << "GPU: Shaders are ready";
 	}
 }
