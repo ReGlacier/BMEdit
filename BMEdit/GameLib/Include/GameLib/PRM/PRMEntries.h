@@ -17,6 +17,11 @@ namespace ZBio::ZBinaryReader
 	class BinaryReader;
 }
 
+namespace ZBio::ZBinaryWriter
+{
+	class BinaryWriter;
+}
+
 namespace gamelib::prm
 {
 	enum class VertexFormat : uint32_t {
@@ -113,5 +118,131 @@ namespace gamelib::prm
 		std::vector<Chunk> chunks;
 		std::vector<Model> models;
 	};
+
+	/// After 02.02.2025: More detailed & correct structures below
+	enum DRAW_DESTINATION {
+		eDD_RGB         = 1,
+		DD_BLOOM        = 2,
+		DD_ZBLUR        = 4,
+		DD_MIRROR       = 8,
+		DD_FIRSTPERSON  = 16
+	};
+
+	enum EPrimPackType : uint16_t
+	{
+		PTSTRIP = 0,
+		PTSTRIPBONES = 1,
+		PTSPRITES = 2,
+		// #3 MISSING
+		PACKTYPEBACKDROP = 4,
+		PTSTRIPBONESV = 5,
+		PTDOT3STRIP = 6,
+		PTOBJECTHEADER = 7,
+		PTMESH = 8,
+		// #9 MISSING
+		// #10 MISSING
+		PTWATERPATCH = 11,
+		PTLIGHT = 12,
+	};
+
+	struct STransformation {
+		using mat3 = float[9];
+		using vec3 = float[3];
+
+		mat3 mTransform { 1.f, 0.f, 0.f,
+		                  0.f, 1.f, 0.f,
+		                  0.f, 0.f, 1.f };
+		vec3 vTransform { 0.f, 0.f, 0.f };
+
+		static void deserialize(STransformation& transform, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+		static void serialize(const STransformation& transform, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+	};
+
+	struct SHandleTableEntry {
+		uint32_t lOffset;
+		uint32_t lSize;
+		uint32_t lRefCount;
+		uint32_t lPad;
+
+		static void deserialize(SHandleTableEntry& entry, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+		static void serialize(const SHandleTableEntry& entry, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+	};
+
+	struct SPrimHeader {
+		uint8_t  lDrawDestination;
+		uint8_t  lPackType;
+		uint16_t lType;
+
+		static void deserialize(SPrimHeader& prims, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+		static void serialize(const SPrimHeader& prims, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+	};
+
+	struct SPrims {
+		SPrimHeader header;
+		uint16_t lTextureId;
+		uint16_t lDrawEntryId;
+		int32_t  lNextPrim;
+
+		static void deserialize(SPrims& prims, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+		static void serialize(const SPrims& prims, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+	};
+
+	struct SPrimObjectHeader {
+		SPrims base;
+		int32_t  lPropertyFlags;
+		int32_t  lPropertyData;
+		int32_t  lNumObjects;
+		int32_t  lObjectTable;
+		int32_t  lColiId;
+		float    vMin[3];
+		float    vMax[3];
+		int32_t  lPlanes;
+
+		static void deserialize(SPrimObjectHeader& header, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+		static void serialize(const SPrimObjectHeader& header, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+	};
+
+	struct SPrimObject {
+		SPrims base;
+		uint8_t  lSubType;
+		uint8_t  lProperties;
+		uint8_t  lLODMask;
+		uint8_t  lVariantId;
+		uint8_t  lNumInstances;
+		uint8_t  lPad;
+		uint16_t lMaterialId;
+		int32_t  lColiBits;
+		int32_t  lWireColor;
+		int32_t  lDrawMode;
+		int32_t  lTransformations;
+		int32_t  lExtraData;
+
+		static void deserialize(SPrimObject& object, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+		static void serialize(const SPrimObject& object, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+	};
+
+	struct SPrimMesh {
+		SPrimObject object;
+		int32_t  lSubMeshTable;
+		int32_t  lNumFrames;
+		uint16_t lFrameStart;
+		uint16_t lFrameStep;
+		int32_t  lTrisPerStripColor;
+
+		static void deserialize(SPrimMesh& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+		static void serialize(const SPrimMesh& mesh, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+	};
+
+	struct SPrimHeaderStrip {
+		SPrimHeader header;
+		uint8_t  Plane0[16];
+		uint8_t  Plane1[16];
+		float    vMax[3];
+		float    vMin[3];
+
+		static void deserialize(SPrimHeaderStrip& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+		static void serialize(const SPrimHeaderStrip& mesh, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter);
+	};
+
 #pragma pack(pop)
 }

@@ -48,7 +48,7 @@ namespace gamelib
 
 				// TODO: Need to refactor and use former header for chunk buffer instead of cropping few bytes (will fix later)
 				// TODO: Need to use proper way to read bytes (endianness)
-				if (m_file.entries[i].size == 0x40 && *reinterpret_cast<std::uint32_t*>(chunk.data.get()) == 0x70100)
+				if (m_file.entries[i].size == 0x40 && *reinterpret_cast<std::uint32_t*>(chunk.data.get()) == 0x070100)
 				{
 					chunk.is_model = true;
 					chunk.model = static_cast<uint32_t>(m_file.models.size());
@@ -68,16 +68,18 @@ namespace gamelib
 				    static_cast<int64_t>(m_file.entries[model.chunk].size)
 				};
 
-				modelReader.seek(0x14);
+				gamelib::prm::SPrimObjectHeader modelHeader {};
+				gamelib::prm::SPrimObjectHeader::deserialize(modelHeader, &modelReader);
+
 				uint32_t meshCount = 0, meshTable = 0;
 
-				meshCount = modelReader.read<uint32_t, ZBio::Endianness::LE>(); // 0x14 -> 0x18
-				meshTable = modelReader.read<uint32_t, ZBio::Endianness::LE>(); // 0x18 -> 0x1C
+				meshCount = modelHeader.lNumObjects;
+				meshTable = modelHeader.lObjectTable;
 
-				// Read bbox
-				ZBioHelpers::seekBy(&modelReader, 0x4);
-
-				prm::BoundingBox::deserialize(model.boundingBox, &modelReader);
+				model.boundingBox = prm::BoundingBox(
+				    glm::vec3(modelHeader.vMin[0], modelHeader.vMin[1], modelHeader.vMin[2]),
+				    glm::vec3(modelHeader.vMax[0], modelHeader.vMax[1], modelHeader.vMax[2])
+				);
 
 				// Read mesh table
 				ZBio::ZBinaryReader::BinaryReader meshTableReader {
