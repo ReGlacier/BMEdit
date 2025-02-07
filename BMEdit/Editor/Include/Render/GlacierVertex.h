@@ -11,7 +11,7 @@ namespace render
 	{
 		glm::vec3 vPos {};
 		glm::vec2 vUV {};
-		uint32_t  iTexIndex { 0u };
+		uint32_t  iMaterialId { 0u };
 	};
 
 	struct SimpleVertex

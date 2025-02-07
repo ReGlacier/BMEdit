@@ -275,14 +275,14 @@ namespace gamelib::prm
 	{
 		prims.lDrawDestination = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
 		prims.lPackType = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
-		prims.lType = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
+		prims.Type.lType = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 	}
 
 	void SPrimHeader::serialize(const SPrimHeader& prims, ZBio::ZBinaryWriter::BinaryWriter* binaryWriter)
 	{
 		binaryWriter->write<uint8_t, ZBio::Endianness::LE>(prims.lDrawDestination);
 		binaryWriter->write<uint8_t, ZBio::Endianness::LE>(prims.lPackType);
-		binaryWriter->write<uint16_t, ZBio::Endianness::LE>(prims.lType);
+		binaryWriter->write<uint16_t, ZBio::Endianness::LE>(prims.Type.lType);
 	}
 
 	void SPrims::deserialize(SPrims& prims, ZBio::ZBinaryReader::BinaryReader* binaryReader)

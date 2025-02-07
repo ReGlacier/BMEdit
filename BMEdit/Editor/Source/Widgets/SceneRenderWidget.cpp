@@ -218,6 +218,14 @@ namespace widgets
 		uint32_t MainGeometryVertexCapacity = 400'000;
 		uint32_t MainGeometryIndexCapacity = 400'000;
 
+		// Materials
+		struct ObjectMaterialDescription {
+			uint32_t Textures[12] { 0 };    // Textures: 0 - usage mask, other - textures
+			glm::vec4 ZBiasOffset { 0.f };  // ZBias & Offset from material
+		};
+
+		QVector<ObjectMaterialDescription> Materials {};
+
 		// Transforms
 		struct ObjectTransformDescription {
 			glm::mat4 Matrix    {  1.f };  /// CPU: Write  GPU: Read
@@ -233,6 +241,7 @@ namespace widgets
 		uint32_t SSBOMaxCapacity = 0;
 		GLuint TransformSSBO = 0;
 		GLuint TexturesSSBO = 0;
+		GLuint MaterialsSSBO = 0;
 
 		// Indirect renderer
 		// Indirect buffer contains all draw commands but executed only by DrawGroup's
@@ -579,22 +588,36 @@ namespace widgets
 		// Impl
 		if (m_pContext)
 		{
-			if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(sceneObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end())
-			{
-				const glm::mat4 mWorld = sceneObject->getWorldTransform();
-				m_pContext->Transforms[*objectToIndexIt].Matrix = mWorld;
+			// Here we need to re-compute sub-tree. In theory, we need to limit us, but actually no, let's compute all subtree
+			using VR = gamelib::scene::SceneObject::EVisitResult;
+			bool bDirty = false;
 
-				const auto primId = GetSceneObjectPrimitiveID(m_pLevel, sceneObject);
-				if (primId)
+			sceneObject->visitChildren([this, &bDirty](const gamelib::scene::SceneObject::Ptr& pObj) -> VR {
+				if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(pObj.get()); objectToIndexIt != m_pContext->ObjectToTransformIndex.end())
 				{
-					// Update world bounding boxes
-					const auto worldBBox = gamelib::BoundingBox::toWorld(m_pContext->BoundingBoxes[primId], mWorld);
-					m_pContext->WorldBoundingBoxes[*objectToIndexIt] = worldBBox;
-					m_pContext->Transforms[*objectToIndexIt].BoundsMin = glm::vec4(worldBBox.min, 1.f);
-					m_pContext->Transforms[*objectToIndexIt].BoundsMax = glm::vec4(worldBBox.max, 1.f);
+					const glm::mat4 mWorld = pObj->getWorldTransform();
+					m_pContext->Transforms[*objectToIndexIt].Matrix = mWorld;
+
+					const auto primId = GetSceneObjectPrimitiveID(m_pLevel, pObj.get());
+					if (primId)
+					{
+						// Update world bounding boxes
+						const auto worldBBox = gamelib::BoundingBox::toWorld(m_pContext->BoundingBoxes[primId], mWorld);
+						m_pContext->WorldBoundingBoxes[*objectToIndexIt] = worldBBox;
+						m_pContext->Transforms[*objectToIndexIt].BoundsMin = glm::vec4(worldBBox.min, 1.f);
+						m_pContext->Transforms[*objectToIndexIt].BoundsMax = glm::vec4(worldBBox.max, 1.f);
+					}
+
+					bDirty = true; // NOTE: Maybe we should upload only part?
 				}
 
-				m_bTransformsDirty = true; // NOTE: Maybe we should upload only part?
+				return VR::VR_CONTINUE;
+			});
+
+			if (bDirty)
+			{
+				m_bTransformsDirty = true;
+				repaint();
 			}
 		}
 	}
@@ -887,83 +910,6 @@ namespace widgets
 		QList<RenderEntity> aTransparentObjects {};
 		int iAcceptedEntries = 0;
 
-#if 0
-		if (!m_pLevel->getSceneObjects().empty())
-		{
-			auto DrawVisitor = [this, &aNonTransparentObjects, &aTransparentObjects, &iAcceptedEntries](const gamelib::scene::SceneObject::Ptr& Object) -> gamelib::scene::SceneObject::EVisitResult {
-				using VR = gamelib::scene::SceneObject::EVisitResult;
-
-				const bool bInvisible = Object->getProperties().getObject<bool>("Invisible", false);
-				const auto vPosition  = Object->getPosition();
-				auto primId = GetSceneObjectPrimitiveID(m_pLevel, Object);
-
-				if (const auto& n = Object->getType()->getName(); n == "ZSHADOWMESHOBJ" || n == "ZBOUND" || n == "ZLIGHT" || n == "ZENVIRONMENT" || n == "ZOMNILIGHT" || n == "ZSPOTLIGHT" || n == "ZSPOTLIGHTSQUARE")
-				{
-					// Do not draw us & our children
-					return VR::VR_NEXT;
-				}
-
-				if (!m_bIgnoreVisibility)
-				{
-					if (bInvisible)
-					{
-						return VR::VR_NEXT;
-					}
-				}
-
-				// Is it drawable?
-				if (!primId)
-				{
-					return VR::VR_CONTINUE;
-				}
-
-				// Check that our 'object' is not a collision box
-				if (IsObjectACollisionArea(Object))
-				{
-					return VR::VR_NEXT; // Do not render collision meshes
-				}
-
-				// Check is it visible
-				const auto transformIndex = m_pContext->ObjectToTransformIndex[Object.get()];
-				gamelib::BoundingBox worldBoundingBox = m_pContext->WorldBoundingBoxes[transformIndex].AsBounds();
-
-				if (!m_camera.canSeeObject(worldBoundingBox))
-				{
-					// Not in view
-					return VR::VR_NEXT;
-				}
-
-				// Here we need to store all MESHES, not MODELS
-				const auto meshesCount = m_pContext->ModelToMeshesCount[primId];
-
-				for (int32_t i = 0; i < meshesCount; i++)
-				{
-					if (auto it = m_pContext->Meshes.find(ENCODE_MESH_IDX(primId, i)); it != m_pContext->Meshes.end())
-					{
-						const bool bIsTransparent = it->renderState.isBlendEnabled();
-						QList<RenderEntity>& toInsert = bIsTransparent ? aTransparentObjects : aNonTransparentObjects;
-
-						RenderEntity& renderEntity    = toInsert.emplace_back();
-						renderEntity.bIsTransparent   = bIsTransparent;
-						renderEntity.startIndex       = it->indexOffset;
-						renderEntity.indicesCount     = it->indexCount;
-						renderEntity.transformIndex   = transformIndex;
-
-						// It's really weird, but at this point I don't know actual position of this mesh in the world.
-						// Anyway, world bounding box is still good point to understand relative to camera position.
-						renderEntity.position = worldBoundingBox.getCenter();
-
-						++iAcceptedEntries;
-					}
-				}
-
-				return VR::VR_CONTINUE;
-			};
-
-			m_pLevel->getSceneObjects()[0]->visitChildren(DrawVisitor);
-		}
-#endif
-
 		m_pCommon->GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_pContext->TransformSSBO);
 		auto* ptr = reinterpret_cast<RenderContext::ObjectTransformDescription*>(m_pCommon->GL->glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY));
 		if (ptr)
@@ -1095,8 +1041,9 @@ namespace widgets
 		m_pContext->GL->glBindVertexArray(m_pContext->MainGeometryVAO);
 
 		// Enable SSBO
-		m_pContext->GL->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_pContext->TransformSSBO); // Store transforms at #0 slot
-		m_pContext->GL->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_pContext->TexturesSSBO);  // Store textures at #1 slot
+		m_pContext->GL->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_pContext->TransformSSBO);  // Store transforms at #0 slot
+		m_pContext->GL->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_pContext->TexturesSSBO);   // Store textures at #1 slot
+		m_pContext->GL->glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, m_pContext->MaterialsSSBO);  // Store material at #2 slot
 
 		// Upload camera data
 		m_pCommon->DefaultShader->setUniformValue(static_cast<GLint>(m_pCommon->DefaultShaderUniformLocations[RenderCommon::EUniformID::U_CAMERA_PROJ_VIEW]),
@@ -1159,6 +1106,9 @@ namespace widgets
 		GL->glDeleteBuffers(1, &TexturesSSBO);
 		TexturesSSBO = 0;
 
+		GL->glDeleteBuffers(1, &MaterialsSSBO);
+		MaterialsSSBO = 0;
+
 		GL->glDeleteBuffers(1, &IndirectDrawBuffer);
 		IndirectDrawBuffer=  0;
 
@@ -1209,6 +1159,12 @@ namespace widgets
 		GL->glGenBuffers(1, &TexturesSSBO);
 		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, TexturesSSBO);
 		GL->glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(SSBOMaxCapacity * sizeof(uint64_t)), nullptr, GL_DYNAMIC_DRAW);
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+		// Materials SSBO
+		GL->glGenBuffers(1, &MaterialsSSBO);
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, MaterialsSSBO);
+		GL->glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(SSBOMaxCapacity * sizeof(ObjectMaterialDescription)), nullptr, GL_DYNAMIC_DRAW);
 		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 		// Indirect renderer
@@ -1311,6 +1267,129 @@ namespace widgets
 		GL->glBindBuffer(GL_ARRAY_BUFFER, MainGeometryVBO);
 		GL->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, MainGeometryEBO);
 
+		// Clear materials too
+		Materials.clear();
+
+		// First of all we need to upload known material instances & fill our cache
+		auto getSlotIndexByName = [](const std::string& texName) -> int32_t
+		{
+			if (texName == "mapDiffuse") return 1;
+			if (texName == "mapDiffuseMask") return 2;
+			if (texName == "mapNormal") return 3;
+			if (texName == "mapNormalDetail") return 4;
+			if (texName == "mapParallax") return 5;
+			if (texName == "mapSpecularMask") return 6;
+			if (texName == "mapEnvironment") return 7;
+			if (texName == "mapReflectionMask") return 8;
+			if (texName == "mapReflectionFallOff") return 9;
+			if (texName == "mapIllumination") return 10;
+
+			return -1;
+		};
+
+		auto getMaterialClassId = [this](const gamelib::mat::MATInstance& instance) -> uint16_t
+		{
+			/*
+			 	[0] = {gamelib::mat::MATClass} {m_name="Sprites", m_parentClass="Sprites", m_properties={ size=7 }, ...}
+				[1] = {gamelib::mat::MATClass} {m_name="StaticShadow", m_parentClass="StaticShadow", m_properties={ size=2 }, ...}
+				[2] = {gamelib::mat::MATClass} {m_name="StaticShadowTextureShadow", m_parentClass="StaticShadow", m_properties={ size=2 }, ...}
+				[3] = {gamelib::mat::MATClass} {m_name="Glow", m_parentClass="Standard", m_properties={ size=5 }, ...}
+				[4] = {gamelib::mat::MATClass} {m_name="Standard", m_parentClass="Standard", m_properties={ size=5 }, ...}
+				[5] = {gamelib::mat::MATClass} {m_name="SkinCloth", m_parentClass="Standard", m_properties={ size=5 }, ...}
+				[6] = {gamelib::mat::MATClass} {m_name="Glass", m_parentClass="Standard", m_properties={ size=4 }, ...}
+				[7] = {gamelib::mat::MATClass} {m_name="Bad", m_parentClass="Old", m_properties={ size=5 }, ...}
+				[8] = {gamelib::mat::MATClass} {m_name="ScatterMaterial", m_parentClass="ScatterMaterial", m_properties={ size=2 }, ...}
+			 */
+			constexpr int SpritesId                = 0;
+			constexpr int StaticShadow              = 1;
+			constexpr int StaticShadowTextureShadow = 2;
+			constexpr int Glow                      = 3;
+			constexpr int Standard                  = 4;
+			constexpr int SkinCloth                 = 5;
+			constexpr int Glass                     = 6;
+			constexpr int Bad                       = 7;
+			constexpr int ScatterMaterial           = 8;
+
+			if (instance.getParentName() == "Sprites" || instance.getName() == "Sprites") return SpritesId;
+			if (instance.getParentName() == "StaticShadow" || instance.getName() == "StaticShadow") return StaticShadow;
+			if (instance.getParentName() == "StaticShadowTextureShadow" || instance.getName() == "StaticShadowTextureShadow") return StaticShadowTextureShadow;
+			if (instance.getParentName() == "Glow" || instance.getName() == "Glow") return Glow;
+			if (instance.getParentName() == "Standard" || instance.getName() == "Standard") return Standard;
+			if (instance.getParentName() == "SkinCloth" || instance.getName() == "SkinCloth") return SkinCloth;
+			if (instance.getParentName() == "Glass" || instance.getName() == "Glass") return Glass;
+			if (instance.getParentName() == "Bad" || instance.getName() == "Bad") return Bad;
+			if (instance.getParentName() == "ScatterMaterial" || instance.getName() == "ScatterMaterial") return ScatterMaterial;
+
+			return SpritesId;
+		};
+
+		for (const auto& materialInstanceDesc : Level->getLevelMaterials()->materialInstances)
+		{
+			auto& materialInstance = Materials.emplace_back();
+
+			materialInstance.ZBiasOffset.z = static_cast<float>(static_cast<uint32_t>(getMaterialClassId(materialInstanceDesc)));
+
+			for (const auto& binder : materialInstanceDesc.getBinders())
+			{
+				if (!binder.renderStates.empty())
+				{
+					materialInstance.ZBiasOffset.x = binder.renderStates[0].hasZBias() ? 1.f : 0.f;
+					materialInstance.ZBiasOffset.y = binder.renderStates[0].getZOffset();
+				}
+
+				if (!binder.textures.empty())
+				{
+					// Fill
+					for (const auto& texture : binder.textures)
+					{
+						int32_t slotIndex = getSlotIndexByName(texture.getName());
+						if (slotIndex == -1)
+							continue;
+
+						uint32_t textureId = 0;
+
+						switch (texture.getPresentedTextureSources())
+						{
+							case gamelib::mat::PresentedTextureSource::PTS_NOTHING:
+								break;  // Nothing
+
+							case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID:
+							{
+								// Only texture id
+								if (auto it = GlacierTextureIndexToResidentialTextureHandle.find(texture.getTextureId()); it != GlacierTextureIndexToResidentialTextureHandle.end())
+								{
+								    textureId = (*it) + 1;
+									break;
+								}
+							}
+							break;
+
+							case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH:
+							{
+								// Only path
+								if (auto it = NamedResidentialTextures.find(QString::fromStdString(texture.getTexturePath())); it != NamedResidentialTextures.end())
+								{
+								    textureId = (*it) + 1;
+									break;
+								}
+							}
+							break;
+
+							default: break;
+						}
+
+						if (textureId)
+						{
+							materialInstance.Textures[0] = materialInstance.Textures[0] | (static_cast<int>(texture.isEnabled()) << slotIndex); // USED
+							materialInstance.Textures[slotIndex] = textureId - 1;   // HERE
+						}
+					}
+
+					break;
+				}
+			}
+		}
+
 		// Global vertices & indices pool
 		QVector<render::GlacierVertex> aVertices {};
 		QVector<uint32_t> aIndices {};
@@ -1360,7 +1439,7 @@ namespace widgets
 				}
 
 				// Detect mesh texture
-				uint32_t meshTexture = 0u;
+				uint32_t meshMaterialIndex = 0u;
 				bool bTextureResolved = false;
 
 				const auto meshMaterialId = mesh.material_id;
@@ -1370,12 +1449,10 @@ namespace widgets
 
 				if (meshMaterialId > 0)
 				{
-					// It has own material
-					// Use material (for meshes)
-					// First of all we need to know that 'shadows' and other things must be filtered here
+					meshMaterialIndex = mesh.material_id - 1;
+
 					const auto& instances = Level->getLevelMaterials()->materialInstances;
-					const auto& classes = Level->getLevelMaterials()->materialClasses;
-					const auto& matInstance = instances[mesh.material_id - 1];
+					const auto& matInstance = instances[meshMaterialIndex];
 
 					// Store material based data
 					{
@@ -1398,59 +1475,8 @@ namespace widgets
 						}
 					}
 
-					// Here we need to find 'color' texture. In most cases we able to use matDiffuse as color texture
-					for (const auto& binder : matInstance.getBinders())
-					{
-						if (bTextureResolved)
-							break;
-
-						for (const auto& texture : binder.textures)
-						{
-							if (bTextureResolved)
-								break;
-
-							switch (texture.getPresentedTextureSources())
-							{
-								case gamelib::mat::PresentedTextureSource::PTS_NOTHING:
-									break;  // Nothing
-
-								case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_ID:
-								{
-									// Only texture id
-								    if (auto it = GlacierTextureIndexToResidentialTextureHandle.find(texture.getTextureId()); it != GlacierTextureIndexToResidentialTextureHandle.end())
-									{
-									    meshTexture = (*it) + 1;
-										bTextureResolved = true;
-										break;
-									}
-
-									qWarning() << "Material refs to texture " << texture.getTextureId() << " but it's not found in cache!";
-								}
-								break;
-
-								case gamelib::mat::PresentedTextureSource::PTS_TEXTURE_PATH:
-								{
-									// Only path
-									if (auto it = NamedResidentialTextures.find(QString::fromStdString(texture.getTexturePath())); it != NamedResidentialTextures.end())
-									{
-									    meshTexture = (*it) + 1;
-										bTextureResolved = true;
-										break;
-									}
-
-									qWarning() << "Material refs to texture by path " << QString::fromStdString(texture.getTexturePath()) << " but it's not found in cache!";
-								}
-								break;
-
-								default:
-								{
-									// Bad case! Undefined behaviour!
-									Q_ASSERT_X(false, __FILE__, "Impossible case!");
-									break;
-								}
-							}
-						}
-					}
+					// Always true since now
+					bTextureResolved = true;
 				}
 
 				if (!bTextureResolved && meshTextureId > 0)
@@ -1459,7 +1485,11 @@ namespace widgets
 					// Use texture here (for sprites). Need to find that texture in loaded textures list
 					if (auto it = GlacierTextureIndexToResidentialTextureHandle.find(mesh.textureId); it != GlacierTextureIndexToResidentialTextureHandle.end())
 					{
-						meshTexture = (*it) + 1;
+						auto& autoMaterial = Materials.emplace_back();
+						autoMaterial.Textures[0] = 2; // bit #0 unused
+						autoMaterial.Textures[1] = (*it); // Use as tex0
+						meshMaterialIndex = static_cast<uint32_t>(Materials.size() - 1);
+
 						bTextureResolved = true;
 					}
 					else
@@ -1493,7 +1523,7 @@ namespace widgets
 				{
 					auto& vertex = aVertices.emplace_back();
 					vertex.vPos = mesh.vertices[i];
-					vertex.iTexIndex = meshTexture;
+					vertex.iMaterialId = bTextureResolved ? meshMaterialIndex + 1 : 0;
 
 					if (mesh.uvs.empty())
 					{
@@ -1564,6 +1594,11 @@ namespace widgets
 		GL->glBindVertexArray(0);
 		GL->glBindBuffer(GL_ARRAY_BUFFER, 0);
 		GL->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		// Upload materials data
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, MaterialsSSBO);
+		GL->glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, static_cast<GLsizeiptr>(sizeof(ObjectMaterialDescription) * Materials.size()), Materials.data());
+		GL->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
 		return true;
 	}

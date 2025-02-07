@@ -48,6 +48,8 @@ namespace gamelib
 
 				// TODO: Need to refactor and use former header for chunk buffer instead of cropping few bytes (will fix later)
 				// TODO: Need to use proper way to read bytes (endianness)
+				auto header = reinterpret_cast<prm::SPrimHeader*>(chunk.data.get());
+
 				if (m_file.entries[i].size == 0x40 && *reinterpret_cast<std::uint32_t*>(chunk.data.get()) == 0x070100)
 				{
 					chunk.is_model = true;
