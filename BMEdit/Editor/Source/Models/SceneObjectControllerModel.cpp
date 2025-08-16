@@ -13,7 +13,8 @@ static const std::string kScriptNamePN = "ScriptName";
 SceneObjectControllerModel::SceneObjectControllerModel(QObject *parent)
 	: ValueModelBase(parent)
 {
-	connect(this, &ValueModelBase::valueChanged, [this]() { onValueChanged(); });
+	connect(this, &ValueModelBase::valueChanged, [this](const QString& propertyName) { onValueChanged(); });
+	connect(this, &ValueModelBase::rebuild, [this]() { onValueChanged(); });
 }
 
 void SceneObjectControllerModel::setGeom(gamelib::scene::SceneObject *geom)

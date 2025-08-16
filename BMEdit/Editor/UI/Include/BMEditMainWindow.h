@@ -85,7 +85,7 @@ public slots:
 	void onContextMenuRequestedForSceneTreeNode(const QPoint& point);
 	void onLevelAssetsLoaded();
 	void onLevelAssetsLoadFailed(const QString& reason);
-	void onSceneObjectPropertyChanged(const gamelib::scene::SceneObject* geom);
+	void onSceneObjectPropertyChanged(const QString &propertyName, const gamelib::scene::SceneObject *geom);
 	void onTextureChanged(uint32_t textureIndex);
 
 protected:

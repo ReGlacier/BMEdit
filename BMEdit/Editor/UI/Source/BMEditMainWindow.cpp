@@ -597,9 +597,9 @@ void BMEditMainWindow::onLevelAssetsLoadFailed(const QString& reason)
 	QMessageBox::critical(this, QString("Scene render failed :("), QString("An error occurred while loading scene assets:\n%1").arg(reason));
 }
 
-void BMEditMainWindow::onSceneObjectPropertyChanged(const gamelib::scene::SceneObject* geom)
+void BMEditMainWindow::onSceneObjectPropertyChanged(const QString& propertyName, const gamelib::scene::SceneObject* geom)
 {
-	ui->sceneGLView->onObjectMoved(const_cast<gamelib::scene::SceneObject*>(geom));
+	ui->sceneGLView->onObjectMoved(propertyName, const_cast<gamelib::scene::SceneObject *>(geom));
 }
 
 void BMEditMainWindow::onTextureChanged(uint32_t textureIndex)

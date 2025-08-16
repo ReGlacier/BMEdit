@@ -4,7 +4,7 @@
 
 namespace render
 {
-        bool GizmoRenderer::setup(QOpenGLFunctions_3_3_Core* gapi)
+        bool GizmoRenderer::setup(GLFunctions* gapi)
         {
                 if (!gapi) return false;
 
@@ -72,7 +72,7 @@ namespace render
                         addLine(p[edges[i]], p[edges[i+1]], glm::vec4(color.r, color.g, color.b, 1.0f));
         }
 
-        void GizmoRenderer::render(QOpenGLFunctions_3_3_Core* gapi, QOpenGLShaderProgram* shader, GLint cameraProjViewLoc, const glm::mat4& projView)
+        void GizmoRenderer::render(GLFunctions* gapi, QOpenGLShaderProgram *shader, GLint cameraProjViewLoc, const glm::mat4 &projView)
         {
                 if (!gapi || !shader) return;
                 shader->bind();

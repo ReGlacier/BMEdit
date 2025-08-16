@@ -69,7 +69,7 @@ namespace widgets
 		void onRedrawRequested();
 
 		// Use when object properties changed and his 'world transform' could be changed.
-		void onObjectMoved(gamelib::scene::SceneObject* sceneObject);
+		void onObjectMoved(const QString &propertyName, gamelib::scene::SceneObject *sceneObject);
 
 	protected:
 		void initializeGL() override;
@@ -114,10 +114,10 @@ namespace widgets
 		bool m_bFirstMouseQuery { true };
 		bool m_bRenderPortals { false }; // Should we render portals between rooms (debug view)
 		bool m_bRenderRoomBoundingBox { false }; // Should we render room bounding box (of all rooms)
-                bool m_bRenderListDirty { false };
-                bool m_bIgnoreVisibility { false };
-                bool m_bTransformsDirty { false };
+		bool m_bRenderListDirty { false };
+		bool m_bIgnoreVisibility { false };
+		bool m_bTransformsDirty { false };
 
-                render::GizmoRenderer m_gizmo;
+		render::GizmoRenderer m_gizmo;
         };
 }

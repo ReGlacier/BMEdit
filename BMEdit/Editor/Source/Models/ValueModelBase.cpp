@@ -79,7 +79,9 @@ bool ValueModelBase::setData(const QModelIndex &index, const QVariant &value, in
 				m_value.value().getInstructions()[i] = val.instructions[i - off];
 			}
 
-			emit valueChanged();
+			auto name = m_value.value().getEntries()[index.row()].name;
+
+			emit valueChanged(QString::fromStdString(name));
 
 			return true;
 		}
@@ -126,7 +128,7 @@ void ValueModelBase::setValue(const gamelib::Value &value)
 	m_value = value;
 	endResetModel();
 
-	emit valueChanged();
+	emit rebuild();
 }
 
 void ValueModelBase::resetValue()
@@ -135,7 +137,7 @@ void ValueModelBase::resetValue()
 	m_value = std::nullopt;
 	endResetModel();
 
-	emit valueChanged();
+	emit rebuild();
 }
 
 const std::optional<gamelib::Value> &ValueModelBase::getValue() const

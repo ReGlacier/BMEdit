@@ -7,17 +7,18 @@
 #include <glm/mat4x4.hpp>
 #include <vector>
 #include <GameLib/BoundingBox.h>
+#include <Render/GL.h>
 
 namespace render
 {
         class GizmoRenderer
         {
         public:
-                bool setup(QOpenGLFunctions_3_3_Core* gapi);
+                bool setup(GLFunctions *gapi);
                 void clear();
                 void addLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color);
                 void addAABB(const gamelib::BoundingBox& box, const glm::vec4& color);
-                void render(QOpenGLFunctions_3_3_Core* gapi, QOpenGLShaderProgram* shader, GLint cameraProjViewLoc, const glm::mat4& projView);
+                void render(GLFunctions *gapi, QOpenGLShaderProgram *shader, GLint cameraProjViewLoc, const glm::mat4 &projView);
 
         private:
                 struct Vertex

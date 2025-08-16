@@ -1,8 +1,8 @@
 #include <Widgets/SceneRenderWidget.h>
 #include <Editor/TextureProcessor.h>
+#include <Render/GL.h>
 
 #include <QOpenGLVersionFunctionsFactory>
-#include <QOpenGLFunctions_4_5_Core>
 #include <QOpenGLShaderProgram>
 #include <QSharedPointer>
 #include <QOpenGLContext>
@@ -128,22 +128,20 @@ namespace widgets
 		return true;
 	}
 
-	using GLFunctions = QOpenGLFunctions_4_5_Core;
-
 #define ENCODE_MESH_IDX(modelId, meshId) ((static_cast<uint64_t>(modelId) << 32) | static_cast<uint64_t>(meshId))
 #define DECODE_MODEL_ID(encoded) (static_cast<uint32_t>((encoded) >> 32))
 #define DECODE_MESH_ID(encoded) (static_cast<uint32_t>((encoded) & 0xFFFFFFFF))
 
-        struct MeshInfo
-        {
-                uint32_t indexOffset = 0;
-                uint32_t indexCount = 0;
-                uint8_t variationId = 0;
-                gamelib::mat::MATRenderState renderState {
-                    "GENERATED",
-                    true,
-                    true,
-                    true,
+	struct MeshInfo
+	{
+			uint32_t indexOffset = 0;
+			uint32_t indexCount = 0;
+			uint8_t variationId = 0;
+			gamelib::mat::MATRenderState renderState {
+				"GENERATED",
+				true,
+				true,
+				true,
 		    true,
 		    false,
 		    1.0f,
@@ -233,8 +231,8 @@ namespace widgets
 			glm::mat4 Matrix    {  1.f };  /// CPU: Write  GPU: Read
 			glm::vec4 BoundsMin { -1.f };  /// CPU: Write  GPU: Read
 			glm::vec4 BoundsMax {  1.f };  /// CPU: Write  GPU: Read
-                        glm::vec4 Status    {  0.f };  /// CPU: ReadWrite GPU: Write | X - Is Visible (GPU), Y - PrimitiveID (CPU), Z - Mesh VariantId, W - unused
-                };
+			glm::vec4 Status    {  0.f };  /// CPU: ReadWrite GPU: Write | X - Is Visible (GPU), Y - PrimitiveID (CPU), Z - Mesh VariantId, W - unused
+	};
 
 		QVector<ObjectTransformDescription> Transforms; // Linear memory chunk to store all transforms directly. There are will be copied to GPU SSBO
 		QVector<BoundingBoxDef> WorldBoundingBoxes; // A cached world space bounding boxes. Indexing same to Transforms
@@ -254,6 +252,8 @@ namespace widgets
 		uint32_t IndirectDrawNonTransparentCommandsCount = 0;
 		std::ptrdiff_t IndirectDrawTransparentCommands = 0;
 		uint32_t IndirectDrawTransparentCommandsCount = 0;
+
+		void FillTransformForSceneObject(gamelib::scene::SceneObject *sceneObj, ObjectTransformDescription &transformDesc, BoundingBoxDef &bbox);
 	};
 
 	struct SceneRenderWidget::RenderCommon
@@ -588,41 +588,61 @@ namespace widgets
 			repaint();
 	}
 
-	void SceneRenderWidget::onObjectMoved(gamelib::scene::SceneObject *sceneObject)
+	void SceneRenderWidget::onObjectMoved(const QString& propertyName, gamelib::scene::SceneObject *sceneObject)
 	{
 		// Impl
 		if (m_pContext)
 		{
-			// Here we need to re-compute sub-tree. In theory, we need to limit us, but actually no, let's compute all subtree
-			using VR = gamelib::scene::SceneObject::EVisitResult;
-			bool bDirty = false;
+			if (propertyName == "Position" || propertyName == "Matrix")
+			{
+				// Here we need to re-compute sub-tree. In theory, we need to limit us, but actually no, let's compute all subtree
+				using VR = gamelib::scene::SceneObject::EVisitResult;
+				bool bDirty = false;
 
-			sceneObject->visitChildren([this, &bDirty](const gamelib::scene::SceneObject::Ptr& pObj) -> VR {
-				if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(pObj.get()); objectToIndexIt != m_pContext->ObjectToTransformIndex.end())
-				{
-					const glm::mat4 mWorld = pObj->getWorldTransform();
-					m_pContext->Transforms[*objectToIndexIt].Matrix = mWorld;
+				sceneObject->visitChildren([this, &bDirty](const gamelib::scene::SceneObject::Ptr &pObj) -> VR {
+					if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(pObj.get()); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) {
+						const glm::mat4 mWorld = pObj->getWorldTransform();
+						m_pContext->Transforms[*objectToIndexIt].Matrix = mWorld;
 
-					const auto primId = GetSceneObjectPrimitiveID(m_pLevel, pObj.get());
-					if (primId)
-					{
-						// Update world bounding boxes
-						const auto worldBBox = gamelib::BoundingBox::toWorld(m_pContext->BoundingBoxes[primId], mWorld);
-						m_pContext->WorldBoundingBoxes[*objectToIndexIt] = worldBBox;
-						m_pContext->Transforms[*objectToIndexIt].BoundsMin = glm::vec4(worldBBox.min, 1.f);
-						m_pContext->Transforms[*objectToIndexIt].BoundsMax = glm::vec4(worldBBox.max, 1.f);
+						const auto primId = GetSceneObjectPrimitiveID(m_pLevel, pObj.get());
+						if (primId) {
+							// Update world bounding boxes
+							const auto worldBBox = gamelib::BoundingBox::toWorld(m_pContext->BoundingBoxes[primId], mWorld);
+							m_pContext->WorldBoundingBoxes[*objectToIndexIt] = worldBBox;
+							m_pContext->Transforms[*objectToIndexIt].BoundsMin = glm::vec4(worldBBox.min, 1.f);
+							m_pContext->Transforms[*objectToIndexIt].BoundsMax = glm::vec4(worldBBox.max, 1.f);
+						}
+
+						bDirty = true;// NOTE: Maybe we should upload only part?
 					}
 
-					bDirty = true; // NOTE: Maybe we should upload only part?
+					return VR::VR_CONTINUE;
+				});
+
+				if (bDirty) {
+					m_bTransformsDirty = true;
+					repaint();
+				}
+			}
+
+			if (propertyName == "PrimId" || propertyName == "MeshVariantId")
+			{
+				bool bDirty = false;
+
+				if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(sceneObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
+				{
+					BoundingBoxDef bbox{};
+					m_pContext->FillTransformForSceneObject(sceneObject, m_pContext->Transforms[*objectToIndexIt], bbox);
+					m_pContext->WorldBoundingBoxes[*objectToIndexIt] = bbox;
+
+					bDirty = true;
 				}
 
-				return VR::VR_CONTINUE;
-			});
-
-			if (bDirty)
-			{
-				m_bTransformsDirty = true;
-				repaint();
+				if (bDirty) 
+				{
+					m_bTransformsDirty = m_bRenderListDirty = true;
+					repaint();
+				}
 			}
 		}
 	}
@@ -930,33 +950,33 @@ namespace widgets
 				}
 
 				// Here we need to store all MESHES, not MODELS
-                                auto primId = static_cast<int32_t>(objectDescription.Status.y);
-                                const auto meshesCount = m_pContext->ModelToMeshesCount[primId];
-                                const int32_t variation = static_cast<int32_t>(objectDescription.Status.z);
+				auto primId = static_cast<int32_t>(objectDescription.Status.y);
+				const auto meshesCount = m_pContext->ModelToMeshesCount[primId];
+				const int32_t variation = static_cast<int32_t>(objectDescription.Status.z);
 
-                                for (int32_t j = 0; j < meshesCount; j++)
-                                {
-                                        if (auto it = m_pContext->Meshes.find(ENCODE_MESH_IDX(primId, j)); it != m_pContext->Meshes.end())
-                                        {
-                                                if (it->variationId != variation)
-                                                        continue;
+				for (int32_t j = 0; j < meshesCount; j++)
+				{
+						if (auto it = m_pContext->Meshes.find(ENCODE_MESH_IDX(primId, j)); it != m_pContext->Meshes.end())
+						{
+								if (it->variationId != variation)
+										continue;
 
-                                                const bool bIsTransparent = it->renderState.isBlendEnabled();
-                                                QList<RenderEntity>& toInsert = bIsTransparent ? aTransparentObjects : aNonTransparentObjects;
+								const bool bIsTransparent = it->renderState.isBlendEnabled();
+								QList<RenderEntity>& toInsert = bIsTransparent ? aTransparentObjects : aNonTransparentObjects;
 
-                                                RenderEntity& renderEntity    = toInsert.emplace_back();
-                                                renderEntity.bIsTransparent   = bIsTransparent;
-                                                renderEntity.startIndex       = it->indexOffset;
-                                                renderEntity.indicesCount     = it->indexCount;
-                                                renderEntity.transformIndex   = i; //transformIndex;
+								RenderEntity& renderEntity    = toInsert.emplace_back();
+								renderEntity.bIsTransparent   = bIsTransparent;
+								renderEntity.startIndex       = it->indexOffset;
+								renderEntity.indicesCount     = it->indexCount;
+								renderEntity.transformIndex   = i; //transformIndex;
 
-                                                // It's really weird, but at this point I don't know actual position of this mesh in the world.
-                                                // Anyway, world bounding box is still good point to understand relative to camera position.
-                                                renderEntity.position = gamelib::BoundingBox(objectDescription.BoundsMin, objectDescription.BoundsMax).getCenter();
+								// It's really weird, but at this point I don't know actual position of this mesh in the world.
+								// Anyway, world bounding box is still good point to understand relative to camera position.
+								renderEntity.position = gamelib::BoundingBox(objectDescription.BoundsMin, objectDescription.BoundsMax).getCenter();
 
-                                                ++iAcceptedEntries;
-                                        }
-                                }
+								++iAcceptedEntries;
+						}
+				}
 			}
 
 			m_pCommon->GL->glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
@@ -1458,8 +1478,8 @@ namespace widgets
 				const auto meshMaterialId = mesh.material_id;
 				const auto meshTextureId = mesh.textureId;
 
-                                MeshInfo& meshInfo = *Meshes.insert(ENCODE_MESH_IDX(static_cast<int32_t>(model.chunk), meshIdx), {});
-                                meshInfo.variationId = mesh.variationId;
+				MeshInfo& meshInfo = *Meshes.insert(ENCODE_MESH_IDX(static_cast<int32_t>(model.chunk), meshIdx), {});
+				meshInfo.variationId = mesh.variationId;
 
 				if (meshMaterialId > 0)
 				{
@@ -1617,6 +1637,26 @@ namespace widgets
 		return true;
 	}
 
+	void SceneRenderWidget::RenderContext::FillTransformForSceneObject(gamelib::scene::SceneObject *sceneObj, ObjectTransformDescription &transformDesc, BoundingBoxDef& bbox)
+	{
+		const auto primId = GetSceneObjectPrimitiveID(Level, sceneObj);
+
+		// Store transform & association
+		const glm::mat4 mWorld = sceneObj->getWorldTransform();
+		transformDesc.Matrix = mWorld;
+		transformDesc.Status.x = 0.f;
+		transformDesc.Status.y = static_cast<float>(primId);
+		transformDesc.Status.z = static_cast<float>(sceneObj->getProperties().getObject<int32_t>("MeshVariantId", 0));
+		transformDesc.Status.w = 0.f;
+
+		// Store bounding box
+		bbox = primId ? gamelib::BoundingBox::toWorld(BoundingBoxes[primId], mWorld) : gamelib::BoundingBox();
+
+		// Store bounds
+		transformDesc.BoundsMin = glm::vec4(bbox.vMin.x, bbox.vMin.y, bbox.vMin.z, 1.f);
+		transformDesc.BoundsMax = glm::vec4(bbox.vMax.x, bbox.vMax.y, bbox.vMax.z, 1.f);
+	}
+
 	bool SceneRenderWidget::RenderContext::buildTransformCache()
 	{
 		// Here we need to visit whole scene object by object (in hierarchy order)
@@ -1625,24 +1665,13 @@ namespace widgets
 
 		auto Visitor = [this](const gamelib::scene::SceneObject::Ptr& pObject) -> gamelib::scene::SceneObject::EVisitResult {
 			using VR = gamelib::scene::SceneObject::EVisitResult;
-			const auto primId = GetSceneObjectPrimitiveID(Level, pObject);
 
-			// Store transform & association
-			const glm::mat4 mWorld = pObject->getWorldTransform();
 			ObjectTransformDescription& transformDescription = Transforms.emplace_back();
-			transformDescription.Matrix = mWorld;
-                        transformDescription.Status.x = 0.f;
-                        transformDescription.Status.y = static_cast<float>(primId);
-                        transformDescription.Status.z = static_cast<float>(pObject->getProperties().getObject<int32_t>("MeshVariantId", 0));
-                        transformDescription.Status.w = 0.f;
 
-			// Store bounding box
-			gamelib::BoundingBox worldBBox = primId ? gamelib::BoundingBox::toWorld(BoundingBoxes[primId], mWorld) : gamelib::BoundingBox();
-			WorldBoundingBoxes.emplace_back(worldBBox); // Store empty bbox if no primId presented at all
+			BoundingBoxDef bbox;
+			FillTransformForSceneObject(pObject.get(), transformDescription, bbox);
 
-			// Store bounds
-			transformDescription.BoundsMin = glm::vec4(worldBBox.min, 1.f);
-			transformDescription.BoundsMax = glm::vec4(worldBBox.max, 1.f);
+			WorldBoundingBoxes.emplace_back(bbox);// Store empty bbox if no primId presented at all
 
 			// Store identity
 			ObjectToTransformIndex[pObject.get()] = (Transforms.size() - 1);
@@ -1668,7 +1697,7 @@ namespace widgets
 	}
 
 	/// ------------------------------ RenderCommon
-	SceneRenderWidget::RenderCommon::RenderCommon(widgets::GLFunctions *pGLFunctions, GLExtFunctions::Ptr&& pGLExtFunctions)
+	SceneRenderWidget::RenderCommon::RenderCommon(GLFunctions *pGLFunctions, GLExtFunctions::Ptr&& pGLExtFunctions)
 	    : GL(pGLFunctions), GLExt(std::move(pGLExtFunctions))
 	{
 	}
