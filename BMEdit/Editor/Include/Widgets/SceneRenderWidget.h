@@ -6,6 +6,7 @@
 #include <QString>
 
 #include <Render/RenderEntry.h>
+#include <Render/GizmoRenderer.h>
 
 #include <GameLib/BoundingBox.h>
 #include <GameLib/Level.h>
@@ -54,8 +55,12 @@ namespace widgets
 		bool shouldRenderPortals() const;
 		void setShouldRenderPortals(bool bVal);
 
-		bool shouldRenderRoomBoundingBox() const;
-		void setShouldRenderRoomBoundingBox(bool bVal);
+                bool shouldRenderRoomBoundingBox() const;
+                void setShouldRenderRoomBoundingBox(bool bVal);
+
+                void addGizmoLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color) { m_gizmo.addLine(a, b, color); }
+                void addGizmoBox(const gamelib::BoundingBox& box, const glm::vec4& color) { m_gizmo.addAABB(box, color); }
+                void clearGizmos() { m_gizmo.clear(); }
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
@@ -109,8 +114,10 @@ namespace widgets
 		bool m_bFirstMouseQuery { true };
 		bool m_bRenderPortals { false }; // Should we render portals between rooms (debug view)
 		bool m_bRenderRoomBoundingBox { false }; // Should we render room bounding box (of all rooms)
-		bool m_bRenderListDirty { false };
-		bool m_bIgnoreVisibility { false };
-		bool m_bTransformsDirty { false };
-	};
+                bool m_bRenderListDirty { false };
+                bool m_bIgnoreVisibility { false };
+                bool m_bTransformsDirty { false };
+
+                render::GizmoRenderer m_gizmo;
+        };
 }

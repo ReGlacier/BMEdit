@@ -20,5 +20,7 @@
     <file alias="mtl_textured_gl33.vsh">Shaders/TexturedEntity_GL33.vsh</file>
     <file alias="mtl_textured_gl33.fsh">Shaders/TexturedEntity_GL33.fsh</file>
     <file alias="culling.csh">Shaders/Culling.csh</file>
+    <file alias="gizmo_gl33.vsh">Shaders/Gizmo_GL33.vsh</file>
+    <file alias="gizmo_gl33.fsh">Shaders/Gizmo_GL33.fsh</file>
 </qresource>
 </RCC>
