@@ -24,7 +24,9 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
 
       - name: Get latest CMake
-        uses: lukka/get-cmake@v3.20.0
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.25.0"
 
       - name: Install Qt6
         uses: jurplel/install-qt-action@v3
