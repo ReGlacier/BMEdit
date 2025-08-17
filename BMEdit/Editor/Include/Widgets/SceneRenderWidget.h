@@ -55,12 +55,12 @@ namespace widgets
 		bool shouldRenderPortals() const;
 		void setShouldRenderPortals(bool bVal);
 
-                bool shouldRenderRoomBoundingBox() const;
-                void setShouldRenderRoomBoundingBox(bool bVal);
+		bool shouldRenderRoomBoundingBox() const;
+		void setShouldRenderRoomBoundingBox(bool bVal);
 
-                void addGizmoLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color) { m_gizmo.addLine(a, b, color); }
-                void addGizmoBox(const gamelib::BoundingBox& box, const glm::vec4& color) { m_gizmo.addAABB(box, color); }
-                void clearGizmos() { m_gizmo.clear(); }
+		void addGizmoLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color) { m_gizmo.addLine(a, b, color); }
+		void addGizmoBox(const gamelib::BoundingBox& box, const glm::vec4& color) { m_gizmo.addAABB(box, color); }
+		void clearGizmos() { m_gizmo.clear(); }
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
@@ -96,6 +96,7 @@ namespace widgets
 	private:
 		// Data
 		gamelib::Level* m_pLevel { nullptr };
+		gamelib::scene::SceneObject* m_pSelectedObject{nullptr};
 
 		// Render data
 		struct RenderContext;
@@ -119,5 +120,5 @@ namespace widgets
 		bool m_bTransformsDirty { false };
 
 		render::GizmoRenderer m_gizmo;
-        };
+	};
 }

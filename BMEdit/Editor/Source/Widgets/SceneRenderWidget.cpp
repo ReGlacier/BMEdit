@@ -360,6 +360,16 @@ namespace widgets
 				m_bTransformsDirty = false;
 			}
 
+			// Fill gizmo
+			if (m_pSelectedObject != nullptr)
+			{
+				if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(m_pSelectedObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
+				{
+					const auto& bounds = m_pContext->WorldBoundingBoxes[*objectToIndexIt];
+					addGizmoBox(bounds.AsBounds(), glm::vec4(0.f, 0.8f, 0.25f, 0.25f));
+				}
+			}
+
 			// Perform commands
 			drawScene();
 		}
@@ -507,6 +517,7 @@ namespace widgets
 		m_bFirstMouseQuery = true;
 		m_pContext = nullptr; // Drop level resources here
 		m_eLoaderState = ELevelLoadState::LLS_NONE;
+		m_pSelectedObject = nullptr;
 
 		resetViewMode();
 		repaint();
@@ -535,13 +546,20 @@ namespace widgets
 		if (!m_pLevel)
 			return;
 
-		auto flags = sceneObject->getGeomInfo().getGeomFlags();
-		bool isBit4Set = flags & (1 << 4);
+		if (m_pSelectedObject != sceneObject)
+		{
+			m_pSelectedObject = sceneObject;
+			repaint();
+		}
 
+		// auto flags = sceneObject->getGeomInfo().getGeomFlags();
+		// bool isBit4Set = flags & (1 << 4);
 	}
 
 	void SceneRenderWidget::resetSelectedObject()
 	{
+		m_pSelectedObject = nullptr;
+		repaint();
 	}
 
 	void SceneRenderWidget::moveCameraTo(const glm::vec3& position)
@@ -590,6 +608,8 @@ namespace widgets
 
 	void SceneRenderWidget::onObjectMoved(const QString& propertyName, gamelib::scene::SceneObject *sceneObject)
 	{
+		bool bNeedRepaint = false;
+
 		// Impl
 		if (m_pContext)
 		{
@@ -621,7 +641,7 @@ namespace widgets
 
 				if (bDirty) {
 					m_bTransformsDirty = true;
-					repaint();
+					bNeedRepaint = true;
 				}
 			}
 
@@ -641,9 +661,14 @@ namespace widgets
 				if (bDirty) 
 				{
 					m_bTransformsDirty = m_bRenderListDirty = true;
-					repaint();
+					bNeedRepaint = true;
 				}
 			}
+		}
+
+		if (bNeedRepaint)
+		{
+			repaint();
 		}
 	}
 
