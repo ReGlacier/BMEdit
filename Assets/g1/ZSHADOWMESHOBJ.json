@@ -8,12 +8,12 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_C",
+            "name": "m_iFlags",
             "offset": 12,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_10",
+            "name": "m_rLight",
             "offset": 16,
             "typename": "ZGEOMREF"
         }

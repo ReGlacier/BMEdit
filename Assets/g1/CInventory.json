@@ -3,6 +3,6 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "Items", "typename": "ZREFTAB32", "offset": 48 }
+        { "name": "m_StartInventory", "typename": "ZREFTAB32", "offset": 48 }
     ]
 }

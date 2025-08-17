@@ -8,32 +8,32 @@
     "parent": "ZItemTemplate",
     "properties": [
         {
-            "name": "property_74",
+            "name": "m_szHM3NormalHoldAnim",
             "offset": 116,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_78",
+            "name": "m_szHM3RunHoldAnim",
             "offset": 120,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_7C",
+            "name": "m_szActorHoldAnim",
             "offset": 124,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_8C",
+            "name": "m_iNumBites",
             "offset": 140,
             "typename": "PRPOpCode.Int8"
         },
         {
-            "name": "property_8D",
+            "name": "m_bDrinkable",
             "offset": 141,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_8E",
+            "name": "m_bEdible",
             "offset": 142,
             "typename": "PRPOpCode.Bool"
         }

@@ -8,47 +8,47 @@
     "parent": "ZGROUP",
     "properties": [
         {
-            "name": "property_48",
+            "name": "m_rClothBundleGroup",
             "offset": 72,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_4C",
+            "name": "m_FootwearMaterial",
             "offset": 76,
             "typename": "ZAUDIOREF"
         },
         {
-            "name": "property_50",
+            "name": "m_rtWeaponsAllowed",
             "offset": 80,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "DressQuality",
+            "name": "m_eDressQuality",
             "offset": 108,
             "typename": "ZHM3HmAs.EDressQuality"
         },
         {
-            "name": "SecurityZone",
+            "name": "m_AllowedZones",
             "offset": 112,
             "typename": "ZHM3HmAs.ESecurityZone"
         },
         {
-            "name": "property_74",
+            "name": "m_rtItemContainerAllowed",
             "offset": 116,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_90",
+            "name": "m_iDisguiseGroup",
             "offset": 144,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_94",
+            "name": "m_bMayUseLadders",
             "offset": 148,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_98",
+            "name": "ExtraOptionName",
             "offset": 152,
             "typename": "PRPOpCode.String"
         }

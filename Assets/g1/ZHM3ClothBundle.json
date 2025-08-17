@@ -8,7 +8,7 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "UnkGeom",
+            "name": "m_rHitmanAs",
             "offset": 12,
             "typename": "ZGEOMREF"
         }

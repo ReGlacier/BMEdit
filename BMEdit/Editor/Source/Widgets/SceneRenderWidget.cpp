@@ -178,6 +178,17 @@ namespace widgets
 		}
 
 		[[nodiscard]] gamelib::BoundingBox AsBounds() const { return gamelib::BoundingBox(vMin, vMax); }
+
+		[[nodiscard]] gamelib::BoundingBox AsBoundsOrCube(const glm::vec3& vOrigin, float fSide) const
+		{
+			auto bbox = AsBounds();
+			if (bbox.getVolume() <= std::numeric_limits<double>::epsilon())
+			{
+				bbox = gamelib::BoundingBox(vOrigin - (glm::vec3(fSide) * .5f), vOrigin + (glm::vec3(fSide) * .5f));
+			}
+
+			return bbox;
+		}
 	};
 
 
@@ -363,11 +374,7 @@ namespace widgets
 			// Fill gizmo
 			if (m_pSelectedObject != nullptr)
 			{
-				if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(m_pSelectedObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
-				{
-					const auto& bounds = m_pContext->WorldBoundingBoxes[*objectToIndexIt];
-					addGizmoBox(bounds.AsBounds(), glm::vec4(0.f, 0.8f, 0.25f, 0.25f));
-				}
+				generateGizmosForEntity(m_pSelectedObject);
 			}
 
 			// Perform commands
@@ -1138,6 +1145,27 @@ namespace widgets
 			                                            (const void *) (m_pContext->IndirectDrawTransparentCommands * sizeof(IndirectRenderDrawCommand)),
 			                                            static_cast<GLint>(m_pContext->IndirectDrawTransparentCommandsCount),
 			                                            0 /* stride */);
+		}
+	}
+
+	void SceneRenderWidget::generateGizmosForEntity(gamelib::scene::SceneObject* pSceneObject)
+	{
+		if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(pSceneObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
+		{
+			// Main gizmo (AABB)
+			const auto &bounds = m_pContext->WorldBoundingBoxes[*objectToIndexIt];
+			addGizmoBox(bounds.AsBoundsOrCube(pSceneObject->getPosition(), 50.0f), glm::vec4(0.f, 1.f, 0.0f, 0.15f), glm::vec4(0.f, 1.f, 0.0f, 1.0f));
+
+			// PathFollower gizmo
+			auto pathFolloweIt = std::find_if(pSceneObject->getControllers().begin(), pSceneObject->getControllers().end(), [](const gamelib::scene::SceneObject::Controller& sc) -> bool {
+				return sc.type->getName() == "ZPathFollower";
+			});
+
+			if (pathFolloweIt != pSceneObject->getControllers().end())
+			{
+				// Nice, we have path follower and a lot of gizmos!
+				// TODO: Extract "m_WayPointLists" property
+			}
 		}
 	}
 

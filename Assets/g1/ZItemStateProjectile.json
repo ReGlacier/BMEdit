@@ -3,15 +3,15 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_34", "typename": "ZItemState.ITEMDEST", "offset": 52 },
-        { "name": "property_38", "typename": "PRPOpCode.Bool", "offset": 56 },
-        { "name": "property_3C", "typename": "ZItemState.ITEMDEST", "offset": 60 },
-        { "name": "property_40", "typename": "PRPOpCode.Float32", "offset": 64 },
-        { "name": "property_44", "typename": "PRPOpCode.Float32", "offset": 64 },
-        { "name": "property_48", "typename": "PRPOpCode.Bool", "offset": 68 },
-        { "name": "property_49", "typename": "PRPOpCode.Bool", "offset": 69 },
-        { "name": "property_4C", "typename": "PRPOpCode.String", "offset": 72 },
-        { "name": "property_50", "typename": "ZGEOMREF", "offset": 76 },
-        { "name": "property_54", "typename": "PRPOpCode.Bool", "offset": 76 }
+        { "name": "m_lStateBits", "typename": "ZItemState.ITEMDEST", "offset": 52 },
+        { "name": "m_bIsMain", "typename": "PRPOpCode.Bool", "offset": 56 },
+        { "name": "m_lDestination", "typename": "ZItemState.ITEMDEST", "offset": 60 },
+        { "name": "m_fActivateDelay", "typename": "PRPOpCode.Float32", "offset": 64 },
+        { "name": "m_fDeactivateTime", "typename": "PRPOpCode.Float32", "offset": 64 },
+        { "name": "m_bReuseStateGeom", "typename": "PRPOpCode.Bool", "offset": 68 },
+        { "name": "m_bAutoRemove", "typename": "PRPOpCode.Bool", "offset": 69 },
+        { "name": "m_sAnimName", "typename": "PRPOpCode.String", "offset": 72 },
+        { "name": "m_rUseGeom", "typename": "ZGEOMREF", "offset": 76 },
+        { "name": "m_bOnlyVisible", "typename": "PRPOpCode.Bool", "offset": 76 }
     ]
 }

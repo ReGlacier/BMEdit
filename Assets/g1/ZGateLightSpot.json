@@ -8,22 +8,22 @@
     "parent": "ZSPOTLIGHT",
     "properties": [
         {
-            "name": "Type",
+            "name": "m_lType",
             "offset": 28,
             "typename": "ZGateLightSpot.EType"
         },
         {
-            "name": "property_20",
+            "name": "m_RoomsFilter",
             "offset": 32,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "Filter",
+            "name": "m_lFilterType",
             "offset": 60,
             "typename": "ZGateLightSpot.EFilterType"
         },
         {
-            "name": "property_40",
+            "name": "m_Slaves",
             "offset": 64,
             "typename": "ZREFTAB32"
         }

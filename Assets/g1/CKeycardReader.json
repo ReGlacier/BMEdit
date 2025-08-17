@@ -3,12 +3,12 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "ControlledObject", "typename": "ZGEOMREF", "offset": 48 },
-        { "name": "Property_34", "typename": "PRPOpCode.String", "offset": 52 },
-        { "name": "Property_38", "typename": "PRPOpCode.String", "offset": 56 },
-        { "name": "MessageOnActivate", "typename": "ZMsg", "offset": 60 },
-        { "name": "Property_40", "typename": "ZAUDIOREF", "offset": 64 },
-        { "name": "Property_44", "typename": "ZAUDIOREF", "offset": 68 },
-        { "name": "Property_81", "typename": "PRPOpCode.Bool", "offset": 129 }
+        { "name": "m_rControlledObject", "typename": "ZGEOMREF", "offset": 48 },
+        { "name": "m_szKeyCardTemplates", "typename": "PRPOpCode.String", "offset": 52 },
+        { "name": "m_szKeyCard", "typename": "PRPOpCode.String", "offset": 56 },
+        { "name": "m_msgObjectActivator", "typename": "ZMsg", "offset": 60 },
+        { "name": "m_sValidCardSound", "typename": "ZAUDIOREF", "offset": 64 },
+        { "name": "m_sInvalidCardSound", "typename": "ZAUDIOREF", "offset": 68 },
+        { "name": "m_bUseLnkAction", "typename": "PRPOpCode.Bool", "offset": 129 }
     ]
 }

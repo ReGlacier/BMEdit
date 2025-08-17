@@ -3,7 +3,7 @@
     "parent": "CCutSequenceEvent",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_34", "typename": "PRPOpCode.String", "offset": 52 },
-        { "name": "property_38", "typename": "PRPOpCode.Int32", "offset": 56 }
+        { "name": "m_sLocalePath", "typename": "PRPOpCode.String", "offset": 52 },
+        { "name": "m_iDuration", "typename": "PRPOpCode.Int32", "offset": 56 }
     ]
 }

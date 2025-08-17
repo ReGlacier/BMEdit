@@ -8,7 +8,7 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_34",
+            "name": "m_iCapacity",
             "offset": 52,
             "typename": "PRPOpCode.Int32"
         }

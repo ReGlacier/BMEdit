@@ -3,9 +3,9 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_644", "typename": "PRPOpCode.Float32", "offset": 1604 },
-        { "name": "property_648", "typename": "PRPOpCode.Float32", "offset": 1608 },
-        { "name": "property_64C", "typename": "ZGEOMREF", "offset": 1612 },
-        { "name": "property_650", "typename": "ZGEOMREF", "offset": 1616 }
+        { "name": "m_fXPos", "typename": "PRPOpCode.Float32", "offset": 1604 },
+        { "name": "m_fYPos", "typename": "PRPOpCode.Float32", "offset": 1608 },
+        { "name": "m_rFocusBar", "typename": "ZGEOMREF", "offset": 1612 },
+        { "name": "m_rActiveLineObjectsGroup", "typename": "ZGEOMREF", "offset": 1616 }
     ]
 }

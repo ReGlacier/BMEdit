@@ -8,42 +8,42 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_10",
+            "name": "m_iIterations",
             "offset": 16,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_14",
+            "name": "m_iMaxNrVisible",
             "offset": 20,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "CollisionType",
+            "name": "m_iActorCollision",
             "offset": 24,
             "typename": "ZCloth.ActorCollisionType"
         },
         {
-            "name": "WindType",
+            "name": "m_iUseWind",
             "offset": 28,
             "typename": "ZCloth.WindType"
         },
         {
-            "name": "property_20",
+            "name": "m_WindSpeed",
             "offset": 32,
             "typename": "ZVector3F"
         },
         {
-            "name": "property_2C",
+            "name": "m_fElasticity",
             "offset": 44,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_30",
+            "name": "m_fGravity",
             "offset": 48,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_34",
+            "name": "m_fDamping",
             "offset": 52,
             "typename": "PRPOpCode.Float32"
         },

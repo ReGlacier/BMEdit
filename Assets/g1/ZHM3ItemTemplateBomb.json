@@ -8,22 +8,22 @@
     "parent": "ZHM3ItemTemplateWeapon",
     "properties": [
         {
-            "name": "property_19C",
+            "name": "m_fMaxDamage",
             "offset": 412,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_1A0",
+            "name": "m_fMaxDamageRange",
             "offset": 416,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_1A4",
+            "name": "m_fMaxRange",
             "offset": 420,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_1A8",
+            "name": "m_fExplodeTimer",
             "offset": 424,
             "typename": "PRPOpCode.Float32"
         },

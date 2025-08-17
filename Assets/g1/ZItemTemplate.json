@@ -8,27 +8,27 @@
     "parent": "ZGROUP",
     "properties": [
         {
-            "name": "ItemHands",
+            "name": "m_eItemHands",
             "offset": 72,
             "typename": "ZItemTemplate.ITEMHANDS"
         },
         {
-            "name": "ItemSize",
+            "name": "m_eItemSize",
             "offset": 76,
             "typename": "ZItemTemplate.ITEMSIZE"
         },
         {
-            "name": "property_50",
+            "name": "m_bIsVisibleToNPCs",
             "offset": 80,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_68",
+            "name": "m_rMaterial",
             "offset": 104,
             "typename": "ZAUDIOREF"
         },
         {
-            "name": "property_6C",
+            "name": "m_bSendImpactEvent",
             "offset": 108,
             "typename": "PRPOpCode.Bool"
         }

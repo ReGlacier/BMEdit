@@ -24,22 +24,22 @@
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_24",
+            "name": "m_OnColor",
             "offset": 36,
             "typename": "ZCOLOR"
         },
         {
-            "name": "property_28",
+            "name": "m_OnBackColor",
             "offset": 40,
             "typename": "ZCOLOR"
         },
         {
-            "name": "property_2C",
+            "name": "m_OffColor",
             "offset": 44,
             "typename": "ZCOLOR"
         },
         {
-            "name": "property_30",
+            "name": "m_OffBackColor",
             "offset": 48,
             "typename": "ZCOLOR"
         }

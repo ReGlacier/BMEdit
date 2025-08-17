@@ -8,12 +8,12 @@
     "parent": "ZItem",
     "properties": [
         {
-            "name": "property_90",
+            "name": "m_iNumBitesRemoved",
             "offset": 144,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_94",
+            "name": "m_bForceUnpickable",
             "offset": 148,
             "typename": "PRPOpCode.Bool"
         },

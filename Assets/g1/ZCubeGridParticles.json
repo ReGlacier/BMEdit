@@ -8,17 +8,17 @@
     "parent": "ZCubeGrid",
     "properties": [
         {
-            "name": "property_38",
+            "name": "m_lColorAlpha",
             "offset": 56,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_3C",
+            "name": "m_lColor",
             "offset": 60,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_40",
+            "name": "m_rParticleBox",
             "offset": 64,
             "typename": "ZGEOMREF"
         }

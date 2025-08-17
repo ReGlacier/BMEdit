@@ -8,92 +8,92 @@
     "parent": "ZItemTemplate",
     "properties": [
         {
-            "name": "property_70",
+            "name": "m_SoundDef",
             "offset": 112,
             "typename": "ZSDOwner"
         },
         {
-            "name": "ShootMode",
+            "name": "m_WeaponOperations",
             "offset": 156,
             "typename": "ZItemTemplateWeapon.WEAPONOPERATION"
         },
         {
-            "name": "WeaponType",
+            "name": "m_eWeaponType",
             "offset": 160,
             "typename": "ZItemTemplateWeapon.WEAPONTYPE"
         },
         {
-            "name": "rAmmoTemplate",
+            "name": "m_AmmoTemplate",
             "offset": 164,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_C0",
+            "name": "m_fMuzzleVelocity",
             "offset": 192,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_C4",
+            "name": "m_fPrecisionDeg",
             "offset": 196,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_C8",
+            "name": "m_fNearRange",
             "offset": 200,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_CC",
+            "name": "m_fFarRange",
             "offset": 204,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_D0",
+            "name": "m_fDamageMultiplier",
             "offset": 208,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_D4",
+            "name": "m_fImpact",
             "offset": 212,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_D8",
+            "name": "m_fTimeBetweenShot",
             "offset": 216,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_DC",
+            "name": "m_bCanFireProjectiles",
             "offset": 220,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_DD",
+            "name": "m_bCanHaveMagazines",
             "offset": 221,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_DE",
+            "name": "m_bSniperMode",
             "offset": 222,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "rModelStates",
+            "name": "m_WeaponParts",
             "offset": 224,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "rFlash",
+            "name": "m_rWeaponFlash",
             "offset": 252,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_100",
+            "name": "m_lNumInstances",
             "offset": 256,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_104",
+            "name": "m_fCartridgeSpeed",
             "offset": 260,
             "typename": "PRPOpCode.Float32"
         }

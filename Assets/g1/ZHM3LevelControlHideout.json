@@ -3,11 +3,11 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_318", "typename": "ZREFTAB32", "offset": 792  },
-        { "name": "property_3C4", "typename": "ZREFTAB32", "offset": 964  },
-        { "name": "property_34",  "typename": "ZSDOwner",  "offset": 52   },
-        { "name": "property_51C", "typename": "ZGEOMREF",  "offset": 1308 },
-        { "name": "property_520", "typename": "ZREFTAB32", "offset": 1312 },
-        { "name": "property_5D0", "typename": "ZGEOMREF",  "offset": 1488 }
+        { "name": "m_BeginningItems", "typename": "ZREFTAB32", "offset": 792  },
+        { "name": "m_rtClothlist", "typename": "ZREFTAB32", "offset": 964  },
+        { "name": "m_Music",  "typename": "ZSDOwner",  "offset": 52   },
+        { "name": "m_rSecurityDevice", "typename": "ZGEOMREF",  "offset": 1308 },
+        { "name": "m_rtSuitcaseBoxes", "typename": "ZREFTAB32", "offset": 1312 },
+        { "name": "m_rWaterSplashParticleSystem", "typename": "ZGEOMREF",  "offset": 1488 }
     ]
 }

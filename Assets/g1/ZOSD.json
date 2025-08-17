@@ -8,117 +8,117 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_48",
+            "name": "m_rSubtitles",
             "offset": 72,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_4C",
+            "name": "m_rSubtitlesOutline",
             "offset": 76,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_74",
+            "name": "m_rCrosshairs",
             "offset": 116,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_94",
+            "name": "m_rWeaponDisplay",
             "offset": 148,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_B0",
+            "name": "m_rInfoDisplay",
             "offset": 176,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_BC",
+            "name": "m_rHealthFrame",
             "offset": 180,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_C4",
+            "name": "m_rCompassMarker",
             "offset": 196,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_C8",
+            "name": "m_rNorth",
             "offset": 200,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_CC",
+            "name": "m_rSouth",
             "offset": 204,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_D0",
+            "name": "m_rEast",
             "offset": 208,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_D4",
+            "name": "m_rWest",
             "offset": 212,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_D8",
+            "name": "m_rNorthOutline",
             "offset": 216,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_DC",
+            "name": "m_rSouthOutline",
             "offset": 220,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_E0",
+            "name": "m_rEastOutline",
             "offset": 224,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_E4",
+            "name": "m_rWestOutline",
             "offset": 228,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_194",
+            "name": "m_rMap",
             "offset": 404,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1A4",
+            "name": "m_rCheatsMenu",
             "offset": 420,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1B8",
+            "name": "m_rPickupMenu",
             "offset": 440,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1CC",
+            "name": "m_rDropDisplay",
             "offset": 460,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1E0",
+            "name": "m_rActionMenu",
             "offset": 480,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1F4",
+            "name": "m_rContainerMenu",
             "offset": 500,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1FC",
+            "name": "m_SoundDef",
             "offset": 508,
             "typename": "ZSDOwner"
         },
         {
-            "name": "property_6B8",
+            "name": "m_aiTextureIds",
             "offset": 1720,
             "typename": "ZVector128I"
         }

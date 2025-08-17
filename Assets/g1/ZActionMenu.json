@@ -3,14 +3,14 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_7AC", "typename": "ZGEOMREF", "offset": 1966 },
-        { "name": "property_7B0", "typename": "ZGEOMREF", "offset": 1968 },
-        { "name": "property_7B4", "typename": "ZGEOMREF", "offset": 1972 },
-        { "name": "property_7B8", "typename": "ZGEOMREF", "offset": 1976 },
-        { "name": "property_7BC", "typename": "ZGEOMREF", "offset": 1980 },
-        { "name": "property_7C0", "typename": "ZGEOMREF", "offset": 1984 },
-        { "name": "property_7C4", "typename": "PRPOpCode.Float32", "offset": 1988 },
-        { "name": "property_7C8", "typename": "PRPOpCode.Float32", "offset": 1992 },
-        { "name": "property_7A4", "typename": "ZGEOMREF", "offset": 1956 }
+        { "name": "m_rMoreSymbol", "typename": "ZGEOMREF", "offset": 1966 },
+        { "name": "m_rFocusBar", "typename": "ZGEOMREF", "offset": 1968 },
+        { "name": "m_rButtonSymbol", "typename": "ZGEOMREF", "offset": 1972 },
+        { "name": "m_rBigButtonSymbol_PcOnly", "typename": "ZGEOMREF", "offset": 1976 },
+        { "name": "m_rButtonSymbolChar_PcOnly", "typename": "ZGEOMREF", "offset": 1980 },
+        { "name": "m_rButtonSymbolChar_PcOnlyOutline", "typename": "ZGEOMREF", "offset": 1984 },
+        { "name": "m_fXPos", "typename": "PRPOpCode.Float32", "offset": 1988 },
+        { "name": "m_fYPos", "typename": "PRPOpCode.Float32", "offset": 1992 },
+        { "name": "m_rActiveLineObjectsGroup", "typename": "ZGEOMREF", "offset": 1956 }
     ]
 }

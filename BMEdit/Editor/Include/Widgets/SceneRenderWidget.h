@@ -59,7 +59,7 @@ namespace widgets
 		void setShouldRenderRoomBoundingBox(bool bVal);
 
 		void addGizmoLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color) { m_gizmo.addLine(a, b, color); }
-		void addGizmoBox(const gamelib::BoundingBox& box, const glm::vec4& color) { m_gizmo.addAABB(box, color); }
+		void addGizmoBox(const gamelib::BoundingBox &box, const glm::vec4 &color, const glm::vec4 &lineColor) { m_gizmo.addAABB(box, color, lineColor); }
 		void clearGizmos() { m_gizmo.clear(); }
 	signals:
 		void resourcesReady();
@@ -88,6 +88,7 @@ namespace widgets
 		void updateViewLists();
 		void generateDrawCommands();
 		void drawScene();
+		void generateGizmosForEntity(gamelib::scene::SceneObject* pSceneObject);
 
 		[[nodiscard]] glm::ivec2 getViewportSize() const {
 			return { widthMM(), heightMM() };

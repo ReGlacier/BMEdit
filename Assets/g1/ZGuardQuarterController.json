@@ -3,6 +3,6 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "rWeaponStorage", "typename": "ZGEOMREF", "offset": 220 }
+        { "name": "m_rWeaponStorage", "typename": "ZGEOMREF", "offset": 220 }
     ]
 }

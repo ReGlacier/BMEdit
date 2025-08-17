@@ -8,12 +8,12 @@
     "parent": "ZWINOBJ",
     "properties": [
         {
-            "name": "property_AC",
+            "name": "m_lWidth",
             "offset": 172,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_B0",
+            "name": "m_lHeight",
             "offset": 176,
             "typename": "PRPOpCode.Int32"
         },

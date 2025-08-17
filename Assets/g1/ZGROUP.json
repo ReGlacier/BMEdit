@@ -8,16 +8,16 @@
     "parent": "ZGEOM",
     "properties": [
         {
-            "name": "property_40",
+            "name": "m_fPFResMultiplier",
             "offset": 64,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "bLightShinesIn",
+            "name": "LightShinesIn",
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "bLightShinesOut",
+            "name": "LightShinesOut",
             "typename": "PRPOpCode.Bool"
         }
     ],

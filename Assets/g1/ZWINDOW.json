@@ -8,12 +8,12 @@
     "parent": "ZWINGROUP",
     "properties": [
         {
-            "name": "property_50",
+            "name": "m_rDefaultFocus",
             "offset": 80,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_54",
+            "name": "m_rWindows",
             "offset": 84,
             "typename": "ZGEOMREF"
         }

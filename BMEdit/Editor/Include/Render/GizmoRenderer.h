@@ -17,7 +17,7 @@ namespace render
                 bool setup(GLFunctions *gapi);
                 void clear();
                 void addLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color);
-                void addAABB(const gamelib::BoundingBox& box, const glm::vec4& color);
+                void addAABB(const gamelib::BoundingBox& box, const glm::vec4& fillColor, const glm::vec4& lineColor);
                 void render(GLFunctions *gapi, QOpenGLShaderProgram *shader, GLint cameraProjViewLoc, const glm::mat4 &projView);
 
         private:

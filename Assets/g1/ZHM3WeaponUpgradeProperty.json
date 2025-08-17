@@ -3,8 +3,8 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "Type",  "typename": "ZHM3WeaponUpgradeProperty.EPropertyType", "offset": 44 },
-        { "name": "Func",  "typename": "ZHM3WeaponUpgradeProperty.EPropertyFunc", "offset": 48 },
-        { "name": "Value", "typename": "PRPOpCode.Float32", "offset": 52 }
+        { "name": "m_eProperty",  "typename": "ZHM3WeaponUpgradeProperty.EPropertyType", "offset": 44 },
+        { "name": "m_ePropertyFunc",  "typename": "ZHM3WeaponUpgradeProperty.EPropertyFunc", "offset": 48 },
+        { "name": "m_fValue", "typename": "PRPOpCode.Float32", "offset": 52 }
     ]
 }

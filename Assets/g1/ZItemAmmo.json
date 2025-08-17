@@ -8,7 +8,7 @@
     "parent": "ZItem",
     "properties": [
         {
-            "name": "property_80",
+            "name": "m_lNrProjectiles",
             "offset": 128,
             "typename": "PRPOpCode.Int32"
         }

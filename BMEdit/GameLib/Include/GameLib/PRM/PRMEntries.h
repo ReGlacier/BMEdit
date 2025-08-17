@@ -32,6 +32,15 @@ namespace gamelib::prm
 		VF_34 = 0x34
 	};
 
+	enum SUBTYPE : uint8_t
+	{
+		SUBTYPE_STANDARD = 0,
+		SUBTYPE_TWEENED = 1,
+		SUBTYPE_RIGID = 2,
+		SUBTYPE_WEIGHTED = 3,
+		SUBTYPE_COUNT = 4
+	};
+
 #pragma pack(push, 1)   // TODO: Need to use some sort of macro to make this place cross-compiler supportable
 	struct PrmFile;
 
@@ -42,6 +51,24 @@ namespace gamelib::prm
 		uint16_t c = 0;
 
 		static void deserialize(Index& index, ZBio::ZBinaryReader::BinaryReader* binaryReader);
+	};
+
+	// VF_10
+	struct SVertexStaticShadowWintel {
+		glm::vec3 p;
+		uint32_t c;
+
+		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexStaticShadowWintel &vertex);
+	};
+
+	// VF_24
+	struct SVertexWintel {
+		glm::vec3 p;
+		glm::vec3 n;
+		glm::uint32 c;
+		glm::vec2 uv;
+
+		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexWintel &vertex);
 	};
 
 	struct BoundingBox
@@ -58,10 +85,10 @@ namespace gamelib::prm
 		uint8_t packType = 0;
 		uint16_t kind = 0;
 		uint16_t textureId = 0;
-		uint16_t unk6 = 0;
-		uint32_t nextVariation = 0;
-		uint8_t unkC = 0;
-		uint8_t unkD = 0;
+		uint16_t drawEntryId = 0;
+		uint32_t nextPrim = 0;
+		uint8_t subType = 0;
+		uint8_t properties = 0;
 		uint8_t lod = 0;
 		uint16_t material_id = 0;
 		uint8_t variationId = 0;

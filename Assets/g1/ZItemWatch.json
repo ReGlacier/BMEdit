@@ -3,6 +3,6 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZREFTAB32", "offset": 44 }
+        { "name": "m_Receivers", "typename": "ZREFTAB32", "offset": 44 }
     ]
 }

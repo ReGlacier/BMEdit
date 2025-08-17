@@ -370,14 +370,14 @@ void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* 
 
 	// Show coli bits and other ZGEOM stuff
 	ui->coliBitsRepr->setPossibleValues({
-	    { "Bit 0", 0 },
-	    { "Bit 1", 1 },
-	    { "Bit 2", 2 },
-	    { "Bit 3", 3 },
-	    { "Bit 4", 4 },
-	    { "Bit 5", 5 },
-	    { "Bit 6", 6 },
-	    { "Bit 7", 7 }
+	    { "Bit 0", 0 }, // idk
+	    { "Bit 1", 1 }, // idk
+	    { "SHOT", 2 },  // from beta ps2
+	    { "Bit 3", 3 }, // idk
+	    { "Bit 4", 4 }, // idk
+	    { "SIGHT", 5 }, // from beta ps2 
+	    {"HERO", 6 },   // from beta ps2
+	    { "CAMERA", 7 } // from beta ps2
 	});
 
 	ui->coliBitsRepr->setValue(selectedSceneObject->getGeomInfo().getColiBits());
