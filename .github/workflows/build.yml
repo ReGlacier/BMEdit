@@ -31,12 +31,11 @@ jobs:
       - name: Install Qt6
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.4.1'
+          version: '6.8.3'
           host: 'windows'
           target: 'desktop'
           arch: 'win64_msvc2022_64'
           install-deps: 'true'
-          modules: 'qt3d'
 
       - name: Install Conan
         id: conan
