@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <glm/gtc/type_precision.hpp>
 
 
 namespace ZBio::ZBinaryReader
@@ -69,6 +70,33 @@ namespace gamelib::prm
 		glm::vec2 uv;
 
 		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexWintel &vertex);
+	};
+
+	struct SVertexWintelDP3 
+	{
+		glm::vec3 p;
+		uint32_t n; // packed normal
+		uint32_t c; // color RGBA/ARGB?
+		glm::vec2 uv;
+		uint32_t T; // tangent packed
+		uint32_t B; // binormal packed
+		uint32_t S; // ???
+
+		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexWintelDP3 &vertex);
+	};
+
+	struct SVertexW4WintelDP3 
+	{
+		glm::vec3 p;
+		glm::vec3 w; // weights
+		glm::u8vec4 bi; // bone indices
+		uint32_t n; // normal packed
+		uint32_t c; // rgba/argb
+		glm::vec2 uv;
+		uint32_t T; // tangent packed
+		uint32_t B; // binormal packed
+		
+		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexW4WintelDP3 &vertex);
 	};
 
 	struct BoundingBox
