@@ -626,13 +626,16 @@ namespace widgets
 				using VR = gamelib::scene::SceneObject::EVisitResult;
 				bool bDirty = false;
 
-				sceneObject->visitChildren([this, &bDirty](const gamelib::scene::SceneObject::Ptr &pObj) -> VR {
-					if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(pObj.get()); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) {
-						const glm::mat4 mWorld = pObj->getWorldTransform();
+				auto ActualizeTransformForSceneObject = [this](const gamelib::scene::SceneObject* pObject) -> bool
+				{
+					if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(const_cast<gamelib::scene::SceneObject *>(pObject)); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
+					{
+						const glm::mat4 mWorld = pObject->getWorldTransform();
 						m_pContext->Transforms[*objectToIndexIt].Matrix = mWorld;
 
-						const auto primId = GetSceneObjectPrimitiveID(m_pLevel, pObj.get());
-						if (primId) {
+						const auto primId = GetSceneObjectPrimitiveID(m_pLevel, pObject);
+						if (primId) 
+						{
 							// Update world bounding boxes
 							const auto worldBBox = gamelib::BoundingBox::toWorld(m_pContext->BoundingBoxes[primId], mWorld);
 							m_pContext->WorldBoundingBoxes[*objectToIndexIt] = worldBBox;
@@ -640,8 +643,18 @@ namespace widgets
 							m_pContext->Transforms[*objectToIndexIt].BoundsMax = glm::vec4(worldBBox.max, 1.f);
 						}
 
-						bDirty = true;// NOTE: Maybe we should upload only part?
+						return true;
 					}
+
+					return false;
+				};
+
+				// actualize for us
+				bDirty = ActualizeTransformForSceneObject(sceneObject);
+
+				// and for children objects
+				sceneObject->visitChildren([this, ActualizeTransformForSceneObject, &bDirty](const gamelib::scene::SceneObject::Ptr &pObj) -> VR {
+					bDirty = ActualizeTransformForSceneObject(pObj.get());
 
 					return VR::VR_CONTINUE;
 				});
