@@ -109,9 +109,9 @@ namespace gamelib::prm
 
 	struct Mesh
 	{
-		uint8_t boneDecl = 0;
+		uint8_t drawDestination = 0;
 		uint8_t packType = 0;
-		uint16_t kind = 0;
+		uint16_t type = 0;
 		uint16_t textureId = 0;
 		uint16_t drawEntryId = 0;
 		uint32_t nextPrim = 0;

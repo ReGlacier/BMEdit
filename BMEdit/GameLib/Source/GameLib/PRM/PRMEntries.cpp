@@ -63,9 +63,9 @@ namespace gamelib::prm
 
 	void Mesh::deserialize(Mesh& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader, const PrmFile& prmFile)
 	{
-		mesh.boneDecl = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+		mesh.drawDestination = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
 		mesh.packType = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
-		mesh.kind = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
+		mesh.type = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 		mesh.textureId = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 		mesh.drawEntryId = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 		mesh.nextPrim = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
