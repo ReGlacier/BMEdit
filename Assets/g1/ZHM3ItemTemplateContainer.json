@@ -8,17 +8,17 @@
     "parent": "ZItemTemplateContainer",
     "properties": [
         {
-            "name": "property_98",
+            "name": "m_szHM3NormalHoldAnim",
             "offset": 152,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_9C",
+            "name": "m_szHM3RunHoldAnim",
             "offset": 156,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_A0",
+            "name": "m_szActorHoldAnim",
             "offset": 160,
             "typename": "PRPOpCode.String"
         }

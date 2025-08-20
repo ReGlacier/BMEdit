@@ -3,12 +3,12 @@
     "parent": "ZSTDOBJ",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_C", "typename": "PRPOpCode.Int32", "offset": 12 },
-        { "name": "property_10", "typename": "PRPOpCode.Float32", "offset": 16 },
-        { "name": "property_14", "typename": "PRPOpCode.Float32", "offset": 20 },
-        { "name": "property_18", "typename": "PRPOpCode.Float32", "offset": 24 },
-        { "name": "property_1C", "typename": "ZCOLOR", "offset": 28 },
-        { "name": "UpdateFrequency", "typename": "ZEnvSampler.UPDATE_FREQUENCY", "offset": 32 },
-        { "name": "property_24", "typename": "PRPOpCode.Bool", "offset": 36 }
+        { "name": "m_lIdentifier", "typename": "PRPOpCode.Int32", "offset": 12 },
+        { "name": "m_fCameraFar", "typename": "PRPOpCode.Float32", "offset": 16 },
+        { "name": "m_fFogNear", "typename": "PRPOpCode.Float32", "offset": 20 },
+        { "name": "m_fFogFar", "typename": "PRPOpCode.Float32", "offset": 24 },
+        { "name": "m_lFogColor", "typename": "ZCOLOR", "offset": 28 },
+        { "name": "m_eUpdateFrequency", "typename": "ZEnvSampler.UPDATE_FREQUENCY", "offset": 32 },
+        { "name": "m_bCurrentRoomOnly", "typename": "PRPOpCode.Bool", "offset": 36 }
     ]
 }

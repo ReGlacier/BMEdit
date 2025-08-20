@@ -11,6 +11,24 @@ namespace ZBio::ZBinaryReader
 
 namespace gamelib::gms
 {
+	enum ECollisionMask : uint32_t
+	{
+		COLIMASK_All = 1,
+		COLIMASK_Background = 2,
+		COLIMASK_Shot = 4,
+		COLIMASK_WaterGlass = 8,
+		COLIMASK_NoWalk = 16,
+		COLIMASK_Sight = 32,
+		COLIMASK_Hero = 64,
+		COLIMASK_Camera = 128,
+		COLIMASK_NPC = 256
+
+
+		/// That masks means that entity attached to some ZROOM and we've able to find room by some "hint"
+		/// 0x40040000
+		/// 0x40000000
+	};
+
 	class GMSGeomEntity
 	{
 		///----------
@@ -32,6 +50,7 @@ namespace gamelib::gms
 		[[nodiscard]] bool isInheritedOfGeom() const;
 		[[nodiscard]] bool isRootOfGroup() const;
 		[[nodiscard]] uint32_t getRelativeDepthLevel() const;
+		[[nodiscard]] uint32_t getGeomFlags() const;
 
 		static void deserialize(GMSGeomEntity &entity, ZBio::ZBinaryReader::BinaryReader *gmsBinaryReader, ZBio::ZBinaryReader::BinaryReader *bufBinaryReader);
 
@@ -52,7 +71,7 @@ namespace gamelib::gms
 		uint32_t m_unk10 { };
 		uint32_t m_typeId { };
 		uint32_t m_unk18 { };
-		uint32_t m_coliBits { };
+		uint32_t m_coliBits {}; // +1C. NOTE: ECollisionMask contains all possible & expected values
 		uint32_t m_unk20 { };
 		uint32_t m_unk24 { };
 		uint32_t m_unk28 { };

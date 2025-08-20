@@ -17,8 +17,10 @@ namespace widgets
 	public:
 		explicit TypePropertyWidget(QWidget* parent = nullptr);
 
-		void setValue(const types::QGlacierValue &value);
-		[[nodiscard]] const types::QGlacierValue &getValue() const;
+		virtual void setValue(const types::QGlacierValue &value);
+		[[nodiscard]] virtual const types::QGlacierValue &getValue() const;
+
+		virtual bool canHookFocus() const;
 
 	signals:
 		void valueChanged();

@@ -8,17 +8,17 @@
     "parent": "ZItemTemplate",
     "properties": [
         {
-            "name": "property_70",
+            "name": "m_ValidItems",
             "offset": 112,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_8C",
+            "name": "m_iMaxNumOfItems",
             "offset": 140,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_90",
+            "name": "m_bHideItem",
             "offset": 144,
             "typename": "PRPOpCode.Bool"
         }

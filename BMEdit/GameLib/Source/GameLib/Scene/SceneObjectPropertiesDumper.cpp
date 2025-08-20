@@ -88,7 +88,7 @@ void SceneObjectPropertiesDumper::visitSceneObject(const SceneObject *sceneObjec
 		// Controllers
 		out.emplace_back(PRPInstruction(PRPOpCode::Container, PRPOperandVal(static_cast<int>(sceneObject->getControllers().size()))));
 
-		for (const auto& [name, properties] : sceneObject->getControllers())
+		for (const auto& [name, properties, type] : sceneObject->getControllers())
 		{
 			out.reserve(3 + properties.getInstructions().size());
 

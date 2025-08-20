@@ -1,3 +1,4 @@
+#include <GameLib/TypeComplex.h>
 #include <GameLib/Value.h>
 #include <GameLib/Type.h>
 #include <stdexcept>
@@ -55,7 +56,15 @@ namespace gamelib
 		return *this;
 	}
 
-	Span<prp::PRPInstruction> Value::operator[](const char* token)
+	Value &Value::operator+=(const gamelib::ValueEntry &ent)
+	{
+		m_entries.emplace_back(ent);
+		std::copy(ent.views.begin(), ent.views.end(), std::back_inserter(m_views)); // TODO: Remove?
+
+		return *this;
+	}
+
+	Span<prp::PRPInstruction> Value::operator[](const char* token) const
 	{
 		if (m_entries.empty())
 		{
@@ -154,5 +163,14 @@ namespace gamelib
 		}
 
 		return false;
+	}
+
+	void Value::removeEntriesAndViewsSince(size_t startIndex)
+	{
+		if (startIndex < m_entries.size())
+			m_entries.erase(m_entries.begin() + static_cast<int>(startIndex), m_entries.end());
+
+		if (startIndex < m_views.size())
+			m_views.erase(m_views.begin() + static_cast<int>(startIndex), m_views.end());
 	}
 }

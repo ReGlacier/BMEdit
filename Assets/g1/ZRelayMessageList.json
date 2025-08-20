@@ -3,9 +3,9 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "rTriggerMessageID", "typename": "ZMsg", "offset":  44 },
-        { "name": "rResponseMessageID", "typename": "ZMsg", "offset":  46 },
-        { "name": "aReceivers", "typename": "ZREFTAB32", "offset":  48 },
-        { "name": "property_4C", "typename": "PRPOpCode.Float32", "offset":  76 }
+        { "name": "m_msgIn", "typename": "ZMsg", "offset":  44 },
+        { "name": "m_msgOut", "typename": "ZMsg", "offset":  46 },
+        { "name": "m_Receivers", "typename": "ZREFTAB32", "offset":  48 },
+        { "name": "m_fTimeDelay", "typename": "PRPOpCode.Float32", "offset":  76 }
     ]
 }

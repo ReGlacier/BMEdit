@@ -3,7 +3,7 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZSDOwner", "offset": 44 },
+        { "name": "m_SoundDef", "typename": "ZSDOwner", "offset": 44 },
         { "name": "property_3C", "typename": "ZSDOwner", "offset": 60 }
     ]
 }

@@ -3,10 +3,11 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "rMovementPointsListRefs", "typename": "ZREFTAB32", "offset": 44 },
-        { "name": "ePathType", "typename": "ZPathFollower.ePathType", "offset": 84 },
-        { "name": "property_58", "typename": "PRPOpCode.Bool", "offset": 88 },
-        { "name": "property_59", "typename": "PRPOpCode.Bool", "offset": 89 },
-        { "name": "property_5A", "typename": "PRPOpCode.Bool", "offset": 90 }
+
+        { "name": "m_WayPointLists", "typename": "ZREFTAB32", "offset": 44 },
+        { "name": "m_eType", "typename": "ZPathFollower.ePathType", "offset": 84 },
+        { "name": "m_bUseWalk", "typename": "PRPOpCode.Bool", "offset": 88 },
+        { "name": "m_bUseClosestOnStart", "typename": "PRPOpCode.Bool", "offset": 89 },
+        { "name": "m_bPlayAnimsWhileWalking", "typename": "PRPOpCode.Bool", "offset": 90 }
     ]
 }

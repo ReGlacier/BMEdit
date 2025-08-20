@@ -3,8 +3,8 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZREFTAB32", "offset": 44 },
-        { "name": "property_D8", "typename": "PRPOpCode.Int32", "offset": 216 },
-        { "name": "property_DC", "typename": "ZREFTAB32", "offset": 220 }
+        { "name": "m_rtRooms", "typename": "ZREFTAB32", "offset": 44 },
+        { "name": "m_lLocationId", "typename": "PRPOpCode.Int32", "offset": 216 },
+        { "name": "m_pAreas", "typename": "ZREFTAB32", "offset": 220 }
     ]
 }

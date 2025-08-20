@@ -8,37 +8,37 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_C",
+            "name": "m_rHMAs",
             "offset": 12,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_10",
+            "name": "m_rInventoryItem",
             "offset": 16,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_14",
+            "name": "m_rHeadWear",
             "offset": 20,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_18",
+            "name": "m_rAttachedBodyItem",
             "offset": 24,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1C",
+            "name": "m_pAccessoryItemsList",
             "offset": 28,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_20",
+            "name": "m_rInvalidatingItem",
             "offset": 32,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_24",
+            "name": "m_bGetFrisked",
             "offset": 36,
             "typename": "PRPOpCode.Bool"
         }

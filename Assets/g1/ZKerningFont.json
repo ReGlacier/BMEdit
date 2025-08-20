@@ -8,7 +8,7 @@
     "parent": "ZTTFONT",
     "properties": [
         {
-            "name": "property_94",
+            "name": "m_iExtraKerning",
             "offset": 148,
             "typename": "PRPOpCode.Int32"
         }

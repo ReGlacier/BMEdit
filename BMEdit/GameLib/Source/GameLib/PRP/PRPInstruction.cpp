@@ -248,4 +248,6 @@ namespace gamelib::prp
 	{
 		return !operator==(other);
 	}
+
+	const PRPOperandVal PRPOperandVal::kInitedOperandValue { false };
 }

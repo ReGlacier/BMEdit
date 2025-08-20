@@ -3,6 +3,6 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_AC", "typename": "PRPOpCode.Bool", "offset": 172 }
+        { "name": "m_bMustFinish", "typename": "PRPOpCode.Bool", "offset": 172 }
     ]
 }

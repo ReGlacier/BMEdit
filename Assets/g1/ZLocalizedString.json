@@ -1,0 +1,6 @@
+{
+  "typename": "ZLocalizedString",
+  "kind": "TypeKind.ALIAS",
+  "alias": "PRPOpCode.String",
+  "editor": "SelectLocalizationKey"
+}

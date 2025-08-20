@@ -8,7 +8,7 @@
     "parent": "ZLNKWHANDS",
     "properties": [
         {
-            "name": "property_404",
+            "name": "m_iPlayerNum",
             "offset": 1028,
             "typename": "PRPOpCode.Int32"
         }

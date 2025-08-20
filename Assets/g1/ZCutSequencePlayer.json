@@ -3,7 +3,7 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_69", "typename": "PRPOpCode.Bool",    "offset": 105 },
-        { "name": "property_6C", "typename": "ZAUDIOREF",    "offset": 109 }
+        { "name": "m_bAutoStart", "typename": "PRPOpCode.Bool",    "offset": 105 },
+        { "name": "m_rSoundIndex", "typename": "ZAUDIOREF",    "offset": 109 }
     ]
 }

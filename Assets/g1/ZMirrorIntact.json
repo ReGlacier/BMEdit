@@ -3,6 +3,6 @@
   "parent": "CCheckInside",
   "kind": "TypeKind.COMPLEX",
   "properties": [
-    { "name": "property_48", "typename": "ZGEOMREF", "offset": 72 }
+    { "name": "m_rMirror", "typename": "ZGEOMREF", "offset": 72 }
   ]
 }

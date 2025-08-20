@@ -3,14 +3,14 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZGEOMREF", "offset": 44 },
-        { "name": "property_30", "typename": "ZGEOMREF", ",offset": 48 },
-        { "name": "property_34", "typename": "ZMsg", "offset": 52 },
-        { "name": "property_36", "typename": "ZMsg", "offset": 54 },
-        { "name": "property_38", "typename": "PRPOpCode.Bool", "offset": 56 },
-        { "name": "property_39", "typename": "PRPOpCode.Bool", "offset": 57 },
-        { "name": "property_3A", "typename": "PRPOpCode.Bool", "offset": 58 },
-        { "name": "property_3B", "typename": "PRPOpCode.Bool", "offset": 59 },
-        { "name": "property_3C", "typename": "PRPOpCode.Bool", "offset": 60 }
+        { "name": "m_TrackObj", "typename": "ZGEOMREF", "offset": 44 },
+        { "name": "m_TargetObj", "typename": "ZGEOMREF", ",offset": 48 },
+        { "name": "m_msgEnter", "typename": "ZMsg", "offset": 52 },
+        { "name": "m_msgLeave", "typename": "ZMsg", "offset": 54 },
+        { "name": "m_bHide", "typename": "PRPOpCode.Bool", "offset": 56 },
+        { "name": "m_bUseCameraObject", "typename": "PRPOpCode.Bool", "offset": 57 },
+        { "name": "m_bListBroadCast", "typename": "PRPOpCode.Bool", "offset": 58 },
+        { "name": "m_bOneShot", "typename": "PRPOpCode.Bool", "offset": 59 },
+        { "name": "m_bSendLeaveOnStart", "typename": "PRPOpCode.Bool", "offset": 60 }
     ]
 }

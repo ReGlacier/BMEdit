@@ -8,11 +8,11 @@
   "typename": "ZHFlowLnkObj",
   "parent": "ZLNKOBJ",
   "properties": [
-    { "name": "RawAnimFile", "typename": "ZFILENAME" },
-    { "name": "UnknownProperty_1", "typename": "PRPOpCode.Int32" },
-    { "name": "RawBonesOffset", "typename": "PRPOpCode.Int32" },
+    { "name": "RawPackAnimFile", "typename": "ZFILENAME" },
+    { "name": "SetupOffset", "typename": "PRPOpCode.Int32" },
+    { "name": "RawBonesDataOffset", "typename": "PRPOpCode.Int32" },
     { "name": "LODGeomList", "typename": "ZREFTAB32" },
     { "name": "AccessoriesList", "typename": "ZREFTAB32" },
-    { "name": "property_F8", "typename": "PRPOpCode.Bool", "offset": 248 }
+    { "name": "m_bOnlyPrimNeeded", "typename": "PRPOpCode.Bool", "offset": 248 }
   ]
 }

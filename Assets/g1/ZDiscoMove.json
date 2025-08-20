@@ -12,7 +12,7 @@
         { "name": "XMax", "typename": "PRPOpCode.Float32" },
         { "name": "YMax", "typename": "PRPOpCode.Float32" },
         { "name": "ZMax", "typename": "PRPOpCode.Float32" },
-        { "name": "property_98", "typename": "PRPOpCode.Bool", "offset": 152 },
-        { "name": "property_9C", "typename": "ZGEOMREF", "offset": 156 }
+        { "name": "m_bHeadZ", "typename": "PRPOpCode.Bool", "offset": 152 },
+        { "name": "m_rTrackTo", "typename": "ZGEOMREF", "offset": 156 }
     ]
 }

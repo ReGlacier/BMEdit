@@ -3,17 +3,17 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZMsg", "offset": 44 },
-        { "name": "property_34", "typename": "PRPOpCode.Int32", "offset": 52 },
-        { "name": "property_38", "typename": "PRPOpCode.Int32", "offset": 56 },
-        { "name": "property_40", "typename": "PRPOpCode.Float32", "offset": 64 },
-        { "name": "property_44", "typename": "PRPOpCode.Bool", "offset": 68 },
-        { "name": "property_45", "typename": "PRPOpCode.Bool", "offset": 69 },
-        { "name": "property_46", "typename": "PRPOpCode.Bool", "offset": 70 },
-        { "name": "property_47", "typename": "PRPOpCode.Bool", "offset": 71 },
-        { "name": "property_48", "typename": "PRPOpCode.Bool", "offset": 72 },
-        { "name": "property_49", "typename": "PRPOpCode.Bool", "offset": 73 },
-        { "name": "property_4A", "typename": "PRPOpCode.Bool", "offset": 74 },
-        { "name": "Phase",       "typename": "ZVertAnim.EPhase", "offset": 76 }
+        { "name": "m_msgActivate", "typename": "ZMsg", "offset": 44 },
+        { "name": "m_lFrameStart", "typename": "PRPOpCode.Int32", "offset": 52 },
+        { "name": "m_lFrameEnd", "typename": "PRPOpCode.Int32", "offset": 56 },
+        { "name": "m_fFPS", "typename": "PRPOpCode.Float32", "offset": 64 },
+        { "name": "m_bRunOffScreen", "typename": "PRPOpCode.Bool", "offset": 68 },
+        { "name": "m_bForceUpdate", "typename": "PRPOpCode.Bool", "offset": 69 },
+        { "name": "m_bDelete", "typename": "PRPOpCode.Bool", "offset": 70 },
+        { "name": "m_bDeleteEmptyParent", "typename": "PRPOpCode.Bool", "offset": 71 },
+        { "name": "m_bDeactivate", "typename": "PRPOpCode.Bool", "offset": 72 },
+        { "name": "m_bLoop", "typename": "PRPOpCode.Bool", "offset": 73 },
+        { "name": "m_bAutoStart", "typename": "PRPOpCode.Bool", "offset": 74 },
+        { "name": "m_Phase",       "typename": "ZVertAnim.EPhase", "offset": 76 }
     ]
 }

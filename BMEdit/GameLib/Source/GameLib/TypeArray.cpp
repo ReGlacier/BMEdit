@@ -124,4 +124,22 @@ namespace gamelib
 		    Value(this, std::move(data), views),
 		    instructions.slice(sliceSize, instructions.size() - sliceSize));
 	}
+
+	Value TypeArray::makeDefaultPropertiesPack() const
+	{
+		// create an array. It presented via at least 3 instructions: BeginArray, [m_entryType opcode], EndArray
+		std::vector<PRPInstruction> instructions{};
+		instructions.resize(2 + m_requiredCapacity);
+
+		instructions.front() = PRPInstruction(PRPOpCode::Array, PRPOperandVal(static_cast<int32_t>(m_requiredCapacity)));
+		instructions.back() = PRPInstruction(PRPOpCode::EndArray);
+
+		// Fill by empty instructions. For float - 0.f, for int - 0, for bool - false, for string - ""
+		for (int i = 1; i < m_requiredCapacity + 1; i++)
+		{
+			instructions[i] = PRPInstruction(m_entryType, prp::PRPOperandVal::kInitedOperandValue);
+		}
+
+		return Value(this, instructions);
+	}
 }

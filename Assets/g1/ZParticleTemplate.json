@@ -8,152 +8,152 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_C",
+            "name": "m_vGravity",
             "offset": 12,
             "typename": "ZVector3F"
         },
         {
-            "name": "property_18",
+            "name": "m_fFriction",
             "offset": 24,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_1C",
+            "name": "m_fMaxAge",
             "offset": 28,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_20",
+            "name": "m_fAgeVariation",
             "offset": 32,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_24",
+            "name": "m_fScale",
             "offset": 36,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_28",
+            "name": "m_fScaleVariation",
             "offset": 40,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_2C",
+            "name": "m_fScaleVel",
             "offset": 44,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_30",
+            "name": "m_fScaleAcc",
             "offset": 48,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_34",
+            "name": "m_fAngleSpeed",
             "offset": 52,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_38",
+            "name": "m_fAngleSpeedVel",
             "offset": 56,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_3C",
+            "name": "m_fAngleSpeedAcc",
             "offset": 60,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_40",
+            "name": "m_bRandomStartAngle",
             "offset": 64,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_41",
+            "name": "m_bAlignWithEmitterDir",
             "offset": 65,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_42",
+            "name": "m_bAlignWithParticleDir",
             "offset": 66,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_44",
+            "name": "m_fAngleStart",
             "offset": 68,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_48",
+            "name": "m_fMotionStretch",
             "offset": 72,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_4C",
+            "name": "m_vWindSpeed",
             "offset": 76,
             "typename": "ZVector3F"
         },
         {
-            "name": "property_58",
+            "name": "m_fWindForce",
             "offset": 88,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_5C",
+            "name": "m_fCollisionRate",
             "offset": 92,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_60",
+            "name": "m_fRestitutionFactor",
             "offset": 96,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_64",
+            "name": "m_lColorRepeat",
             "offset": 100,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_68",
+            "name": "m_bFake3dRotation",
             "offset": 104,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_69",
+            "name": "m_bRandomTrajectoryEnvelope",
             "offset": 105,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_6A",
+            "name": "m_bRandomRotationDir",
             "offset": 106,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_6C",
+            "name": "m_rNextTemplate",
             "offset": 108,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_70",
+            "name": "m_lPrimsTable",
             "offset": 112,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_74",
+            "name": "m_pszFileName",
             "offset": 116,
             "typename": "ZFILENAME"
         },
         {
-            "name": "property_78",
+            "name": "m_szNextTemplateName",
             "offset": 120,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_7C",
+            "name": "m_fChanceTransfer",
             "offset": 124,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_80",
+            "name": "m_vColorKeys",
             "offset": 128,
             "typename": "ZVector32F"
         }

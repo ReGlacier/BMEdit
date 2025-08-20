@@ -3,6 +3,10 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_4C", "typename": "PRPOpCode.Bool", "offset": 64 }
+      {
+        "name": "m_bClosed",
+        "typename": "PRPOpCode.Bool",
+        "offset": 64
+      }
     ]
 }

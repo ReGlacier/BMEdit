@@ -8,32 +8,32 @@
     "parent": "ZIKLNKOBJ",
     "properties": [
         {
-            "name": "property_18C",
+            "name": "m_fSpeed",
             "offset": 396,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_194",
+            "name": "m_fMaxSpeed",
             "offset": 404,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_19C",
+            "name": "m_fMaxForce",
             "offset": 412,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_1A0",
+            "name": "m_fMass",
             "offset": 416,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_1A4",
+            "name": "m_rBoidList",
             "offset": 420,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1A8",
+            "name": "m_rSoundSet",
             "offset": 424,
             "typename": "ZAUDIOREF"
         }

@@ -3,6 +3,6 @@
   "parent": "ZLNKOBJ",
   "kind": "TypeKind.COMPLEX",
   "properties": [
-    { "name": "property_10C", "typename": "ZSDOwner", "offset": 268 }
+    { "name": "m_SoundDef", "typename": "ZSDOwner", "offset": 268 }
   ]
 }

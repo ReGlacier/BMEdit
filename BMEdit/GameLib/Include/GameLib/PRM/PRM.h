@@ -1,5 +1,4 @@
 #pragma once
 
-#include <GameLib/PRM/PRMHeader.h>
-#include <GameLib/PRM/PRMChunkDescriptor.h>
-#include <GameLib/PRM/PRMChunk.h>
+#include <GameLib/PRM/PRMEntries.h>
+#include <GameLib/PRM/PRMReader.h>

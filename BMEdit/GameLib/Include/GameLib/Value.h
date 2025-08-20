@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GameLib/PRP/PRPObjectExtractor.h>
 #include <GameLib/PRP/PRPInstruction.h>
 #include <GameLib/ValueView.h>
 #include <GameLib/Span.h>
@@ -74,12 +75,17 @@ namespace gamelib
 		Value& operator+=(const std::pair<std::string, Value>& another);
 
 		/**
+		 * Add a new view
+		 */
+		Value& operator+=(const ValueEntry& ent);
+
+		/**
 		 * Extract span of instructions which represents requested property
 		 * @param propertyName - name of the property
 		 * @return span of instructions
 		 * @note This function may throw an exception if requested propertyName not found. You should check your property via hasProperty before ask operator[]
 		 */
-		Span<prp::PRPInstruction> operator[](const char* propertyName);
+		Span<prp::PRPInstruction> operator[](const char* propertyName) const;
 
 		[[nodiscard]] bool operator==(const Value &other) const;
 		[[nodiscard]] bool operator!=(const Value &other) const;
@@ -92,6 +98,23 @@ namespace gamelib
 		void updateContainer(int entryIndex, const std::vector<prp::PRPInstruction>& newDecl);
 
 		bool hasProperty(const char* propertyName) const;
+
+		// Extractor
+		template <typename T>
+		T getObject(const std::string& objectName, T def = T()) const requires (HasSpecializationTObjectExtractor<T>)
+		{
+			for (const auto& ent : m_entries)
+			{
+				if (ent.name == objectName)
+				{
+					return TObjectExtractor<T>::extract(Span(m_data).slice(ent.instructions));
+				}
+			}
+
+			return def;
+		}
+
+		void removeEntriesAndViewsSince(size_t startIndex);
 
 	private:
 		const Type *m_type {nullptr}; // type

@@ -8,7 +8,7 @@
     "parent": "ZWINOBJ",
     "properties": [
         {
-            "name": "property_90",
+            "name": "m_szStringId",
             "offset": 144,
             "typename": "PRPOpCode.String"
         },

@@ -8,62 +8,62 @@
     "parent": "ZItemTemplateWeapon",
     "properties": [
         {
-            "name": "RecoilRandom",
+            "name": "m_eHM3RecoilRandom",
             "offset": 360,
             "typename": "ZHM3ItemTemplateWeapon.EHM3RecoilRandom"
         },
         {
-            "name": "property_16C",
+            "name": "m_fRecoilStrengthX",
             "offset": 364,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_170",
+            "name": "m_fRecoilStrengthY",
             "offset": 368,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "ScopeType",
+            "name": "m_eScope",
             "offset": 372,
             "typename": "ZHM3ItemTemplateWeapon.EHM3WeaponScope"
         },
         {
-            "name": "property_178",
+            "name": "m_pAnimNameActorReload",
             "offset": 372,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_17C",
+            "name": "m_pAnimNameActorChamber",
             "offset": 376,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_180",
+            "name": "m_pAnimName1stPersonAim",
             "offset": 380,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_184",
+            "name": "m_pAnimName1stPersonRecoil",
             "offset": 384,
             "typename": "PRPOpCode.String"
         },
         {
-            "name": "property_188",
+            "name": "RecognitionDistance",
             "offset": 388,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_18C",
+            "name": "m_PelvisUpDown",
             "offset": 392,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_190",
+            "name": "m_PelvisFrontBack",
             "offset": 396,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_194",
+            "name": "m_PelvisLeftRight",
             "offset": 400,
             "typename": "PRPOpCode.Float32"
         },
@@ -76,7 +76,7 @@
             "typename": "ZGEOMREF"
         },
         {
-            "name": "SilencerType",
+            "name": "m_eSilencerType",
             "offset": 404,
             "typename": "ZHM3ItemTemplateWeapon.ESilencerType"
         }

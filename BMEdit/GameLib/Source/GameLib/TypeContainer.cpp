@@ -53,4 +53,11 @@ namespace gamelib
 
 		return Type::DataMappingResult(Value(this, std::move(data)), instructions.slice(sliceSize, instructions.size() - sliceSize));
 	}
+
+	Value TypeContainer::makeDefaultPropertiesPack() const
+	{
+		// Just produce an empty container
+		constexpr int32_t kEmptyContainerSize = 0;
+		return Value(this, { PRPInstruction(PRPOpCode::Container, PRPOperandVal(kEmptyContainerSize)) });
+	}
 }

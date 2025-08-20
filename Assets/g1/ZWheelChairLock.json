@@ -3,6 +3,6 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "rTargetGeom", "typename": "ZGEOMREF", "offset": 44 }
+        { "name": "m_rActor", "typename": "ZGEOMREF", "offset": 44 }
     ]
 }

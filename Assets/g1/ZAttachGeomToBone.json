@@ -3,8 +3,8 @@
   "parent": "ZEventBase",
   "kind": "TypeKind.COMPLEX",
   "properties": [
-    { "name": "rGeom", "typename": "ZGEOMREF", "offset": 48 },
-    { "name": "eBoneID", "typename": "ZAttachGeomToBone.eBoneID", "offset": 52 },
-    { "name": "property_38", "typename": "PRPOpCode.Bool", "offset": 56 }
+    { "name": "m_rGeomToAttach", "typename": "ZGEOMREF", "offset": 48 },
+    { "name": "m_lBoneId", "typename": "ZAttachGeomToBone.eBoneID", "offset": 52 },
+    { "name": "m_bOwnerDraw", "typename": "PRPOpCode.Bool", "offset": 56 }
   ]
 }

@@ -8,42 +8,45 @@
     "parent": "ZTreeGroup",
     "properties": [
         {
-            "name": "property_6C",
+            "name": "m_lNrExits",
+            "__comment__": "I'm not sure about that. 6C and 84 sometimes same",
             "offset": 108,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_84",
+            "name": "m_lNrNeighborRooms",
+            "__comment__": "I'm not sure about that. 6C and 84 sometimes same",
             "offset": 132,
             "typename": "PRPOpCode.Int8"
         },
         {
-            "name": "property_A4",
+            "name": "m_dwRoomRef",
             "offset": 164,
             "typename": "ZAUDIOREF"
         },
         {
-            "name": "NoiseLevel",
+            "name": "m_eNoiseLevel",
             "typename": "ENoiseLevel"
         },
         {
-            "name": "Location",
+            "name": "m_eLocationState",
             "typename": "ELocation"
         },
         {
-            "name": "property_12C",
-            "typename": "ZRawData"
+            "name": "m_StaticShadowSampleData",
+            "typename": "ZRawData",
+            "__comment": "Some data about tree, entries, etc"
         },
         {
-            "name": "NotInRoomData",
+            "name": "bNotInRoomTree",
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "DisableAudiEvt",
+            "name": "bDisableAudioEvents",
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "ExitOffsets",
+            "name": "ExitsOffset",
             "typename": "PRPOpCode.Int32"
         },
         {
@@ -51,11 +54,11 @@
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "EnvironmentLight",
+            "name": "Environment",
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_134",
+            "name": "m_vWind",
             "typename": "ZVector3F"
         }
     ],

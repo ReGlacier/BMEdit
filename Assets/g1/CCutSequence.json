@@ -3,8 +3,8 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_40", "typename": "PRPOpCode.Float32", "offset": 64 },
-        { "name": "property_44", "typename": "PRPOpCode.Float32", "offset": 68 },
-        { "name": "property_48", "typename": "PRPOpCode.Bool",    "offset": 72 }
+        { "name": "m_SequenceData_fStart", "typename": "PRPOpCode.Float32", "offset": 64 },
+        { "name": "m_SequenceData_fEnd", "typename": "PRPOpCode.Float32", "offset": 68 },
+        { "name": "m_SequenceData_bResetStateAfterCut", "typename": "PRPOpCode.Bool",    "offset": 72 }
     ]
 }

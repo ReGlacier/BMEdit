@@ -3,13 +3,13 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "PRPOpCode.Bool", "offset": 44 },
-        { "name": "property_38", "typename": "PRPOpCode.Float32", "offset": 56 },
-        { "name": "property_3C", "typename": "PRPOpCode.Float32", "offset": 60 },
-        { "name": "property_108", "typename": "ZMsg", "offset": 264 },
-        { "name": "property_10A", "typename": "PRPOpCode.Bool", "offset": 266 },
-        { "name": "property_10B", "typename": "PRPOpCode.Bool", "offset": 267 },
-        { "name": "property_10C", "typename": "PRPOpCode.Float32", "offset": 268 },
-        { "name": "property_110", "typename": "ZParamAnim.EPhase", "offset": 272 }
+        { "name": "m_bDelete", "typename": "PRPOpCode.Bool", "offset": 44 },
+        { "name": "m_fStartFrameTime", "typename": "PRPOpCode.Float32", "offset": 56 },
+        { "name": "m_fEndFrameTime", "typename": "PRPOpCode.Float32", "offset": 60 },
+        { "name": "m_msgActivate", "typename": "ZMsg", "offset": 264 },
+        { "name": "m_bRunOffScreen", "typename": "PRPOpCode.Bool", "offset": 266 },
+        { "name": "m_bLoop", "typename": "PRPOpCode.Bool", "offset": 267 },
+        { "name": "m_fFPS", "typename": "PRPOpCode.Float32", "offset": 268 },
+        { "name": "m_Phase", "typename": "ZParamAnim.EPhase", "offset": 272 }
     ]
 }

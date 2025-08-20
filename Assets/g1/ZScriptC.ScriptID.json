@@ -1,0 +1,6 @@
+{
+  "typename": "ZScriptC.ScriptID",
+  "kind": "TypeKind.ALIAS",
+  "alias": "PRPOpCode.String",
+  "editor": "SelectGameScript"
+}

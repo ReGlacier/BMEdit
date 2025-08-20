@@ -60,6 +60,159 @@ namespace gamelib
 		linkTypes();
 	}
 
+	void produceOpCode(ScriptInfo& si, prp::PRPOpCode opCode)
+	{
+		const gamelib::prp::PRPOperandVal kNullOperand(0); // initialized with zero but it's not typed holder
+		prp::PRPInstruction instruction { opCode, kNullOperand };
+		si.initialInstructions.emplace_back(instruction);
+	}
+
+	bool collectParameters(const std::unordered_map<std::string, nlohmann::json>& base, const nlohmann::json& current, ScriptInfo& info, int& instructionOffset) // NOLINT(*-no-recursion)
+	{
+		// Push current parameters on top
+		if (current.contains("parent"))
+		{
+			const std::string parentName = current["parent"].get<std::string>();
+			if (auto it = base.find(parentName); it != base.end())
+			{
+				if (!collectParameters(base, it->second, info, instructionOffset))
+					return false;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		// Copy parameters to front
+		if (auto parametersIt = current.find("parameters"); parametersIt != current.end())
+		{
+			for (const auto& item : (*parametersIt))
+			{
+				const std::string kind = item["kind"].get<std::string>();
+
+				if (kind == "UNKNOWN")
+				{
+					// It's skip block. Just skip N instructions
+					if (!item.contains("opcodes"))
+						return false; // bad format
+
+					const auto& opcodes = item["opcodes"];
+					for (const auto& opcodeAsStr : opcodes)
+					{
+						if (auto opCode = prp::fromString(opcodeAsStr.get<std::string>()); OPCODE_VALID(opCode))
+						{
+							// store opcode as instruction into info
+							produceOpCode(info, opCode);
+						}
+						else
+						{
+							// WTF?
+							assert(false && "Bad opcode");
+							return false;
+						}
+					}
+
+					instructionOffset += static_cast<int>(item["opcodes"].size());
+				}
+				else if (kind == "VARIABLE")
+				{
+					if (!item.contains("typename") || !item.contains("name"))
+						return false;
+
+					const std::string typeName = item["typename"].get<std::string>();
+					const std::string varName = item["name"].get<std::string>();
+
+					if (typeName.empty() || varName.empty())
+						return false; // invalid entry
+
+					// build entry
+					ValueEntry entry {};
+					entry.name = varName;
+					entry.instructions.iOffset = instructionOffset;
+					entry.instructions.iSize = 0; // Will calculate later
+
+					// std::make_unique<TypeAlias>(typeName, aliasTypeAsOpCode);
+					if (auto opCode = prp::fromString(typeName); OPCODE_VALID(opCode))
+					{
+						// presented as opcode
+						entry.views.emplace_back(varName, opCode, nullptr); // name, opcode, no owner type
+						entry.instructions.iSize = 1; // presented as single opcode
+
+						// store opcode as instruction into info
+						produceOpCode(info, opCode);
+					}
+					else
+					{
+						// ok, let's try to find a type
+						if (const auto* pType = TypeRegistry::getInstance().findTypeByName(typeName))
+						{
+							if (pType->getKind() == TypeKind::COMPLEX && reinterpret_cast<const TypeComplex*>(pType)->areUnexposedInstructionsAllowed())
+							{
+								// Whoops, it's not allowed to be here! ZScriptC can not refs to ZScriptC!
+								return false;
+							}
+
+							entry.views.emplace_back(varName, pType, nullptr); // name, known type, no owner type
+							entry.instructions.iSize = static_cast<int64_t>(pType->makeDefaultPropertiesPack().getInstructions().size()); // weird way but why not?
+
+							// produce & copy
+							auto defInstru = pType->makeDefaultPropertiesPack().getInstructions();
+							std::copy(defInstru.begin(), defInstru.end(), std::back_inserter(info.initialInstructions));
+						}
+						else
+						{
+							// type not found
+							return false;
+						}
+					}
+
+					// And continue work
+					if (entry.instructions.iSize > 0)
+					{
+						instructionOffset += static_cast<int64_t>(entry.instructions.iSize);
+						info.entries.insert(info.entries.end(), entry);
+					} // otherwise no reason to save this entry
+				}
+			}
+		}
+
+		return true;
+	}
+
+	void TypeRegistry::registerScripts(std::unordered_map<std::string, nlohmann::json> &&scriptInfoMap)
+	{
+		for (const  auto& [scriptId, scriptDef] : scriptInfoMap)
+		{
+			// Ok, here we need to check if we have parent scripts - we need to collect all parameters from that scripts
+			ScriptInfo info {};
+			info.name = scriptId;
+			int ip = 0; // base is 0, for the future usage user must add base ip to another ip
+			if (!collectParameters(scriptInfoMap, scriptDef, info, ip))
+			{
+				// maybe throw something?
+				continue;
+			}
+
+			m_scriptsByName[scriptId] = info;
+		}
+	}
+
+	std::optional<ScriptInfo> TypeRegistry::getScriptInfo(const std::string &scriptName)
+	{
+		if (auto it = m_scriptsByName.find(scriptName); it != m_scriptsByName.end())
+		{
+			return it->second;
+		}
+
+		return std::nullopt;
+	}
+
+	bool TypeRegistry::hasScriptInfo(const std::string &scriptName)
+	{
+		return m_scriptsByName.contains(scriptName);
+	}
+
 	const Type *TypeRegistry::findTypeByName(const std::string &typeName) const
 	{
 		auto it = m_typesByName.find(typeName);
@@ -138,6 +291,19 @@ namespace gamelib
 		for (const auto& type: m_types)
 		{
 			predicate(type.get());
+		}
+	}
+
+	void TypeRegistry::forEachScript(const std::function<void(const std::string&, const ScriptInfo&)> &predicate)
+	{
+		if (!predicate)
+		{
+			return;
+		}
+
+		for (const auto& [scriptName, scriptInfo] : m_scriptsByName)
+		{
+			predicate(scriptName, scriptInfo);
 		}
 	}
 

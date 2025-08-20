@@ -111,7 +111,7 @@ namespace gamelib::scene
 				throw SceneObjectVisitorException(objectIdx, "Invalid instructions set (verification failed) [2]");
 			}
 
-			currentObject->getProperties() = *value;
+			currentObject->setProperties(*value);
 			ip = newIP; // Assign new ip
 		}
 
@@ -192,6 +192,7 @@ namespace gamelib::scene
 				auto& controller = currentObject->getControllers().emplace_back();
 				controller.name = controllerName;
 				controller.properties = controllerMapResult.value();
+				controller.type = controllerType;
 
 				if (ip[0].getOpCode() != PRPOpCode::EndObject && reinterpret_cast<const TypeComplex*>(controllerType)->areUnexposedInstructionsAllowed())
 				{

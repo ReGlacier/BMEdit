@@ -1,0 +1,15 @@
+{
+  "typename": "ECollisionMask",
+  "kind": "TypeKind.ENUM",
+  "enum": {
+    "COLIMASK_All" : 1,
+    "COLIMASK_Background": 2,
+    "COLIMASK_Shot": 4,
+    "COLIMASK_WaterGlass": 8,
+    "COLIMASK_NoWalk": 16,
+    "COLIMASK_Sight": 32,
+    "COLIMASK_Hero": 64,
+    "COLIMASK_Camera": 128,
+    "COLIMASK_NPC": 256
+  }
+}

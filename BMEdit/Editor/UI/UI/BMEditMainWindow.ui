@@ -6,21 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1548</width>
-    <height>790</height>
+    <width>1499</width>
+    <height>979</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string notr="true">BMEdit</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QOpenGLWidget" name="sceneGLView"/>
-      </item>
-     </layout>
+     <widget class="widgets::SceneRenderWidget" name="sceneGLView">
+      <property name="focusPolicy">
+       <enum>Qt::ClickFocus</enum>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -29,8 +29,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1548</width>
-     <height>21</height>
+     <width>1499</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -42,6 +42,7 @@
       <string>Export</string>
      </property>
      <addaction name="actionExport_PRP_properties"/>
+     <addaction name="actionExport_LOC_localization"/>
     </widget>
     <addaction name="actionOpen_level"/>
     <addaction name="menuExport"/>
@@ -52,6 +53,8 @@
     <property name="title">
      <string>Edit</string>
     </property>
+    <addaction name="actionTextures"/>
+    <addaction name="actionLocalization"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -69,7 +72,19 @@
     <property name="title">
      <string>Scene</string>
     </property>
+    <widget class="QMenu" name="menuRender_Mode">
+     <property name="title">
+      <string>Render Mode</string>
+     </property>
+     <addaction name="actionRenderMode_Texture"/>
+     <addaction name="actionRenderMode_Wireframe"/>
+     <addaction name="actionRenderMode_Portals"/>
+     <addaction name="actionRenderMode_RenderRoomBoundingBoxes"/>
+    </widget>
     <addaction name="actionSave_properties"/>
+    <addaction name="separator"/>
+    <addaction name="actionView_whole_scene"/>
+    <addaction name="menuRender_Mode"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -81,7 +96,7 @@
    <property name="minimumSize">
     <size>
      <width>120</width>
-     <height>35</height>
+     <height>40</height>
     </size>
    </property>
    <property name="features">
@@ -102,7 +117,7 @@
    <property name="minimumSize">
     <size>
      <width>260</width>
-     <height>189</height>
+     <height>191</height>
     </size>
    </property>
    <property name="windowTitle">
@@ -187,7 +202,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="propertiesDock">
+  <widget class="QDockWidget" name="gameObjectDock">
    <property name="minimumSize">
     <size>
      <width>260</width>
@@ -201,7 +216,7 @@
     <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="windowTitle">
-    <string>Properties</string>
+    <string>Game Object</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
@@ -209,7 +224,7 @@
    <widget class="QWidget" name="propertiesDockContents">
     <layout class="QVBoxLayout" name="verticalLayout_4">
      <item>
-      <widget class="QTabWidget" name="geomData">
+      <widget class="QTabWidget" name="zGeomColiBitsPage">
        <property name="currentIndex">
         <number>0</number>
        </property>
@@ -258,18 +273,50 @@
           </layout>
          </item>
          <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Properties:</string>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="geomInstanceIdLabel">
+             <property name="text">
+              <string>Instance ID:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="geomInstanceId">
+             <property name="text">
+              <string>0</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QTableView" name="propertiesView">
-           <property name="selectionMode">
-            <enum>QAbstractItemView::SingleSelection</enum>
-           </property>
-          </widget>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Properties:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTableView" name="propertiesView">
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -283,148 +330,66 @@
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>ZGEOM</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Coli Bits (8):</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="widgets::BitSetViewWidget" name="coliBitsRepr" native="true">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>100</width>
+               <height>100</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="primitivesDock">
-   <property name="features">
-    <set>QDockWidget::DockWidgetFeatureMask</set>
-   </property>
+  <widget class="QDockWidget" name="localizationDock">
    <property name="windowTitle">
-    <string>Primitives</string>
+    <string>Localization</string>
    </property>
    <attribute name="dockWidgetArea">
-    <number>8</number>
+    <number>1</number>
    </attribute>
-   <widget class="QWidget" name="primitivesDockContents">
-    <layout class="QHBoxLayout" name="horizontalLayout_10">
+   <widget class="QWidget" name="localizationDockContents">
+    <layout class="QVBoxLayout" name="verticalLayout_9">
      <item>
-      <widget class="QSplitter" name="splitter">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="placeholderText">
+        <string>Search...</string>
        </property>
-       <widget class="QWidget" name="layoutWidget">
-        <layout class="QHBoxLayout" name="horizontalLayout_9">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_7">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <item>
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>Primitives count: </string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="primitivesCountLabel">
-               <property name="text">
-                <string>0</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QPushButton" name="exportChunk">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Export chunk</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_8">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_7">
-             <item>
-              <widget class="QLabel" name="label_5">
-               <property name="text">
-                <string>Filter by:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_UnknownPrimType">
-               <property name="text">
-                <string>Unknown</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_ZeroBufferPrimType">
-               <property name="text">
-                <string>Zero buffer</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_DescriptionPrimType">
-               <property name="text">
-                <string>Description Buffer</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_IndexBufferPrimType">
-               <property name="text">
-                <string>Index Buffer</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="primitivesFilter_VertexBufferPrimType">
-               <property name="text">
-                <string>Vertex Buffer</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QTableView" name="scenePrimitivesTable"/>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QGroupBox" name="previewGroupBox">
-        <property name="title">
-         <string>Primitive Preview:</string>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_8">
-         <item>
-          <widget class="widgets::PrimitivePreviewWidget" name="scenePrimitivePreview">
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>100</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
       </widget>
+     </item>
+     <item>
+      <widget class="QTreeView" name="localizationTree"/>
      </item>
     </layout>
    </widget>
@@ -432,6 +397,9 @@
   <action name="actionOpen_level">
    <property name="text">
     <string>Open level</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="actionExit">
@@ -494,6 +462,90 @@
     <string>Export PRP (properties)</string>
    </property>
   </action>
+  <action name="actionTextures">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Textures</string>
+   </property>
+  </action>
+  <action name="actionLocalization">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Localization</string>
+   </property>
+  </action>
+  <action name="actionView_whole_scene">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>View whole scene</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+V</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_Texture">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Texture</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_Wireframe">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Wireframe</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_TextureAndWireframe">
+   <property name="text">
+    <string>Texture &amp; Wireframe</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_Portals">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Render Portals</string>
+   </property>
+   <property name="iconText">
+    <string>Render Portals</string>
+   </property>
+  </action>
+  <action name="actionRenderMode_RenderRoomBoundingBoxes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Render Room Bounding Boxes</string>
+   </property>
+  </action>
+  <action name="actionExport_LOC_localization">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Export LOC (localization)</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -508,9 +560,15 @@
    <header>Widgets/SceneTreeView.h</header>
   </customwidget>
   <customwidget>
-   <class>widgets::PrimitivePreviewWidget</class>
+   <class>widgets::SceneRenderWidget</class>
    <extends>QOpenGLWidget</extends>
-   <header>Widgets/PrimitivePreviewWidget.h</header>
+   <header>Widgets/SceneRenderWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>widgets::BitSetViewWidget</class>
+   <extends>QWidget</extends>
+   <header>Widgets/BitSetViewWidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -32,4 +32,9 @@ namespace gamelib
 	{
 		throw NotImplemented("You must implement this method in your own class!");
 	}
+
+	Value Type::makeDefaultPropertiesPack() const
+	{
+		throw NotImplemented("You must implement this method in your own class!");
+	}
 }

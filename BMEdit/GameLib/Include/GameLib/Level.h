@@ -2,10 +2,15 @@
 
 #include <GameLib/IO/IOLevelAssetsProvider.h>
 #include <GameLib/Scene/SceneObject.h>
-#include <GameLib/PRM/PRM.h>
 #include <GameLib/PRP/PRP.h>
 #include <GameLib/GMS/GMS.h>
+#include <GameLib/TEX/TEX.h>
+#include <GameLib/PRM/PRM.h>
+#include <GameLib/MAT/MAT.h>
+#include <GameLib/OCT/OCT.h>
+#include <GameLib/LOC/LOC.h>
 
+#include <functional>
 #include <memory>
 #include <vector>
 #include <cstdint>
@@ -21,16 +26,52 @@ namespace gamelib
 		uint32_t objectsCount;
 	};
 
-	struct LevelGeometry
+	struct LevelTextures
 	{
-		prm::PRMHeader header;
-		std::vector<prm::PRMChunkDescriptor> chunkDescriptors;
-		std::vector<prm::PRMChunk> chunks;
+		tex::TEXHeader header;
+		std::vector<tex::TEXEntry> entries;
+		tex::OffsetsPool table1Offsets { 0u };
+		tex::OffsetsPool table2Offsets { 0u };
+		uint32_t countOfEmptyOffsets { 0u };
 	};
 
 	struct SceneProperties
 	{
 		gms::GMSHeader header;
+	};
+
+	struct LevelGeometry
+	{
+		prm::PrmFile primitives;
+	};
+
+	struct LevelMaterials
+	{
+		mat::MATHeader header;
+		std::vector<mat::MATClass> materialClasses;
+		std::vector<mat::MATInstance> materialInstances;
+	};
+
+	struct LevelRooms
+	{
+		struct RoomGroup
+		{
+			oct::OCTHeader header {};
+			std::vector<oct::OCTNode> nodes{};
+			std::vector<oct::OCTObject> objects{};
+			std::vector<oct::OCTUnknownBlock> ubs{};
+
+			[[nodiscard]] glm::i16vec3 worldToRoom(const glm::vec3& vWorld) const;
+			[[nodiscard]] glm::vec3 roomToWorld(const glm::i16vec3& vTree) const;
+		};
+
+		RoomGroup outside {};
+		RoomGroup inside {};
+	};
+
+	struct LevelLocalization
+	{
+		loc::LOCTreeNode::Ptr localizationRoot { nullptr };
 	};
 
 	class Level
@@ -44,17 +85,38 @@ namespace gamelib
 		[[nodiscard]] const LevelProperties *getLevelProperties() const;
 		[[nodiscard]] LevelProperties *getLevelProperties();
 		[[nodiscard]] const SceneProperties *getSceneProperties() const;
+		[[nodiscard]] const LevelTextures* getSceneTextures() const;
+		[[nodiscard]] LevelTextures* getSceneTextures();
 		[[nodiscard]] const LevelGeometry* getLevelGeometry() const;
 		[[nodiscard]] LevelGeometry* getLevelGeometry();
+		[[nodiscard]] const LevelMaterials* getLevelMaterials() const;
+		[[nodiscard]] LevelMaterials* getLevelMaterials();
+		[[nodiscard]] const LevelRooms* getLevelRooms() const;
+		[[nodiscard]] LevelRooms* getLevelRooms();
+		[[nodiscard]] const LevelLocalization* getLevelLocalization() const;
+		[[nodiscard]] LevelLocalization* getLevelLocalization();
 
-		[[nodiscard]] const std::vector<scene::SceneObject::Ptr> &getSceneObjects() const;
+		[[nodiscard]] const std::vector<scene::SceneObject::Ptr>& getSceneObjects() const;
+
+		[[nodiscard]] scene::SceneObject::Ptr getSceneObjectByGEOMREF(const std::string& path) const;
+
+		[[nodiscard]] scene::SceneObject::Ptr getSceneObjectByInstanceID(std::uint32_t instanceID) const;
+
+		[[nodiscard]] Span<uint8_t> getStaticBuffer() const;
 
 		void dumpAsset(io::AssetKind assetKind, std::vector<uint8_t> &outBuffer) const;
+
+		void forEachObjectOfType(const std::string& objectTypeName, const std::function<bool(const scene::SceneObject::Ptr&)>& pred) const;
+		void forEachObjectOfTypeWithInheritance(const std::string& objectBaseType, const std::function<bool(const scene::SceneObject::Ptr&)>& pred) const;
 
 	private:
 		bool loadLevelProperties();
 		bool loadLevelScene();
 		bool loadLevelPrimitives();
+		bool loadLevelTextures();
+		bool loadLevelMaterials();
+		bool loadLevelRooms();
+		bool loadLevelLocalization();
 
 	private:
 		// Core
@@ -64,7 +126,17 @@ namespace gamelib
 		// Raw data
 		LevelProperties m_levelProperties;
 		SceneProperties m_sceneProperties;
+		LevelTextures m_levelTextures;
 		LevelGeometry m_levelGeometry;
+		LevelMaterials m_levelMaterials;
+		LevelRooms m_levelRooms;
+		LevelLocalization m_levelLocalization;
+
+		struct BUF
+		{
+			std::unique_ptr<uint8_t[]> data { nullptr };
+			std::int64_t size{ 0 };
+		} m_buf;
 
 		// Managed objects
 		std::vector<scene::SceneObject::Ptr> m_sceneObjects {};

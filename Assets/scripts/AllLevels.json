@@ -1,0 +1,624 @@
+{
+  "alllevels\\civilian": {
+    "parameters": [
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rHelpPointList"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray"
+        ]
+      }
+    ]
+  },
+  "alllevels\\guard": {
+    "parameters": [
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rHelpPointList"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rPrimaryWeapon"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray"
+        ]
+      },
+      {
+        "kind": "VARIABLE",
+        "typename": "ZGEOMREF",
+        "name": "rBodyStorage"
+      },
+      {
+        "kind": "UNKNOWN",
+        "opcodes": [
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray",
+          "PRPOpCode.Array", "PRPOpCode.Int32", "PRPOpCode.EndArray"
+        ]
+      }
+    ]
+  },
+  "alllevels\\radiocontroller": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownMask" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue7" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue8" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue9" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnknownValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\rat": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnkRef" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnkRef1" }
+    ]
+  },
+  "alllevels\\useable\\useable_wait": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnkValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnkValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnkValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnkValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_sitdown": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_playanim": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sAnimationName" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue6" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue7" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue8" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "fUnkValue9" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue10" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_playubanim": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sAnimationName" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "rUnknownValue6" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue7" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_piss": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_smoking": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rCigarettes" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_consumeobject": {
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rItems" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rDummyObject" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_lookaround": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_playoneliner": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sAnim0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sAnim1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sAnim2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sAnim3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue7" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue8" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\useable\\useable_waypointnotify": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\vehicles\\car": {
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rCheckInside" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\kissingcouple": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "rCheckInside" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnknownGeomRef" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnkValue8" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rMale" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue11" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue12" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\armedbartender": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnkValue4" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue7" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnkValue8" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue9" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue10" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBartendingPos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBarguestUsepoint" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rGlass" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rGlassPos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBottle" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBottlePos" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rSponge" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rGlassToClean" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnkValue19" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\bird": {
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rFlyBox" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue1" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue2" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue3" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "iUnknownValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "iUnknownValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Float32", "name": "iUnknownValue6" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue7" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue8" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue9" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue10" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "sUnknownValue11" }
+    ]
+  },
+  "alllevels\\alligator": {
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rBox" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rUnknown" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rHidePos" }
+    ]
+  },
+  "alllevels\\armed": {
+    "parent": "alllevels\\civilian",
+    "parameters": [
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rPrimaryWeapon" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue8" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue9" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] }
+    ]
+  },
+  "alllevels\\poodle": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue3" },
+      { "kind": "VARIABLE", "typename": "ZGEOMREF", "name": "rOwnerHuman" },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue4" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iUnknownValue5" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue6" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue7" }
+    ]
+  },
+  "alllevels\\useable\\useable_playanim_pickup": {
+    "parameters": [
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "rANIM_0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iPlayCount_0" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "rANIM_1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iPlayCount_1" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "rANIM_2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.Array"] },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.Int32", "name": "iPlayCount_2" },
+      { "kind": "UNKNOWN", "opcodes": ["PRPOpCode.EndArray"] },
+
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue5" },
+      { "kind": "VARIABLE", "typename": "PRPOpCode.String", "name": "iUnknownValue6" }
+    ]
+  }
+}

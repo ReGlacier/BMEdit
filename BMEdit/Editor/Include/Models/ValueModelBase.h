@@ -35,7 +35,8 @@ namespace models
 		[[nodiscard]] const std::optional<gamelib::Value> &getValue() const;
 
 	signals:
-		void valueChanged();
+		void rebuild();
+		void valueChanged(const QString& propertyName);
 
 	protected:
 		[[nodiscard]] bool isReady() const;

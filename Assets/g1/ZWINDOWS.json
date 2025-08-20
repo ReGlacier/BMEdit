@@ -8,17 +8,17 @@
     "parent": "ZWINGROUP",
     "properties": [
         {
-            "name": "property_58",
+            "name": "m_rMouse",
             "offset": 88,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_1DB",
+            "name": "m_bUseZBuffer",
             "offset": 475,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_1DC",
+            "name": "m_bClearScreen",
             "offset": 476,
             "typename": "PRPOpCode.Bool"
         },

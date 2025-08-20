@@ -3,7 +3,7 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_30", "typename": "ZVector3F", "offset": 48 },
+        { "name": "m_vSpeed", "typename": "ZVector3F", "offset": 48 },
         { "name": "StartSpinning", "typename": "PRPOpCode.Bool" }
     ]
 }

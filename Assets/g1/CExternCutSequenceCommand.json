@@ -3,11 +3,11 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_48", "typename": "ZGEOMREF", "offset": 72 },
-        { "name": "property_34", "typename": "ZMsg", "offset": 52 },
-        { "name": "property_38", "typename": "ZGEOMREF", "offset": 56 },
-        { "name": "property_3C", "typename": "PRPOpCode.String", "offset": 60 },
+        { "name": "m_rCutsequenceList", "typename": "ZGEOMREF", "offset": 72 },
+        { "name": "m_msgMessage", "typename": "ZMsg", "offset": 52 },
+        { "name": "m_rReceiver", "typename": "ZGEOMREF", "offset": 56 },
+        { "name": "m_sReceiver", "typename": "PRPOpCode.String", "offset": 60 },
         { "name": "property_40", "typename": "PRPOpCode.String", "offset": 64 },
-        { "name": "property_44", "typename": "PRPOpCode.Int32", "offset": 68 }
+        { "name": "m_lParameter", "typename": "PRPOpCode.Int32", "offset": 68 }
     ]
 }

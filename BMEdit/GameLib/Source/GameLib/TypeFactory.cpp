@@ -33,12 +33,28 @@ namespace gamelib
 			auto aliasTypeName = alias.get<std::string>();
 			auto aliasTypeAsOpCode = prp::fromString(aliasTypeName);
 
+			std::unique_ptr<TypeAlias> finalType = nullptr;
+
 			if (OPCODE_VALID(aliasTypeAsOpCode))
 			{
-				return std::make_unique<TypeAlias>(typeName, aliasTypeAsOpCode);
+				finalType = std::make_unique<TypeAlias>(typeName, aliasTypeAsOpCode);
+			}
+			else
+			{
+				finalType = std::make_unique<TypeAlias>(typeName, aliasTypeName);
 			}
 
-			return std::make_unique<TypeAlias>(typeName, aliasTypeName);
+			// read tool hint
+			if (json.contains("editor"))
+			{
+				const auto& toolHint = json["editor"].get<std::string>();
+				if (!toolHint.empty())
+				{
+					finalType->setToolHint(toolHint);
+				}
+			}
+
+			return finalType;
 		}
 		case TypeKind::COMPLEX: {
 			std::vector<ValueView> properties = {};

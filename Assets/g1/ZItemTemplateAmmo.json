@@ -8,47 +8,47 @@
     "parent": "ZItemTemplate",
     "properties": [
         {
-            "name": "property_70",
+            "name": "m_lProjectilesPerMagazine",
             "offset": 112,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_74",
+            "name": "m_lProjectilesPerShot",
             "offset": 116,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_78",
+            "name": "m_fNearDamage",
             "offset": 120,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_7C",
+            "name": "m_fFarDamage",
             "offset": 124,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_80",
+            "name": "m_bSplashDamage",
             "offset": 128,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_81",
+            "name": "m_bUseImpactSound",
             "offset": 129,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_88",
+            "name": "m_rProjectile",
             "offset": 136,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_8C",
+            "name": "m_rCartridge",
             "offset": 140,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "DamageType",
+            "name": "m_eDamageType",
             "offset": 72,
             "typename": "ZItemTemplateAmmo.eDamageType"
         }

@@ -9,6 +9,9 @@
 #include <QFileDialog>
 #include <QStringListModel>
 #include <QClipboard>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 
 #include <GameLib/TypeRegistry.h>
 #include <GameLib/TypeNotFoundException.h>
@@ -18,9 +21,10 @@
 #include <Models/SceneObjectsTreeModel.h>
 #include <Models/SceneObjectPropertiesModel.h>
 #include <Models/ScenePropertiesModel.h>
-#include <Models/ScenePrimitivesModel.h>
-#include <Models/ScenePrimitivesFilterModel.h>
 #include <Models/SceneFilterModel.h>
+#include <Models/SceneTexturesModel.h>
+#include <Models/GameScriptsTreeModel.h>
+#include <Models/ModelsLocator.h>
 
 #include <Delegates/TypePropertyItemDelegate.h>
 #include <Delegates/ScenePropertyTypeDelegate.h>
@@ -46,7 +50,8 @@ enum OperationToProgress : int
 BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::BMEditMainWindow),
-    m_loadSceneDialog(this)
+    m_loadSceneDialog(this),
+	m_viewTexturesDialog(this)
 {
     ui->setupUi(this);
 
@@ -54,14 +59,17 @@ BMEditMainWindow::BMEditMainWindow(QWidget *parent) :
 	initProperties();
 	initControllers();
 	initSceneProperties();
-	initScenePrimitives();
 	initSceneLoadingDialog();
+	initViewTexturesDialog();
 	initStatusBar();
 	initSearchInput();
 	connectActions();
 	connectDockWidgetActions();
 	connectEditorSignals();
 	loadTypesDataBase();
+
+	// Drag & Drop for levels
+	setAcceptDrops(true);
 }
 
 BMEditMainWindow::~BMEditMainWindow()
@@ -69,9 +77,10 @@ BMEditMainWindow::~BMEditMainWindow()
 	delete m_geomTypesModel;
 	delete m_typePropertyItemDelegate;
 	delete m_sceneTreeFilterModel;
-	delete m_sceneTreeModel;
+	models::ModelsLocator::s_SceneTreeModel = nullptr; // reset me
+	models::ModelsLocator::s_GameScriptsTreeModel = nullptr; // reset me
+	models::ModelsLocator::s_LocalizationTreeModel = nullptr; // reset me
 	delete m_sceneObjectPropertiesModel;
-	delete m_scenePrimitivesModel;
 
 	delete m_operationProgress;
 	delete m_operationLabel;
@@ -84,12 +93,14 @@ void BMEditMainWindow::initStatusBar()
 	m_operationProgress = new QProgressBar(statusBar());
 	m_operationLabel = new QLabel(statusBar());
 	m_operationCommentLabel = new QLabel(statusBar());
+	m_renderStatsLabel = new QLabel(statusBar());
 
 	resetStatusToDefault();
 
 	statusBar()->insertWidget(0, m_operationLabel);
 	statusBar()->insertWidget(1, m_operationProgress);
 	statusBar()->insertWidget(2, m_operationCommentLabel);
+	statusBar()->insertWidget(3, m_renderStatsLabel);
 }
 
 void BMEditMainWindow::initSearchInput()
@@ -99,12 +110,43 @@ void BMEditMainWindow::initSearchInput()
 
 void BMEditMainWindow::connectActions()
 {
-	connect(ui->actionExit, &QAction::triggered, [=]() { onExit(); });
-	connect(ui->actionOpen_level, &QAction::triggered, [=]() { onOpenLevel(); });
-	connect(ui->actionRestore_layout, &QAction::triggered, [=]() { onRestoreLayout(); });
-	connect(ui->actionTypes_Viewer, &QAction::triggered, [=]() { onShowTypesViewer(); });
-	connect(ui->actionSave_properties, &QAction::triggered, [=]() { onExportProperties(); });
-	connect(ui->actionExport_PRP_properties, &QAction::triggered, [=]() { onExportPRP(); });
+	connect(ui->actionExit, &QAction::triggered, this, &BMEditMainWindow::onExit);
+	connect(ui->actionOpen_level, &QAction::triggered, this, &BMEditMainWindow::onOpenLevel);
+	connect(ui->actionRestore_layout, &QAction::triggered, this, &BMEditMainWindow::onRestoreLayout);
+	connect(ui->actionTypes_Viewer, &QAction::triggered, this, &BMEditMainWindow::onShowTypesViewer);
+	connect(ui->actionSave_properties, &QAction::triggered, this, &BMEditMainWindow::onExportProperties);
+	connect(ui->actionExport_PRP_properties, &QAction::triggered, this, &BMEditMainWindow::onExportPRP);
+	connect(ui->actionExport_LOC_localization, &QAction::triggered, this, &BMEditMainWindow::onExportLOC);
+	connect(ui->actionTextures, &QAction::triggered, this, &BMEditMainWindow::onShowTexturesDialog);
+	connect(ui->actionView_whole_scene, &QAction::triggered, this, [this] { ui->sceneGLView->setWorldViewMode(); });
+
+	// Modes
+//	connect(ui->actionRenderMode_Texture, &QAction::toggled, this, [this](bool val) {
+//		widgets::RenderModeFlags newMode = ui->sceneGLView->getRenderMode();
+//
+//		if (val)
+//			newMode |= widgets::RenderMode::RM_TEXTURE;
+//		else
+//			newMode &= ~widgets::RenderMode::RM_TEXTURE;
+//
+//		ui->sceneGLView->setRenderMode(newMode);
+//	});
+//	connect(ui->actionRenderMode_Wireframe, &QAction::toggled, this, [this](bool val) {
+//		widgets::RenderModeFlags newMode = ui->sceneGLView->getRenderMode();
+//
+//		if (val)
+//			newMode |= widgets::RenderMode::RM_WIREFRAME;
+//		else
+//			newMode &= ~widgets::RenderMode::RM_WIREFRAME;
+//
+//		ui->sceneGLView->setRenderMode(newMode);
+//	});
+	connect(ui->actionRenderMode_Portals, &QAction::toggled, this, [this](bool val) {
+		ui->sceneGLView->setShouldRenderPortals(val);
+	});
+	connect(ui->actionRenderMode_RenderRoomBoundingBoxes, &QAction::toggled, this, [this](bool val) {
+		ui->sceneGLView->setShouldRenderRoomBoundingBox(val);
+	});
 }
 
 void BMEditMainWindow::connectDockWidgetActions()
@@ -140,7 +182,7 @@ void BMEditMainWindow::connectDockWidgetActions()
 	});
 
 	// Properties
-	connect(ui->propertiesDock, &QDockWidget::visibilityChanged, [=](bool visibility)
+	connect(ui->gameObjectDock, &QDockWidget::visibilityChanged, [=](bool visibility)
 	{
 		QSignalBlocker actionPropertiesBlocker{ui->actionProperties};
 
@@ -149,9 +191,9 @@ void BMEditMainWindow::connectDockWidgetActions()
 
 	connect(ui->actionProperties, &QAction::triggered, [=](bool checked)
 	{
-		QSignalBlocker propertiesDockBlocker{ui->propertiesDock};
+		QSignalBlocker propertiesDockBlocker{ui->gameObjectDock};
 
-		ui->propertiesDock->setVisible(checked);
+		ui->gameObjectDock->setVisible(checked);
 	});
 }
 
@@ -192,9 +234,9 @@ void BMEditMainWindow::onOpenLevel()
 }
 
 void BMEditMainWindow::onRestoreLayout() {
-	ui->propertiesDock->setVisible(true);
+	ui->gameObjectDock->setVisible(true);
 	ui->sceneDock->setVisible(true);
-	ui->propertiesDock->setVisible(true);
+	ui->gameObjectDock->setVisible(true);
 }
 
 void BMEditMainWindow::onShowTypesViewer()
@@ -207,16 +249,37 @@ void BMEditMainWindow::onShowTypesViewer()
 void BMEditMainWindow::onLevelLoadSuccess()
 {
 	auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
-	setWindowTitle(QString("BMEdit - %1").arg(QString::fromStdString(currentLevel->getLevelName())));
+	setWindowTitle(QString("BMEdit - %1 [loading view...]").arg(QString::fromStdString(currentLevel->getLevelName())));
 
 	resetStatusToDefault();
 
 	// Level loaded, show objects tree
 	ui->searchInputField->clear();
+	ui->actionView_whole_scene->setEnabled(true);
+	ui->actionView_whole_scene->setChecked(true);
+	ui->actionRenderMode_Texture->setEnabled(true);
+	ui->actionRenderMode_Texture->setChecked(true);
+	ui->actionRenderMode_Wireframe->setEnabled(true);
+	ui->actionRenderMode_Wireframe->setChecked(false);
+	ui->actionRenderMode_Portals->setEnabled(true);
+	ui->actionRenderMode_Portals->setChecked(ui->sceneGLView->shouldRenderPortals());
+	ui->actionRenderMode_RenderRoomBoundingBoxes->setEnabled(true);
+	ui->actionRenderMode_RenderRoomBoundingBoxes->setChecked(ui->sceneGLView->shouldRenderRoomBoundingBox());
 
-	if (m_sceneTreeModel)
+	// Setup models
+	if (models::ModelsLocator::s_SceneTreeModel)
 	{
-		m_sceneTreeModel->setLevel(currentLevel);
+		models::ModelsLocator::s_SceneTreeModel->setLevel(currentLevel);
+	}
+
+	if (models::ModelsLocator::s_LocalizationTreeModel)
+	{
+		models::ModelsLocator::s_LocalizationTreeModel->setLevel(currentLevel);
+	}
+
+	if (m_sceneTexturesModel)
+	{
+		m_sceneTexturesModel->setLevel(currentLevel);
 	}
 
 	if (m_sceneObjectPropertiesModel)
@@ -229,24 +292,18 @@ void BMEditMainWindow::onLevelLoadSuccess()
 		m_scenePropertiesModel->setLevel(const_cast<gamelib::Level*>(currentLevel));
 	}
 
-	if (m_scenePrimitivesModel)
-	{
-		m_scenePrimitivesModel->setLevel(const_cast<gamelib::Level*>(currentLevel));
-		ui->primitivesCountLabel->setText(QString("%1").arg(currentLevel->getLevelGeometry()->header.countOfPrimitives));
-	}
-
-	// Reset primitive filters
-	resetPrimitivesFilter();
-
-	// Setup preview
-	ui->scenePrimitivePreview->setLevel(const_cast<gamelib::Level*>(currentLevel));
+	// Show game scene (start loading process)
+	ui->sceneGLView->setLevel(const_cast<gamelib::Level*>(currentLevel));
 
 	// Load controllers index
-	ui->geomControllers->switchToDefaults();
+	ui->geomControllers->resetGeom(); // FIRST: Reset geom, save or revert changes
+	ui->geomControllers->switchToDefaults(); // SECOND: Drop value
 
 	// Export action
 	ui->menuExport->setEnabled(true);
 	ui->actionExport_PRP_properties->setEnabled(true);
+	ui->actionExport_LOC_localization->setEnabled(true);
+	ui->actionTextures->setEnabled(true);
 
 	//ui->actionSave_properties->setEnabled(true); //TODO: Uncomment when exporter to ZIP will be done
 	ui->searchInputField->setEnabled(true);
@@ -260,6 +317,7 @@ void BMEditMainWindow::onLevelLoadFailed(const QString &reason)
 	QMessageBox::warning(this, QString("Failed to load level"), QString("Error occurred during level load process:\n%1").arg(reason));
 	m_operationCommentLabel->setText(QString("Failed to open level '%1'").arg(reason));
 	m_operationProgress->setValue(0);
+	//TODO: Need to reset global state properly!
 }
 
 void BMEditMainWindow::onLevelLoadProgressChanged(int totalPercentsProgress, const QString &currentOperationTag)
@@ -301,15 +359,37 @@ void BMEditMainWindow::onSelectedSceneObject(const gamelib::scene::SceneObject* 
 	ui->sceneObjectName->setText(QString::fromStdString(selectedSceneObject->getName()));
 	ui->sceneObjectTypeCombo->setEnabled(true);
 	ui->sceneObjectTypeCombo->setCurrentText(QString::fromStdString(selectedSceneObject->getType()->getName()));
+	ui->geomInstanceId->setText(QString("%1").arg(selectedSceneObject->getGeomInfo().getInstanceId()));
+
+	ui->sceneGLView->setSelectedObject(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
 
 	m_sceneObjectPropertiesModel->setGeom(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
 
 	ui->geomControllers->setGeom(const_cast<gamelib::scene::SceneObject*>(selectedSceneObject));
 	ui->geomControllers->switchToFirstController();
+
+	// Show coli bits and other ZGEOM stuff
+	ui->coliBitsRepr->setPossibleValues({
+	    { "Bit 0", 0 }, // idk
+	    { "Bit 1", 1 }, // idk
+	    { "SHOT", 2 },  // from beta ps2
+	    { "Bit 3", 3 }, // idk
+	    { "Bit 4", 4 }, // idk
+	    { "SIGHT", 5 }, // from beta ps2 
+	    {"HERO", 6 },   // from beta ps2
+	    { "CAMERA", 7 } // from beta ps2
+	});
+
+	ui->coliBitsRepr->setValue(selectedSceneObject->getGeomInfo().getColiBits());
+	ui->coliBitsRepr->setEnabled(true);
 }
 
 void BMEditMainWindow::onDeselectedSceneObject()
 {
+	ui->sceneGLView->resetSelectedObject();
+	ui->coliBitsRepr->reset();
+	ui->coliBitsRepr->setEnabled(false);
+
 	if (!m_sceneObjectPropertiesModel)
 	{
 		return;
@@ -317,6 +397,7 @@ void BMEditMainWindow::onDeselectedSceneObject()
 
 	ui->sceneObjectTypeCombo->setEnabled(false);
 	ui->sceneObjectName->clear();
+	ui->geomInstanceId->setText("0");
 	ui->geomControllers->resetGeom();
 
 	m_sceneObjectPropertiesModel->resetGeom();
@@ -344,16 +425,14 @@ void BMEditMainWindow::onAssetExportFailed(const QString &reason)
 void BMEditMainWindow::onCloseLevel()
 {
 	// Cleanup models
-	if (m_sceneTreeModel) m_sceneTreeModel->resetLevel();
+	if (models::ModelsLocator::s_SceneTreeModel) models::ModelsLocator::s_SceneTreeModel->resetLevel();
+	if (models::ModelsLocator::s_LocalizationTreeModel) models::ModelsLocator::s_LocalizationTreeModel->resetLevel();
 	if (m_sceneObjectPropertiesModel) m_sceneObjectPropertiesModel->resetLevel();
 	if (m_scenePropertiesModel) m_scenePropertiesModel->resetLevel();
-	if (m_scenePrimitivesModel) m_scenePrimitivesModel->resetLevel();
+	if (m_sceneTexturesModel) m_sceneTexturesModel->resetLevel();
 
-	// Reset filters
-	resetPrimitivesFilter();
-
-	// Reset
-	ui->scenePrimitivePreview->resetLevel();
+	// Unload resources
+	ui->sceneGLView->resetLevel();
 
 	// Reset widget states
 	ui->geomControllers->resetGeom();
@@ -361,9 +440,20 @@ void BMEditMainWindow::onCloseLevel()
 	// Reset export menu
 	ui->menuExport->setEnabled(false);
 	ui->actionExport_PRP_properties->setEnabled(false);
+	ui->actionExport_LOC_localization->setEnabled(false);
+	ui->actionTextures->setEnabled(false);
 
-	// Reset primitives counter
-	ui->primitivesCountLabel->setText("0");
+	// Reset world view mode
+	ui->actionView_whole_scene->setEnabled(false);
+	ui->actionView_whole_scene->setChecked(true);
+	ui->actionRenderMode_Texture->setEnabled(false);
+	ui->actionRenderMode_Texture->setChecked(true);
+	ui->actionRenderMode_Wireframe->setEnabled(false);
+	ui->actionRenderMode_Wireframe->setChecked(true);
+	ui->actionRenderMode_Portals->setEnabled(false);
+	ui->actionRenderMode_Portals->setChecked(ui->sceneGLView->shouldRenderPortals());
+	ui->actionRenderMode_RenderRoomBoundingBoxes->setEnabled(false);
+	ui->actionRenderMode_RenderRoomBoundingBoxes->setChecked(ui->sceneGLView->shouldRenderRoomBoundingBox());
 
 	// Disable filtering
 	QSignalBlocker blocker { ui->searchInputField };
@@ -394,9 +484,37 @@ void BMEditMainWindow::onExportPRP()
 	QMessageBox::information(this, "Export PRP", QString("PRP file exported successfully to %1").arg(saveAsPath));
 }
 
+void BMEditMainWindow::onExportLOC()
+{
+	QFileDialog saveLOCDialog(this, QString("Save LOC"), QString(), QString("Localization (*.LOC)"));
+	saveLOCDialog.setViewMode(QFileDialog::ViewMode::Detail);
+	saveLOCDialog.setFileMode(QFileDialog::FileMode::AnyFile);
+	saveLOCDialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+	saveLOCDialog.selectFile(QString("%1.LOC").arg(QString::fromStdString(editor::EditorInstance::getInstance().getActiveLevel()->getLevelName())));
+	if (!saveLOCDialog.exec())
+	{
+		return;
+	}
+
+	if (saveLOCDialog.selectedFiles().empty())
+	{
+		return;
+	}
+
+	const auto saveAsPath = saveLOCDialog.selectedFiles().first();
+	editor::EditorInstance::getInstance().exportLOC(saveAsPath);
+
+	QMessageBox::information(this, "Export LOC", QString("LOC file exported successfully to %1").arg(saveAsPath));
+}
+
+void BMEditMainWindow::onShowTexturesDialog()
+{
+	m_viewTexturesDialog.show();
+}
+
 void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& point)
 {
-	if (!m_sceneTreeModel)
+	if (!models::ModelsLocator::s_SceneTreeModel)
 	{
 		return;
 	}
@@ -433,40 +551,100 @@ void BMEditMainWindow::onContextMenuRequestedForSceneTreeNode(const QPoint& poin
 			QGuiApplication::clipboard()->setText(finalPath);
 		};
 
+		auto implMoveCameraToGeom = [this](gamelib::scene::SceneObject* sceneObject)
+		{
+			const glm::vec3 vPosition {
+			    sceneObject->getProperties()["Position"][1].getOperand().get<float>(),
+			    sceneObject->getProperties()["Position"][2].getOperand().get<float>(),
+			    sceneObject->getProperties()["Position"][3].getOperand().get<float>()
+			};
+
+			ui->sceneGLView->moveCameraTo(vPosition);
+		};
+
+		auto implShowSelectedGeom = [this](gamelib::scene::SceneObject* sceneObject)
+		{
+			ui->actionView_whole_scene->setChecked(false);
+			ui->sceneGLView->setGeomViewMode(sceneObject);
+		};
+
 		contextMenu.addAction(QString("Object: '%1'").arg(QString::fromStdString(selectedGeom->getName())))->setDisabled(true);
 		contextMenu.addAction(QString("Type: '%1'").arg(QString::fromStdString(selectedGeom->getType()->getName())))->setDisabled(true);
+
 		contextMenu.addSeparator();
 		contextMenu.addAction("Copy path", [implCopyPathToGeom, selectedGeom] { implCopyPathToGeom(selectedGeom, false); });
 		contextMenu.addAction("Copy path (ignore ROOT)", [implCopyPathToGeom, selectedGeom] { implCopyPathToGeom(selectedGeom, true); });
+
+		contextMenu.addSeparator();
+		contextMenu.addAction("Move camera to this object", [implMoveCameraToGeom, selectedGeom] { implMoveCameraToGeom(const_cast<gamelib::scene::SceneObject*>(selectedGeom)); });
+		contextMenu.addAction("Show only this geom", [implShowSelectedGeom, selectedGeom] { implShowSelectedGeom(const_cast<gamelib::scene::SceneObject*>(selectedGeom)); });
 
 		contextMenu.exec(ui->sceneTreeView->viewport()->mapToGlobal(point));
 	}
 }
 
-void BMEditMainWindow::onContextMenuRequestedForPrimitivesTableHeader(const QPoint &point)
+void BMEditMainWindow::onLevelAssetsLoaded()
 {
-	QMenu contextMenu;
+	auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
+	setWindowTitle(QString("BMEdit - %1 [DONE]").arg(QString::fromStdString(currentLevel->getLevelName())));
+}
 
-#define BE_CONFIGURE_ACTION(actName, actFmt) \
-	{ \
-		auto action = contextMenu.addAction(actName);  \
-		action->setCheckable(true);  \
-		action->setChecked(m_scenePrimitivesFilterModel->isVertexFormatAllowed(actFmt)); \
-        connect(action, &QAction::toggled, [this](bool val) { m_scenePrimitivesFilterModel->setVertexFormatAllowed(actFmt, val); }); \
+void BMEditMainWindow::onLevelAssetsLoadFailed(const QString& reason)
+{
+	auto currentLevel = editor::EditorInstance::getInstance().getActiveLevel();
+	setWindowTitle(QString("BMEdit - %1 [!!!ERROR!!!]").arg(QString::fromStdString(currentLevel->getLevelName())));
+
+	QMessageBox::critical(this, QString("Scene render failed :("), QString("An error occurred while loading scene assets:\n%1").arg(reason));
+}
+
+void BMEditMainWindow::onSceneObjectPropertyChanged(const QString& propertyName, const gamelib::scene::SceneObject* geom)
+{
+	ui->sceneGLView->onObjectMoved(propertyName, const_cast<gamelib::scene::SceneObject *>(geom));
+}
+
+void BMEditMainWindow::onTextureChanged(uint32_t textureIndex)
+{
+//	ui->sceneGLView->reloadTexture(textureIndex);
+}
+
+void BMEditMainWindow::dragEnterEvent(QDragEnterEvent *pEvent)
+{
+	if (pEvent->mimeData()->hasUrls())
+	{
+		for (const QUrl& url : pEvent->mimeData()->urls())
+		{
+			if (QFileInfo(url.toLocalFile()).suffix().toLower() == "zip")
+			{
+				pEvent->acceptProposedAction();
+				return;
+			}
+		}
 	}
+}
 
-	BE_CONFIGURE_ACTION("Vertex Format 10", gamelib::prm::PRMVertexBufferFormat::VBF_VERTEX_10);
-	BE_CONFIGURE_ACTION("Vertex Format 24", gamelib::prm::PRMVertexBufferFormat::VBF_VERTEX_24);
-	BE_CONFIGURE_ACTION("Vertex Format 28", gamelib::prm::PRMVertexBufferFormat::VBF_VERTEX_28);
-	BE_CONFIGURE_ACTION("Vertex Format 34", gamelib::prm::PRMVertexBufferFormat::VBF_VERTEX_34);
+void BMEditMainWindow::dropEvent(QDropEvent *pEvent)
+{
+	if (pEvent->mimeData()->hasUrls())
+	{
+		QString info;
 
-	contextMenu.exec(ui->scenePrimitivesTable->horizontalHeader()->viewport()->mapToGlobal(point));
+		for (const QUrl& url : pEvent->mimeData()->urls())
+		{
+			QString fileName = url.toLocalFile();
+			if (QFileInfo(fileName).suffix().toLower() == "zip")
+			{
+				editor::EditorInstance::getInstance().openLevelFromZIP(fileName.toStdString());
+				return;
+			}
+		}
+	}
 }
 
 void BMEditMainWindow::loadTypesDataBase()
 {
 	m_operationProgress->setValue(OperationToProgress::DISCOVER_TYPES_DATABASE);
 
+	// TODO: Move this code to another place!!!
 	gamelib::TypeRegistry::getInstance().reset();
 
 	QFile typeRegistryFile("TypesRegistry.json");
@@ -488,7 +666,7 @@ void BMEditMainWindow::loadTypesDataBase()
 
 	m_operationProgress->setValue(OperationToProgress::DATABASE_PARSED);
 
-	if (!registryFile.contains("inc") || !registryFile.contains("db"))
+	if (!registryFile.contains("inc") || !registryFile.contains("db") || !registryFile.contains("script_incs"))
 	{
 		m_operationCommentLabel->setText("Invalid types database format");
 		return;
@@ -504,6 +682,7 @@ void BMEditMainWindow::loadTypesDataBase()
 	}
 
 	const auto incPath = registryFile["inc"].get<std::string>();
+	const auto scriptsPath = registryFile["script_incs"].get<std::string>();
 
 	m_operationProgress->setValue(OperationToProgress::LOADING_TYPE_DESCRIPTORS);
 	m_operationCommentLabel->setText(QString("Hash indices loaded (%1), loading types from '%2' folder").arg(typesToHashes.size()).arg(QString::fromStdString(incPath)));
@@ -536,12 +715,55 @@ void BMEditMainWindow::loadTypesDataBase()
 		}
 	}
 
+	// Here we need to lookup for script declarations and parse them
+	std::unordered_map<std::string, nlohmann::json> scriptInfos;
+	QDirIterator scriptInfoFolderIterator(QString::fromStdString(scriptsPath), { "*.json" }, QDir::Files);
+	while (scriptInfoFolderIterator.hasNext())
+	{
+		auto path = scriptInfoFolderIterator.next();
+
+		QFile scriptDescriptionFile(path);
+		if (!scriptDescriptionFile.open(QIODevice::ReadOnly))
+		{
+			m_operationCommentLabel->setText(QString("ERROR: Failed to open file '%1'").arg(path));
+			return;
+		}
+
+		auto scriptInfoContents = scriptDescriptionFile.readAll().toStdString();
+		scriptDescriptionFile.close();
+
+		nlohmann::json jContents = nlohmann::json::parse(scriptInfoContents, nullptr, false, true);
+		if (jContents.is_discarded())
+		{
+			qWarning() << "Failed to parse " << path << " (script def)";
+			continue;
+		}
+
+		for (const auto& [key, data] : jContents.items())
+		{
+			if (scriptInfos.contains(key))
+			{
+				qWarning() << "Duplicate script name " << QString::fromStdString(key) << " in " << path << " (script def)";
+				continue;
+			}
+
+			scriptInfos[key] = data;
+		}
+	}
+
 	try
 	{
+		// register common types
 		registry.registerTypes(std::move(typeInfos), std::move(typesToHashes));
+
+		// register script extensions (extra types)
+		registry.registerScripts(std::move(scriptInfos));
 
 		QStringList allAvailableTypes;
 		gamelib::TypeRegistry::getInstance().forEachType([&allAvailableTypes](const gamelib::Type *type) { allAvailableTypes.push_back(QString::fromStdString(type->getName())); });
+
+		// Runtime types
+		models::ModelsLocator::s_GameScriptsTreeModel = std::make_unique<models::GameScriptsTreeModel>(this);
 
 		delete m_geomTypesModel;
 		m_geomTypesModel = new QStringListModel(allAvailableTypes, this);
@@ -566,16 +788,23 @@ void BMEditMainWindow::resetStatusToDefault()
 {
 	m_operationLabel->setText("Progress: ");
 	m_operationCommentLabel->setText("(No active operation)");
+	m_renderStatsLabel->setText("[No render stats]");
 	m_operationProgress->setValue(0);
 }
 
 void BMEditMainWindow::initSceneTree()
 {
 	// Main model
-	m_sceneTreeModel = new models::SceneObjectsTreeModel(this);
+	models::ModelsLocator::s_SceneTreeModel = std::make_unique<models::SceneObjectsTreeModel>(this);
+	models::ModelsLocator::s_LocalizationTreeModel = std::make_unique<models::LocalizationTreeModel>(this);
 	m_sceneTreeFilterModel = new models::SceneFilterModel(this);
-	m_sceneTreeFilterModel->setSourceModel(m_sceneTreeModel);
+	m_sceneTreeFilterModel->setSourceModel(models::ModelsLocator::s_SceneTreeModel.get());
 
+	// Fill LocalizationTree view
+	ui->localizationTree->setModel(models::ModelsLocator::s_LocalizationTreeModel.get());
+	ui->localizationTree->setSelectionMode(QAbstractItemView::SingleSelection);
+
+	// Fill SceneTree view
 	ui->sceneTreeView->header()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->sceneTreeView->setModel(m_sceneTreeFilterModel);
 	ui->sceneTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -599,6 +828,9 @@ void BMEditMainWindow::initSceneTree()
 	});
 
 	connect(ui->sceneTreeView, &QTreeView::customContextMenuRequested, this, &BMEditMainWindow::onContextMenuRequestedForSceneTreeNode);
+
+	connect(ui->sceneGLView, &widgets::SceneRenderWidget::resourcesReady, this, &BMEditMainWindow::onLevelAssetsLoaded);
+	connect(ui->sceneGLView, &widgets::SceneRenderWidget::resourceLoadFailed, this, &BMEditMainWindow::onLevelAssetsLoadFailed);
 }
 
 void BMEditMainWindow::initProperties()
@@ -610,6 +842,8 @@ void BMEditMainWindow::initProperties()
 	ui->propertiesView->setItemDelegateForColumn(1, m_typePropertyItemDelegate);
 	ui->propertiesView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 	ui->propertiesView->verticalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+
+	connect(m_sceneObjectPropertiesModel, &models::SceneObjectPropertiesModel::objectPropertiesChanged, this, &BMEditMainWindow::onSceneObjectPropertyChanged);
 }
 
 void BMEditMainWindow::initSceneProperties()
@@ -629,60 +863,6 @@ void BMEditMainWindow::initControllers()
 	//TODO: Init this
 }
 
-void BMEditMainWindow::initScenePrimitives()
-{
-	m_scenePrimitivesModel = new models::ScenePrimitivesModel(this);
-	m_scenePrimitivesFilterModel = new models::ScenePrimitivesFilterModel(this);
-
-	m_scenePrimitivesFilterModel->setSourceModel(m_scenePrimitivesModel);
-	ui->scenePrimitivesTable->setModel(m_scenePrimitivesFilterModel);
-	ui->scenePrimitivesTable->setSelectionBehavior(QAbstractItemView::SelectItems);
-	ui->scenePrimitivesTable->setSelectionMode(QAbstractItemView::SingleSelection);
-	ui->scenePrimitivesTable->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
-	ui->scenePrimitivesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::Stretch);
-
-	connect(ui->scenePrimitivesTable->selectionModel(), &QItemSelectionModel::selectionChanged, [=](const QItemSelection &selected, const QItemSelection &deselected) {
-		if ((selected.indexes().size() == 1 && selected.indexes().at(0).row() != 0) || (!selected.indexes().empty()))
-		{
-			m_selectedPrimitiveToPreview.emplace(static_cast<std::uint32_t>(selected.indexes().first().data(types::kChunkIndexRole).value<int>()));
-			ui->scenePrimitivePreview->setPrimitiveIndex(*m_selectedPrimitiveToPreview);
-		}
-		else if (!deselected.indexes().isEmpty())
-		{
-			m_selectedPrimitiveToPreview = std::nullopt;
-		}
-
-		ui->exportChunk->setEnabled(m_selectedPrimitiveToPreview.has_value());
-	});
-
-	connect(ui->exportChunk, &QPushButton::clicked, [=]() {
-		if (m_selectedPrimitiveToPreview.has_value())
-		{
-			//TODO: Impl me
-		}
-	});
-
-	connect(ui->scenePrimitivesTable->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &BMEditMainWindow::onContextMenuRequestedForPrimitivesTableHeader);
-
-	auto sendChangesToFilterModel = [=](models::ScenePrimitivesFilterEntry entry, int newState)
-	{
-		if (newState)
-		{
-			m_scenePrimitivesFilterModel->addFilterEntry(entry);
-		}
-		else
-		{
-			m_scenePrimitivesFilterModel->removeFilterEntry(entry);
-		}
-	};
-
-	connect(ui->primitivesFilter_UnknownPrimType,      &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Unknown,     newState); });
-	connect(ui->primitivesFilter_ZeroBufferPrimType,   &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Zero,        newState); });
-	connect(ui->primitivesFilter_DescriptionPrimType,  &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Description, newState); });
-	connect(ui->primitivesFilter_IndexBufferPrimType,  &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Index,       newState); });
-	connect(ui->primitivesFilter_VertexBufferPrimType, &QCheckBox::stateChanged, [=](int newState) { sendChangesToFilterModel(models::ScenePrimitivesFilterEntry::FilterAllow_Vertex,      newState); });
-}
-
 void BMEditMainWindow::initSceneLoadingDialog()
 {
 	m_loadSceneDialog.setFixedSize(m_loadSceneDialog.size());
@@ -690,24 +870,11 @@ void BMEditMainWindow::initSceneLoadingDialog()
 	m_loadSceneDialog.setModal(true);
 }
 
-void BMEditMainWindow::resetPrimitivesFilter()
+void BMEditMainWindow::initViewTexturesDialog()
 {
-	if (m_scenePrimitivesFilterModel)
-	{
-		m_scenePrimitivesFilterModel->resetToDefaults();
-	}
+	m_sceneTexturesModel.reset(new models::SceneTexturesModel(this));
+	m_viewTexturesDialog.setModal(true);
+	m_viewTexturesDialog.setTexturesSource(m_sceneTexturesModel.get());
 
-#define BE_RESET_CHECK_BOX(x)  \
-	{                          \
-		QSignalBlocker blk{x}; \
-		x->setChecked(true);   \
-	}
-
-	BE_RESET_CHECK_BOX(ui->primitivesFilter_UnknownPrimType);
-	BE_RESET_CHECK_BOX(ui->primitivesFilter_ZeroBufferPrimType);
-	BE_RESET_CHECK_BOX(ui->primitivesFilter_DescriptionPrimType);
-	BE_RESET_CHECK_BOX(ui->primitivesFilter_IndexBufferPrimType);
-	BE_RESET_CHECK_BOX(ui->primitivesFilter_VertexBufferPrimType);
-
-#undef BE_RESET_CHECK_BOX
+	connect(&m_viewTexturesDialog, &ViewTexturesDialog::textureChanged, this, &BMEditMainWindow::onTextureChanged);
 }

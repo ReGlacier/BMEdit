@@ -8,37 +8,37 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_C",
+            "name": "m_fCost",
             "offset": 12,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "UpgradeType",
+            "name": "m_eType",
             "offset": 16,
             "typename": "ZHM3WeaponUpgrade.EUpgradeType"
         },
         {
-            "name": "property_14",
+            "name": "m_pRequires",
             "offset": 20,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_18",
+            "name": "m_pExcludes",
             "offset": 24,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_1C",
+            "name": "m_BoneIncludes",
             "offset": 28,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_20",
+            "name": "m_BoneExcludes",
             "offset": 32,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "UpgradeTier",
+            "name": "m_eTier",
             "offset": 36,
             "typename": "ZHM3WeaponUpgrade.EUpgradeTier"
         }

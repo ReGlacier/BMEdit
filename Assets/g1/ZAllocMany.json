@@ -8,25 +8,25 @@
     "parent": "ZGROUP",
     "properties": [
         {
-            "name": "property_48",
+            "name": "m_iNumObjects",
             "offset": 72,
             "typename": "PRPOpCode.Int16"
         },
         {
-            "name": "property_54",
+            "name": "m_msgActivate",
             "offset": 84,
             "typename": "ZMsg"
         },
         {
-            "name": "property_56",
+            "name": "m_bClone",
             "offset": 86,
             "typename": "PRPOpCode.Bool"
         },
-        {
-            "name": "property_58",
-            "offset": 88,
-            "typename": "ZGEOMREF"
-        }
+      {
+        "name": "m_rCloneGroup",
+        "offset": 88,
+        "typename": "ZGEOMREF"
+      }
     ],
     "typename": "ZAllocMany"
 }

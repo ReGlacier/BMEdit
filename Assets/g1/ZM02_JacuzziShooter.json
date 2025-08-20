@@ -3,8 +3,8 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_4C", "typename": "ZREFTAB32", "offset": 76 },
-        { "name": "property_68", "typename": "ZGEOMREF", "offset": 104 },
-        { "name": "property_6C", "typename": "ZGEOMREF", "offset": 108 }
+        { "name": "m_rtWaterGeoms", "typename": "ZREFTAB32", "offset": 76 },
+        { "name": "m_rEffectGroup", "typename": "ZGEOMREF", "offset": 104 },
+        { "name": "m_rBox", "typename": "ZGEOMREF", "offset": 108 }
     ]
 }

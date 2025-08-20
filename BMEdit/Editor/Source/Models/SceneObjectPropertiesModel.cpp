@@ -12,7 +12,8 @@ namespace models
 	SceneObjectPropertiesModel::SceneObjectPropertiesModel(QObject *parent)
 		: ValueModelBase(parent)
 	{
-		connect(this, &ValueModelBase::valueChanged, [=]() { onValueChanged(); });
+		connect(this, &ValueModelBase::valueChanged, [=](const QString& propertyName) { onValueChanged(propertyName); });
+		connect(this, &ValueModelBase::rebuild, [=]() { onValueChanged(QString()); });
 	}
 
 	void SceneObjectPropertiesModel::setLevel(const gamelib::Level *level)
@@ -69,14 +70,16 @@ namespace models
 		resetValue();
 	}
 
-	void SceneObjectPropertiesModel::onValueChanged()
+	void SceneObjectPropertiesModel::onValueChanged(const QString &propertyName)
 	{
 		const auto& value = getValue();
 		if (!value.has_value()) return;
 
 		if (value.value() != m_geom->getProperties())
 		{
-			m_geom->getProperties() = value.value();
+			m_geom->setProperties(value.value());
+
+			emit objectPropertiesChanged(propertyName, m_geom);
 		}
 	}
 }

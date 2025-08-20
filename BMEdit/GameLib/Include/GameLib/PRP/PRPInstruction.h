@@ -64,9 +64,15 @@ namespace gamelib::prp
 		template <> int32_t get() const { return trivial.i32; }
 		template <> float get() const { return trivial.f32; }
 		template <> double get() const { return trivial.f64; }
+		template <> std::string_view get() const { return str; }
 		template <> const std::string& get() const { return str; }
 		template <> const RawData& get() const { return raw; }
 		template <> const StringArray& get() const { return stringArray; }
+
+		/**
+		 * Initialised (isSet = true) empty operand.
+		 */
+		static const PRPOperandVal kInitedOperandValue;
 	};
 
 	class PRPInstruction

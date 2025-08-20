@@ -8,12 +8,12 @@
     "parent": "ZGROUP",
     "properties": [
         {
-            "name": "property_4C",
+            "name": "rItemTemplate",
             "offset": 76,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_50",
+            "name": "m_bVisibleToNPCs",
             "offset": 80,
             "typename": "PRPOpCode.Bool"
         }

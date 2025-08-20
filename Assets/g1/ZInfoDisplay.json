@@ -3,9 +3,9 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_3F18", "typename": "ZGEOMREF", "offset": 16152 },
-        { "name": "property_3F1C", "typename": "ZGEOMREF", "offset": 16156 },
-        { "name": "rText", "typename": "ZGEOMREF" },
-        { "name": "rTextOutline", "typename": "ZGEOMREF" }
+        { "name": "m_rSymbol", "typename": "ZGEOMREF", "offset": 16152 },
+        { "name": "m_rTickoffMark", "typename": "ZGEOMREF", "offset": 16156 },
+        { "name": "text", "typename": "ZGEOMREF" },
+        { "name": "textOutline", "typename": "ZGEOMREF" }
     ]
 }

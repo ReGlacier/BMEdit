@@ -41,7 +41,7 @@ namespace gamelib::gms
 		{
 			// Validate format
 			BinaryReaderSeekScope rootScope { gmsFileReader };
-			gmsFileReader->seek(4);
+			gmsFileReader->seek(4); // skip first block (Entities)
 
 			static constexpr std::array<uint32_t, 3> kExpectedSignature = { 0, 0, 4 };
 			std::array<uint32_t, 3> sections = { 0, 0, 0 };
@@ -214,54 +214,5 @@ namespace gamelib::gms
 				currentPath.push_back(&entities[i]);
 			}
 		}
-	}
-
-	CachedRuntimeTypes::CachedRuntimeTypes()
-	{
-		auto &rttiRegistry = TypeRegistry::getInstance();
-
-#define IS_VALID_TYPE_INSTANCE(x) ((x) && (x->getKind() == TypeKind::COMPLEX) && reinterpret_cast<const TypeComplex *>((x))->hasGeomInfo())
-
-		ZSHAPE = rttiRegistry.findTypeByName("ZSHAPE");
-		if (IS_VALID_TYPE_INSTANCE(ZSHAPE)) {
-			ZSHAPE_Runtime = &reinterpret_cast<const TypeComplex *>(ZSHAPE)->getGeomInfo();
-		}
-
-		ZSTDOBJ = rttiRegistry.findTypeByName("ZSTDOBJ");
-		if (IS_VALID_TYPE_INSTANCE(ZSTDOBJ)) {
-			ZSTDOBJ_Runtime = &reinterpret_cast<const TypeComplex *>(ZSTDOBJ)->getGeomInfo();
-		}
-
-		ZBOUND = rttiRegistry.findTypeByName("ZBOUND");
-		if (IS_VALID_TYPE_INSTANCE(ZBOUND)) {
-			ZBOUND_Runtime = &reinterpret_cast<const TypeComplex *>(ZBOUND)->getGeomInfo();
-		}
-
-		ZSNDOBJ = rttiRegistry.findTypeByName("ZSNDOBJ");
-		if (IS_VALID_TYPE_INSTANCE(ZSNDOBJ)) {
-			ZSNDOBJ_Runtime = &reinterpret_cast<const TypeComplex *>(ZSNDOBJ)->getGeomInfo();
-		}
-
-		ZGROUP = rttiRegistry.findTypeByName("ZGROUP");
-		if (IS_VALID_TYPE_INSTANCE(ZGROUP)) {
-			ZGROUP_Runtime = &reinterpret_cast<const TypeComplex *>(ZGROUP)->getGeomInfo();
-		}
-
-		ZLIGHT = rttiRegistry.findTypeByName("ZLIGHT");
-		if (IS_VALID_TYPE_INSTANCE(ZLIGHT)) {
-			ZLIGHT_Runtime = &reinterpret_cast<const TypeComplex *>(ZLIGHT)->getGeomInfo();
-		}
-
-#undef IS_VALID_TYPE_INSTANCE
-	}
-
-	CachedRuntimeTypes::operator bool() const noexcept
-	{
-		return ZSHAPE && ZSHAPE_Runtime
-			&& ZSTDOBJ && ZSTDOBJ_Runtime
-			&& ZBOUND && ZBOUND_Runtime
-			&& ZSNDOBJ && ZSNDOBJ_Runtime
-			&& ZGROUP && ZGROUP_Runtime
-			&& ZLIGHT && ZLIGHT_Runtime;
 	}
 }

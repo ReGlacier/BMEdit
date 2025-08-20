@@ -75,15 +75,17 @@ void PrimitivePreviewWidget::resizeGL(int w, int h)
 
 void PrimitivePreviewWidget::doPreloadNewPrimitive()
 {
-	auto& chk = m_level->getLevelGeometry()->chunks.at(m_primitiveIndex);
-	if (chk.getKind() != gamelib::prm::PRMChunkRecognizedKind::CRK_DESCRIPTION_BUFFER)
-	{
-		// Invalid case: we've unable to draw model by non-descriptor index
-		m_primitiveIndex = 0u;
-		return;
-	}
+	m_primitiveIndex = 0u; // invalid case, do nothing
 
-	const auto descriptionHeader = chk.getDescriptionBufferHeader();
+//	auto& chk = m_level->getLevelGeometry()->chunks.at(m_primitiveIndex);
+//	if (chk.getKind() != gamelib::prm::PRMChunkRecognizedKind::CRK_DESCRIPTION_BUFFER)
+//	{
+//		// Invalid case: we've unable to draw model by non-descriptor index
+//		m_primitiveIndex = 0u;
+//		return;
+//	}
+//
+//	const auto descriptionHeader = chk.getDescriptionBufferHeader();
 	//TODO: Extract index buffer, extract vertex buffer, validate index buffer, validate vertex buffer.
 }
 

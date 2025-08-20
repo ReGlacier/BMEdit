@@ -8,17 +8,17 @@
     "parent": "ZCTRLIKLNKOBJ",
     "properties": [
         {
-            "name": "rSpeechSound",
+            "name": "m_SoundDef",
             "offset": 520,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_218",
+            "name": "m_MaterialDef",
             "offset": 536,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_228",
+            "name": "m_fActorPitch",
             "offset": 552,
             "typename": "PRPOpCode.Float32"
         }

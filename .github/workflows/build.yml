@@ -12,7 +12,7 @@ on:
 jobs:
   build_windows:
     name: Build (Windows)
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
       - name: Checkout
@@ -25,33 +25,35 @@ jobs:
 
       - name: Get latest CMake
         uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "~3.25.0"
 
       - name: Install Qt6
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: '6.4.1'
+          version: '6.8.3'
           host: 'windows'
           target: 'desktop'
-          arch: 'win64_msvc2019_64'
+          arch: 'win64_msvc2022_64'
           install-deps: 'true'
-          modules: 'qt3d'
 
       - name: Install Conan
         id: conan
         uses: turtlebrowser/get-conan@main
         with:
-          version: 1.54.0
+          version: 2.0.9
 
       - name: Make build folder and install Conan dependencies
         run: |
           mkdir build
-          conan install . -s build_type=Release --install-folder=build
+          conan profile detect --force
+          conan install . --output-folder=build --build=missing -s build_type=Release
 
       - name: Generate projects
         run: |
           cd build
           cmake --version
-          cmake -G "Visual Studio 16 2019" ..
+          cmake -G "Visual Studio 17 2022" ..
 
       - name: Build project
         run: |
@@ -61,39 +63,21 @@ jobs:
       - name: Move assets to distribution folder
         run: |
           mkdir dist
-          mv build/bin/BMEdit.exe dist
-          mv build/bin/d3dcompiler_47.dll dist
-          mv build/bin/opengl32sw.dll dist
-          mv build/bin/Qt6Core.dll dist
-          mv build/bin/Qt6Gui.dll dist
-          mv build/bin/Qt6OpenGL.dll dist
-          mv build/bin/Qt6OpenGLWidgets.dll dist
-          mv build/bin/Qt6Svg.dll dist
-          mv build/bin/Qt6Widgets.dll dist
-          mv build/bin/Qt63DCore.dll dist
-          mv build/bin/Qt63DRender.dll dist
-          mv build/bin/Qt63DInput.dll dist
-          mv build/bin/Qt63DAnimation.dll dist
-          mv build/bin/Qt63DExtras.dll dist
-          mv build/bin/Qt6Network.dll dist
-          mv build/bin/Qt6Concurrent.dll dist
-          mv build/bin/zip.dll dist
-          mv build/bin/translations dist/translations
-          mv build/bin/styles dist/styles
-          mv build/bin/platforms dist/platforms
-          mv build/bin/renderers dist/renderers
-          mv build/bin/sceneparsers dist/sceneparsers
-          mv build/bin/networkinformation dist/networkinformation
-          mv build/bin/tls dist/tls
-          mv build/bin/geometryloaders dist/geometryloaders
-          mv build/bin/imageformats dist/imageformats
-          mv build/bin/iconengines dist/iconengines
+          mv build/Release/BMEdit.exe dist
+          mv build/Release/*.dll dist
+          mv build/Release/styles dist/styles
+          mv build/Release/platforms dist/platforms
+          mv build/Release/networkinformation dist/networkinformation
+          mv build/Release/tls dist/tls
+          mv build/Release/imageformats dist/imageformats
+          mv build/Release/iconengines dist/iconengines
           mv Assets/g1 dist/g1
+          mv Assets/scripts dist/scripts
           mv Assets/TypesRegistry.json dist
           mv README.md dist
 
       - name: Upload build artifacts - BMEdit
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: "BMEdit"
           path: dist
@@ -135,7 +119,7 @@ jobs:
 
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.artifact }}

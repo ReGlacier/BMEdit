@@ -3,6 +3,6 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_5D0", "typename": "ZGEOMREF", "offset": 1488 }
+        { "name": "m_rWaterSplashParticleSystem", "typename": "ZGEOMREF", "offset": 1488 }
     ]
 }

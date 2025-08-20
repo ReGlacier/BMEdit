@@ -4,9 +4,9 @@
   "kind": "TypeKind.COMPLEX",
   "properties": [
     { "name": "Followers",  "typename": "ZREFTAB32" },
-    { "name": "FormationType",  "typename": "CFormationController.eFormation", "offset": 44 },
-    { "name": "property_30",  "typename": "PRPOpCode.Float32", "offset": 48 },
-    { "name": "property_34",  "typename": "PRPOpCode.Float32", "offset": 52 },
-    { "name": "property_38",  "typename": "PRPOpCode.Bool", "offset": 56 }
+    { "name": "m_Formation",  "typename": "CFormationController.eFormation", "offset": 44 },
+    { "name": "m_fDeltaX",  "typename": "PRPOpCode.Float32", "offset": 48 },
+    { "name": "m_fDeltaZ",  "typename": "PRPOpCode.Float32", "offset": 52 },
+    { "name": "m_bWaitForReadyFormation",  "typename": "PRPOpCode.Bool", "offset": 56 }
   ]
 }
