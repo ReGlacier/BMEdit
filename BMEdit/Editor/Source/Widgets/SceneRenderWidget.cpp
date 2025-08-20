@@ -1419,7 +1419,7 @@ namespace widgets
 			{
 				if (!binder.renderStates.empty())
 				{
-					materialInstance.ZBiasOffset.x = binder.renderStates[0].hasZBias() ? 1.f : 0.f;
+					materialInstance.ZBiasOffset.x = static_cast<float>(binder.renderStates[0].getZBias()); // NOTE: Need to convert it correctly (see PS2 build, method ZOldDrawPS2::BiasToScale)
 					materialInstance.ZBiasOffset.y = binder.renderStates[0].getZOffset();
 				}
 

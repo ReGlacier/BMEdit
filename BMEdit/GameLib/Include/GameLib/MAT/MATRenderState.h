@@ -19,13 +19,13 @@ namespace gamelib::mat
 		MATRenderState() = default;
 
 		MATRenderState(std::string name,
-		               bool bEnabled, bool bBlendEnabled, bool bAlphaTest, bool bFogEnabled, bool bZBias,
+		               bool bEnabled, bool bBlendEnabled, bool bAlphaTest, bool bFogEnabled, uint32_t iZBias,
 		               float fOpacity, float fZOffset,
 		               uint32_t iAlphaReference,
 		               MATCullMode cullMode, MATBlendMode blendMode,
 		               MATValU&& valU):
 			   	m_name(std::move(name)),
-   				m_bEnabled(bEnabled), m_bEnableBlend(bBlendEnabled), m_bAlphaTest(bAlphaTest), m_bFogEnabled(bFogEnabled), m_bZBias(bZBias),
+				m_bEnabled(bEnabled), m_bEnableBlend(bBlendEnabled), m_bAlphaTest(bAlphaTest), m_bFogEnabled(bFogEnabled), m_iZBias(iZBias),
 			   	m_fOpacity(fOpacity), m_fZOffset(fZOffset),
 			   	m_iAlphaReference(iAlphaReference),
 			   	m_eCullMode(cullMode), m_eBlendMode(blendMode),
@@ -40,7 +40,7 @@ namespace gamelib::mat
 		[[nodiscard]] bool isBlendEnabled() const { return m_bEnableBlend; }
 		[[nodiscard]] bool isAlphaTestEnabled() const { return m_bAlphaTest; }
 		[[nodiscard]] bool isFogEnabled() const { return m_bFogEnabled; }
-		[[nodiscard]] bool hasZBias() const { return m_bZBias; }
+		[[nodiscard]] uint32_t getZBias() const { return m_iZBias; }
 		[[nodiscard]] uint32_t getAlphaReference() const { return m_iAlphaReference; }
 		[[nodiscard]] float getOpacity() const { return m_fOpacity; }
 		[[nodiscard]] float getZOffset() const { return m_fZOffset; }
@@ -53,7 +53,7 @@ namespace gamelib::mat
 		bool m_bEnableBlend { false };
 		bool m_bAlphaTest { false };
 		bool m_bFogEnabled { false };
-		bool m_bZBias { false };
+		uint32_t m_iZBias{0};
 		MATCullMode m_eCullMode { MATCullMode::CM_DontCare };
 		MATBlendMode m_eBlendMode { MATBlendMode::BM_TRANS };
 		uint32_t m_iAlphaReference { 0u };

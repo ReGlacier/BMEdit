@@ -9,7 +9,8 @@ namespace gamelib::mat
 	MATRenderState MATRenderState::makeFromStream(ZBio::ZBinaryReader::BinaryReader* binaryReader, int propertiesCount)
 	{
 		std::string name {};
-		bool bEnabled { false }, bBlendEnabled { false }, bAlphaTest { false }, bFogEnabled { false }, bZBias { false };
+		bool bEnabled { false }, bBlendEnabled { false }, bAlphaTest { false }, bFogEnabled { false };
+		uint32_t iZBias{0};
 		float fOpacity { 1.0f }, fZOffset { .0f };
 		uint32_t iAlphaReference { 0u };
 		MATCullMode cullMode { MATCullMode::CM_DontCare };
@@ -53,7 +54,7 @@ namespace gamelib::mat
 			    break;
 			    case MATPropertyKind::PK_Z_BIAS:
 			    {
-				    bZBias = static_cast<bool>(entry.reference);
+				    iZBias = static_cast<uint32_t>(entry.reference);
 			    }
 			    break;
 			    case MATPropertyKind::PK_OPACITY:
@@ -130,6 +131,6 @@ namespace gamelib::mat
 			}
 		}
 
-		return MATRenderState(std::move(name), bEnabled, bBlendEnabled, bAlphaTest, bFogEnabled, bZBias, fOpacity, fZOffset, iAlphaReference, cullMode, blendMode, std::move(valU));
+		return MATRenderState(std::move(name), bEnabled, bBlendEnabled, bAlphaTest, bFogEnabled, iZBias, fOpacity, fZOffset, iAlphaReference, cullMode, blendMode, std::move(valU));
 	}
 }
