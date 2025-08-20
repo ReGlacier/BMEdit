@@ -8,7 +8,7 @@
     "parent": "ZGROUP",
     "properties": [
         {
-            "name": "property_48",
+            "name": "m_pDefaultBones",
             "offset": 72,
             "typename": "ZREFTAB32"
         }

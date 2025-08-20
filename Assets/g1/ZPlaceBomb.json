@@ -3,9 +3,9 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZREFTAB32", "offset": 44 },
-        { "name": "property_48", "typename": "ZGEOMREF", "offset": 72 },
-        { "name": "PlaceItemType", "typename": "ZPlaceBomb.EPlaceItemType", "offset": 76 },
-        { "name": "property_50", "typename": "PRPOpCode.Bool", "offset": 80 }
+        { "name": "m_AffectedGeoms", "typename": "ZREFTAB32", "offset": 44 },
+        { "name": "m_rRigGeom", "typename": "ZGEOMREF", "offset": 72 },
+        { "name": "m_iItemType", "typename": "ZPlaceBomb.EPlaceItemType", "offset": 76 },
+        { "name": "m_bPickupable", "typename": "PRPOpCode.Bool", "offset": 80 }
     ]
 }

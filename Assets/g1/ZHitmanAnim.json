@@ -8,7 +8,7 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_C",
+            "name": "m_pHMAnimFileName",
             "offset": 12,
             "typename": "ZANIM"
         }

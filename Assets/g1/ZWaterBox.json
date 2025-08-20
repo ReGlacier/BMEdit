@@ -8,7 +8,7 @@
     "parent": "ZBoxPrimitive",
     "properties": [
         {
-            "name": "property_C4",
+            "name": "m_vCurrent",
             "offset": 196,
             "typename": "ZVector3F"
         }

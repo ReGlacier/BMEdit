@@ -13,12 +13,12 @@
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_60",
+            "name": "m_SoundMappingMaterial",
             "offset": 96,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "AnimCollection",
+            "name": "anmCollection",
             "typename": "PRPOpCode.String"
         }
     ],

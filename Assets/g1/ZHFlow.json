@@ -8,17 +8,17 @@
   "typename": "ZHFlow",
   "parent": "ZSTDOBJ",
   "properties": [
-    { "name": "property_138", "typename": "PRPOpCode.Float32", "offset": 312 },
-    { "name": "property_13C", "typename": "PRPOpCode.Float32", "offset": 316 },
-    { "name": "FlowPictureProperty", "typename": "PRPOpCode.String" },
+    { "name": "m_fSizeX", "typename": "PRPOpCode.Float32", "offset": 312 },
+    { "name": "m_fSizeY", "typename": "PRPOpCode.Float32", "offset": 316 },
+    { "name": "FlowPicture", "typename": "PRPOpCode.String" },
     { "name": "FlowDataOffset", "typename": "PRPOpCode.Int32" },
-    { "name": "property_140", "typename": "PRPOpCode.Bool", "offset": 320 },
-    { "name": "property_144", "typename": "PRPOpCode.Float32", "offset": 324 },
+    { "name": "m_bLightDoubleResolution", "typename": "PRPOpCode.Bool", "offset": 320 },
+    { "name": "m_fLightMultiplier", "typename": "PRPOpCode.Float32", "offset": 324 },
     { "name": "InstanceObjects", "typename": "ZREFTAB32" },
     { "name": "LightList", "typename": "ZREFTAB32" },
     { "name": "StaticBoxList", "typename": "ZREFTAB32" },
     { "name": "MovingBoxList", "typename": "ZREFTAB32" },
     { "name": "ObstaclesList", "typename": "ZREFTAB32" },
-    { "name": "property_148", "typename": "PRPOpCode.Int32", "offset": 328 }
+    { "name": "m_lNumFlowInstances", "typename": "PRPOpCode.Int32", "offset": 328 }
   ]
 }

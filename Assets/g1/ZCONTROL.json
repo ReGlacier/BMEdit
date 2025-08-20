@@ -8,62 +8,62 @@
     "parent": "ZWINGROUP",
     "properties": [
         {
-            "name": "property_58",
+            "name": "m_dwId",
             "offset": 88,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_68",
+            "name": "m_rLeftControl",
             "offset": 104,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_6C",
+            "name": "m_rRightControl",
             "offset": 108,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_70",
+            "name": "m_rUpControl",
             "offset": 112,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_74",
+            "name": "m_rDownControl",
             "offset": 116,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "property_79",
+            "name": "m_bTextControl",
             "offset": 121,
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_7C",
+            "name": "m_dwNormalColor",
             "offset": 124,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_80",
+            "name": "m_dwHoverColor",
             "offset": 128,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_84",
+            "name": "m_dwFocusColor",
             "offset": 132,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_88",
+            "name": "m_dwPushColor",
             "offset": 136,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_8C",
+            "name": "m_dwDisabledColor",
             "offset": 140,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_90",
+            "name": "m_dwCheckColor",
             "offset": 144,
             "typename": "PRPOpCode.Int32"
         },

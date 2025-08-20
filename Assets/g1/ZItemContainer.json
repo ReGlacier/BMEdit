@@ -8,7 +8,7 @@
     "parent": "ZItem",
     "properties": [
         {
-            "name": "property_88",
+            "name": "m_prtContainedItems",
             "offset": 132,
             "typename": "ZREFTAB32"
         }

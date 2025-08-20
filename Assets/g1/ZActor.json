@@ -8,7 +8,7 @@
     "parent": "ZLNKWHANDS",
     "properties": [
         {
-            "name": "property_580",
+            "name": "m_pAudibleRoomList",
             "offset": 1408,
             "typename": "ZREFTAB32"
         }

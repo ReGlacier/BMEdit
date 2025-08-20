@@ -14,6 +14,43 @@ namespace gamelib::prm
 		index.c = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 	}
 
+	void SVertexStaticShadowWintel::deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexStaticShadowWintel &vertex)
+	{
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.p), 3);
+		vertex.c = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+	}
+
+	void SVertexWintel::deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexWintel &vertex)
+	{
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.p), 3);
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.n), 3);
+		vertex.c = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.uv), 2);
+	}
+
+	void SVertexWintelDP3::deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexWintelDP3 &vertex)
+	{
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.p), 3);
+		vertex.n = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		vertex.c = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.uv), 2);
+		vertex.T = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		vertex.B = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		vertex.S = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+	}
+
+	void SVertexW4WintelDP3::deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexW4WintelDP3 &vertex)
+	{
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.p), 3);
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.w), 3);
+		binaryReader->read<uint8_t, ZBio::Endianness::LE>(&vertex.bi.x, 4);
+		vertex.n = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		vertex.c = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		binaryReader->read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex.uv), 2);
+		vertex.T = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+		vertex.B = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+	}
+
 	void BoundingBox::deserialize(BoundingBox& boundingBox, ZBio::ZBinaryReader::BinaryReader* binaryReader)
 	{
 		boundingBox.vMin.x = binaryReader->read<float, ZBio::Endianness::LE>();
@@ -26,20 +63,21 @@ namespace gamelib::prm
 
 	void Mesh::deserialize(Mesh& mesh, ZBio::ZBinaryReader::BinaryReader* binaryReader, const PrmFile& prmFile)
 	{
-		mesh.boneDecl = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+		mesh.drawDestination = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
 		mesh.packType = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
-		mesh.kind = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
+		mesh.type = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
 		mesh.textureId = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
-		mesh.unk6 = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
-		mesh.nextVariation = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
-		mesh.unkC = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
-		mesh.unkD = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+		mesh.drawEntryId = binaryReader->read<uint16_t, ZBio::Endianness::LE>();
+		mesh.nextPrim = binaryReader->read<uint32_t, ZBio::Endianness::LE>();
+
+		mesh.subType = binaryReader->read<uint8_t, ZBio::Endianness::LE>(); // subtype
+		mesh.properties = binaryReader->read<uint8_t, ZBio::Endianness::LE>(); // properties
 
 		assert(binaryReader->tell() == 0xE && "Bad offset");
 		if (binaryReader->tell() != 0xE)
 			return;
 
-		mesh.lod = binaryReader->read<uint8_t, ZBio::Endianness::LE>();
+		mesh.lod = binaryReader->read<uint8_t, ZBio::Endianness::LE>(); // lLODMask
 
 		if (mesh.lod & (uint8_t)1 == (uint8_t)1)
 		{
@@ -140,17 +178,19 @@ namespace gamelib::prm
 				{
 					mesh.vertexFormat = static_cast<VertexFormat>(vertexSize);
 
+					// VF_28 - SVertexWintelDP3 or SVertexWintelShadowVolumeMPS
+					// VF_34 - SVertexW4Wintel or SVertexW4WintelDP3 
+
 					switch (mesh.vertexFormat)
 					{
 						case VertexFormat::VF_10:
 						{
 						    for (uint32_t j = 0; j < vertexCount; j++)
 						    {
-							    glm::vec3& vertex = mesh.vertices.emplace_back();
-							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
+							    SVertexStaticShadowWintel vertex{};
+							    SVertexStaticShadowWintel::deserialize(&vertexReader, vertex);
 
-							    uint8_t l[4] { 0, 0, 0, 0 };
-							    vertexReader.read<uint8_t, ZBio::Endianness::LE>(&l[0], 4);
+							    mesh.vertices.emplace_back(vertex.p);
 						    }
 					    }
 					    break;
@@ -158,16 +198,11 @@ namespace gamelib::prm
 					    {
 						    for (uint32_t j = 0; j < vertexCount; j++)
 						    {
-							    glm::vec3& vertex = mesh.vertices.emplace_back();
-							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
+							    SVertexWintel vertex{};
+							    SVertexWintel::deserialize(&vertexReader, vertex);
 
-							    // Skip another 0x10 useful info
-							    // TODO: Fix this!
-							    ZBioHelpers::seekBy(&vertexReader, 0x10);
-
-							    // Read UVs
-							    glm::vec2& uv = mesh.uvs.emplace_back();
-							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
+							    mesh.vertices.emplace_back(vertex.p);
+							    mesh.uvs.emplace_back(vertex.uv);
 						    }
 					    }
 					    break;
@@ -175,20 +210,11 @@ namespace gamelib::prm
 					    {
 						    for (uint32_t j = 0; j < vertexCount; j++)
 						    {
-							    glm::vec3& vertex = mesh.vertices.emplace_back();
-							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
+							    SVertexWintelDP3 vertex{};
+							    SVertexWintelDP3::deserialize(&vertexReader, vertex);
 
-							    // Skip another 0x10 useful info
-							    // TODO: Fix this!
-							    ZBioHelpers::seekBy(&vertexReader, 0x8);
-
-							    // Read UVs
-							    glm::vec2& uv = mesh.uvs.emplace_back();
-							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
-
-							    // Another seek
-							    // TODO: Fix this!
-							    ZBioHelpers::seekBy(&vertexReader, 0xC);
+								mesh.vertices.emplace_back(vertex.p);
+							    mesh.uvs.emplace_back(vertex.uv);
 						    }
 					    }
 					    break;
@@ -196,17 +222,11 @@ namespace gamelib::prm
 					    {
 						    for (uint32_t j = 0; j < vertexCount; j++)
 						    {
-							    glm::vec3& vertex = mesh.vertices.emplace_back();
-							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(vertex), 3);
+							    SVertexW4WintelDP3 vertex{};
+							    SVertexW4WintelDP3::deserialize(&vertexReader, vertex);
 
-							    // TODO: Fix this!
-							    ZBioHelpers::seekBy(&vertexReader, 0x18);
-
-							    glm::vec2& uv = mesh.uvs.emplace_back();
-							    vertexReader.read<float, ZBio::Endianness::LE>(glm::value_ptr(uv), 2);
-
-							    // TODO: Fix this
-							    ZBioHelpers::seekBy(&vertexReader, 0x8);
+								mesh.vertices.emplace_back(vertex.p);
+							    mesh.uvs.emplace_back(vertex.uv);
 						    }
 					    }
 					    break;

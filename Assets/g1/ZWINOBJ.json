@@ -8,11 +8,11 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_7E",
+            "name": "m_dwAmount",
             "typename": "PRPOpCode.Int8"
         },
         {
-            "name": "property_7F",
+            "name": "m_iPriority",
             "typename": "PRPOpCode.Int8"
         },
         {

@@ -1,8 +1,8 @@
 #include <Widgets/SceneRenderWidget.h>
 #include <Editor/TextureProcessor.h>
+#include <Render/GL.h>
 
 #include <QOpenGLVersionFunctionsFactory>
-#include <QOpenGLFunctions_4_5_Core>
 #include <QOpenGLShaderProgram>
 #include <QSharedPointer>
 #include <QOpenGLContext>
@@ -27,6 +27,7 @@
 #include <Render/GLResource.h>
 #include <Render/Shader.h>
 
+#include <cstdint>
 #include <unordered_map>
 #include <unordered_set>
 #include <string_view>
@@ -127,21 +128,20 @@ namespace widgets
 		return true;
 	}
 
-	using GLFunctions = QOpenGLFunctions_4_5_Core;
-
 #define ENCODE_MESH_IDX(modelId, meshId) ((static_cast<uint64_t>(modelId) << 32) | static_cast<uint64_t>(meshId))
 #define DECODE_MODEL_ID(encoded) (static_cast<uint32_t>((encoded) >> 32))
 #define DECODE_MESH_ID(encoded) (static_cast<uint32_t>((encoded) & 0xFFFFFFFF))
 
 	struct MeshInfo
 	{
-		uint32_t indexOffset = 0;
-		uint32_t indexCount = 0;
-		gamelib::mat::MATRenderState renderState {
-		    "GENERATED",
-		    true,
-		    true,
-		    true,
+			uint32_t indexOffset = 0;
+			uint32_t indexCount = 0;
+			uint8_t variationId = 0;
+			gamelib::mat::MATRenderState renderState {
+				"GENERATED",
+				true,
+				true,
+				true,
 		    true,
 		    false,
 		    1.0f,
@@ -178,6 +178,17 @@ namespace widgets
 		}
 
 		[[nodiscard]] gamelib::BoundingBox AsBounds() const { return gamelib::BoundingBox(vMin, vMax); }
+
+		[[nodiscard]] gamelib::BoundingBox AsBoundsOrCube(const glm::vec3& vOrigin, float fSide) const
+		{
+			auto bbox = AsBounds();
+			if (bbox.getVolume() <= std::numeric_limits<double>::epsilon())
+			{
+				bbox = gamelib::BoundingBox(vOrigin - (glm::vec3(fSide) * .5f), vOrigin + (glm::vec3(fSide) * .5f));
+			}
+
+			return bbox;
+		}
 	};
 
 
@@ -231,8 +242,8 @@ namespace widgets
 			glm::mat4 Matrix    {  1.f };  /// CPU: Write  GPU: Read
 			glm::vec4 BoundsMin { -1.f };  /// CPU: Write  GPU: Read
 			glm::vec4 BoundsMax {  1.f };  /// CPU: Write  GPU: Read
-			glm::vec4 Status    {  0.f };  /// CPU: ReadWrite GPU: Write | X - Is Visible (GPU), Y - PrimitiveID (CPU), Z, W - unused
-		};
+			glm::vec4 Status    {  0.f };  /// CPU: ReadWrite GPU: Write | X - Is Visible (GPU), Y - PrimitiveID (CPU), Z - Mesh VariantId, W - unused
+	};
 
 		QVector<ObjectTransformDescription> Transforms; // Linear memory chunk to store all transforms directly. There are will be copied to GPU SSBO
 		QVector<BoundingBoxDef> WorldBoundingBoxes; // A cached world space bounding boxes. Indexing same to Transforms
@@ -252,6 +263,8 @@ namespace widgets
 		uint32_t IndirectDrawNonTransparentCommandsCount = 0;
 		std::ptrdiff_t IndirectDrawTransparentCommands = 0;
 		uint32_t IndirectDrawTransparentCommandsCount = 0;
+
+		void FillTransformForSceneObject(gamelib::scene::SceneObject *sceneObj, ObjectTransformDescription &transformDesc, BoundingBoxDef &bbox);
 	};
 
 	struct SceneRenderWidget::RenderCommon
@@ -264,10 +277,12 @@ namespace widgets
 		/// --- Data -------------------
 		enum EUniformID { U_CAMERA_PROJ_VIEW = 0, MAX_UNIFORM_INDEX };
 
-		QSharedPointer<QOpenGLShaderProgram> DefaultShader = nullptr;
-		QSharedPointer<QOpenGLShaderProgram> CullingShader = nullptr;
-		GLuint DefaultShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
-		GLuint CullingShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
+                QSharedPointer<QOpenGLShaderProgram> DefaultShader = nullptr;
+                QSharedPointer<QOpenGLShaderProgram> CullingShader = nullptr;
+                QSharedPointer<QOpenGLShaderProgram> GizmoShader = nullptr;
+                GLuint DefaultShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
+                GLuint CullingShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
+                GLuint GizmoShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
 
 		GLFunctions* GL = nullptr;
 		GLExtFunctions::Ptr GLExt = nullptr;
@@ -330,10 +345,11 @@ namespace widgets
 			return;
 		}
 
-		m_pCommon->setup();
+                m_pCommon->setup();
+                m_gizmo.setup(m_pCommon->GL);
 
-		qDebug() << "Base render stubs are inited";
-	}
+                qDebug() << "Base render stubs are inited";
+        }
 
 	void SceneRenderWidget::paintGL()
 	{
@@ -353,6 +369,12 @@ namespace widgets
 			{
 				m_pContext->syncTransforms();
 				m_bTransformsDirty = false;
+			}
+
+			// Fill gizmo
+			if (m_pSelectedObject != nullptr)
+			{
+				generateGizmosForEntity(m_pSelectedObject);
 			}
 
 			// Perform commands
@@ -502,6 +524,7 @@ namespace widgets
 		m_bFirstMouseQuery = true;
 		m_pContext = nullptr; // Drop level resources here
 		m_eLoaderState = ELevelLoadState::LLS_NONE;
+		m_pSelectedObject = nullptr;
 
 		resetViewMode();
 		repaint();
@@ -530,13 +553,20 @@ namespace widgets
 		if (!m_pLevel)
 			return;
 
-		auto flags = sceneObject->getGeomInfo().getGeomFlags();
-		bool isBit4Set = flags & (1 << 4);
+		if (m_pSelectedObject != sceneObject)
+		{
+			m_pSelectedObject = sceneObject;
+			repaint();
+		}
 
+		// auto flags = sceneObject->getGeomInfo().getGeomFlags();
+		// bool isBit4Set = flags & (1 << 4);
 	}
 
 	void SceneRenderWidget::resetSelectedObject()
 	{
+		m_pSelectedObject = nullptr;
+		repaint();
 	}
 
 	void SceneRenderWidget::moveCameraTo(const glm::vec3& position)
@@ -583,42 +613,82 @@ namespace widgets
 			repaint();
 	}
 
-	void SceneRenderWidget::onObjectMoved(gamelib::scene::SceneObject *sceneObject)
+	void SceneRenderWidget::onObjectMoved(const QString& propertyName, gamelib::scene::SceneObject *sceneObject)
 	{
+		bool bNeedRepaint = false;
+
 		// Impl
 		if (m_pContext)
 		{
-			// Here we need to re-compute sub-tree. In theory, we need to limit us, but actually no, let's compute all subtree
-			using VR = gamelib::scene::SceneObject::EVisitResult;
-			bool bDirty = false;
+			if (propertyName == "Position" || propertyName == "Matrix")
+			{
+				// Here we need to re-compute sub-tree. In theory, we need to limit us, but actually no, let's compute all subtree
+				using VR = gamelib::scene::SceneObject::EVisitResult;
+				bool bDirty = false;
 
-			sceneObject->visitChildren([this, &bDirty](const gamelib::scene::SceneObject::Ptr& pObj) -> VR {
-				if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(pObj.get()); objectToIndexIt != m_pContext->ObjectToTransformIndex.end())
+				auto ActualizeTransformForSceneObject = [this](const gamelib::scene::SceneObject* pObject) -> bool
 				{
-					const glm::mat4 mWorld = pObj->getWorldTransform();
-					m_pContext->Transforms[*objectToIndexIt].Matrix = mWorld;
-
-					const auto primId = GetSceneObjectPrimitiveID(m_pLevel, pObj.get());
-					if (primId)
+					if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(const_cast<gamelib::scene::SceneObject *>(pObject)); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
 					{
-						// Update world bounding boxes
-						const auto worldBBox = gamelib::BoundingBox::toWorld(m_pContext->BoundingBoxes[primId], mWorld);
-						m_pContext->WorldBoundingBoxes[*objectToIndexIt] = worldBBox;
-						m_pContext->Transforms[*objectToIndexIt].BoundsMin = glm::vec4(worldBBox.min, 1.f);
-						m_pContext->Transforms[*objectToIndexIt].BoundsMax = glm::vec4(worldBBox.max, 1.f);
+						const glm::mat4 mWorld = pObject->getWorldTransform();
+						m_pContext->Transforms[*objectToIndexIt].Matrix = mWorld;
+
+						const auto primId = GetSceneObjectPrimitiveID(m_pLevel, pObject);
+						if (primId) 
+						{
+							// Update world bounding boxes
+							const auto worldBBox = gamelib::BoundingBox::toWorld(m_pContext->BoundingBoxes[primId], mWorld);
+							m_pContext->WorldBoundingBoxes[*objectToIndexIt] = worldBBox;
+							m_pContext->Transforms[*objectToIndexIt].BoundsMin = glm::vec4(worldBBox.min, 1.f);
+							m_pContext->Transforms[*objectToIndexIt].BoundsMax = glm::vec4(worldBBox.max, 1.f);
+						}
+
+						return true;
 					}
 
-					bDirty = true; // NOTE: Maybe we should upload only part?
+					return false;
+				};
+
+				// actualize for us
+				bDirty = ActualizeTransformForSceneObject(sceneObject);
+
+				// and for children objects
+				sceneObject->visitChildren([this, ActualizeTransformForSceneObject, &bDirty](const gamelib::scene::SceneObject::Ptr &pObj) -> VR {
+					bDirty = ActualizeTransformForSceneObject(pObj.get());
+
+					return VR::VR_CONTINUE;
+				});
+
+				if (bDirty) {
+					m_bTransformsDirty = true;
+					bNeedRepaint = true;
+				}
+			}
+
+			if (propertyName == "PrimId" || propertyName == "MeshVariantId")
+			{
+				bool bDirty = false;
+
+				if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(sceneObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
+				{
+					BoundingBoxDef bbox{};
+					m_pContext->FillTransformForSceneObject(sceneObject, m_pContext->Transforms[*objectToIndexIt], bbox);
+					m_pContext->WorldBoundingBoxes[*objectToIndexIt] = bbox;
+
+					bDirty = true;
 				}
 
-				return VR::VR_CONTINUE;
-			});
-
-			if (bDirty)
-			{
-				m_bTransformsDirty = true;
-				repaint();
+				if (bDirty) 
+				{
+					m_bTransformsDirty = m_bRenderListDirty = true;
+					bNeedRepaint = true;
+				}
 			}
+		}
+
+		if (bNeedRepaint)
+		{
+			repaint();
 		}
 	}
 
@@ -927,26 +997,30 @@ namespace widgets
 				// Here we need to store all MESHES, not MODELS
 				auto primId = static_cast<int32_t>(objectDescription.Status.y);
 				const auto meshesCount = m_pContext->ModelToMeshesCount[primId];
+				const int32_t variation = static_cast<int32_t>(objectDescription.Status.z);
 
 				for (int32_t j = 0; j < meshesCount; j++)
 				{
-					if (auto it = m_pContext->Meshes.find(ENCODE_MESH_IDX(primId, j)); it != m_pContext->Meshes.end())
-					{
-						const bool bIsTransparent = it->renderState.isBlendEnabled();
-						QList<RenderEntity>& toInsert = bIsTransparent ? aTransparentObjects : aNonTransparentObjects;
+						if (auto it = m_pContext->Meshes.find(ENCODE_MESH_IDX(primId, j)); it != m_pContext->Meshes.end())
+						{
+								if (it->variationId != variation)
+										continue;
 
-						RenderEntity& renderEntity    = toInsert.emplace_back();
-						renderEntity.bIsTransparent   = bIsTransparent;
-						renderEntity.startIndex       = it->indexOffset;
-						renderEntity.indicesCount     = it->indexCount;
-						renderEntity.transformIndex   = i; //transformIndex;
+								const bool bIsTransparent = it->renderState.isBlendEnabled();
+								QList<RenderEntity>& toInsert = bIsTransparent ? aTransparentObjects : aNonTransparentObjects;
 
-						// It's really weird, but at this point I don't know actual position of this mesh in the world.
-						// Anyway, world bounding box is still good point to understand relative to camera position.
-						renderEntity.position = gamelib::BoundingBox(objectDescription.BoundsMin, objectDescription.BoundsMax).getCenter();
+								RenderEntity& renderEntity    = toInsert.emplace_back();
+								renderEntity.bIsTransparent   = bIsTransparent;
+								renderEntity.startIndex       = it->indexOffset;
+								renderEntity.indicesCount     = it->indexCount;
+								renderEntity.transformIndex   = i; //transformIndex;
 
-						++iAcceptedEntries;
-					}
+								// It's really weird, but at this point I don't know actual position of this mesh in the world.
+								// Anyway, world bounding box is still good point to understand relative to camera position.
+								renderEntity.position = gamelib::BoundingBox(objectDescription.BoundsMin, objectDescription.BoundsMax).getCenter();
+
+								++iAcceptedEntries;
+						}
 				}
 			}
 
@@ -1066,11 +1140,15 @@ namespace widgets
 			                                            (const void *) (m_pContext->IndirectDrawNonTransparentCommands * sizeof(IndirectRenderDrawCommand)),
 			                                            static_cast<GLint>(m_pContext->IndirectDrawNonTransparentCommandsCount),
 			                                            0 /* stride */);
-		}
-		// Stage #4: Gizmo (not implemented yet)
-		// Stage #5: Transparent commands
-		if (m_pContext->IndirectDrawTransparentCommandsCount)
-		{
+                }
+                // Stage #4: Gizmo
+                m_gizmo.render(m_pCommon->GL,
+                               m_pCommon->GizmoShader.get(),
+                               static_cast<GLint>(m_pCommon->GizmoShaderUniformLocations[RenderCommon::EUniformID::U_CAMERA_PROJ_VIEW]),
+                               m_camera.getProjView());
+                // Stage #5: Transparent commands
+                if (m_pContext->IndirectDrawTransparentCommandsCount)
+                {
 			m_pContext->GL->glDepthMask(GL_TRUE);
 			m_pContext->GL->glEnable(GL_BLEND);
 			m_pContext->GL->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -1080,6 +1158,27 @@ namespace widgets
 			                                            (const void *) (m_pContext->IndirectDrawTransparentCommands * sizeof(IndirectRenderDrawCommand)),
 			                                            static_cast<GLint>(m_pContext->IndirectDrawTransparentCommandsCount),
 			                                            0 /* stride */);
+		}
+	}
+
+	void SceneRenderWidget::generateGizmosForEntity(gamelib::scene::SceneObject* pSceneObject)
+	{
+		if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(pSceneObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
+		{
+			// Main gizmo (AABB)
+			const auto &bounds = m_pContext->WorldBoundingBoxes[*objectToIndexIt];
+			addGizmoBox(bounds.AsBoundsOrCube(pSceneObject->getPosition(), 50.0f), glm::vec4(0.f, 1.f, 0.0f, 0.15f), glm::vec4(0.f, 1.f, 0.0f, 1.0f));
+
+			// PathFollower gizmo
+			auto pathFolloweIt = std::find_if(pSceneObject->getControllers().begin(), pSceneObject->getControllers().end(), [](const gamelib::scene::SceneObject::Controller& sc) -> bool {
+				return sc.type->getName() == "ZPathFollower";
+			});
+
+			if (pathFolloweIt != pSceneObject->getControllers().end())
+			{
+				// Nice, we have path follower and a lot of gizmos!
+				// TODO: Extract "m_WayPointLists" property
+			}
 		}
 	}
 
@@ -1333,7 +1432,7 @@ namespace widgets
 			{
 				if (!binder.renderStates.empty())
 				{
-					materialInstance.ZBiasOffset.x = binder.renderStates[0].hasZBias() ? 1.f : 0.f;
+					materialInstance.ZBiasOffset.x = static_cast<float>(binder.renderStates[0].getZBias()); // NOTE: Need to convert it correctly (see PS2 build, method ZOldDrawPS2::BiasToScale)
 					materialInstance.ZBiasOffset.y = binder.renderStates[0].getZOffset();
 				}
 
@@ -1446,6 +1545,7 @@ namespace widgets
 				const auto meshTextureId = mesh.textureId;
 
 				MeshInfo& meshInfo = *Meshes.insert(ENCODE_MESH_IDX(static_cast<int32_t>(model.chunk), meshIdx), {});
+				meshInfo.variationId = mesh.variationId;
 
 				if (meshMaterialId > 0)
 				{
@@ -1603,6 +1703,26 @@ namespace widgets
 		return true;
 	}
 
+	void SceneRenderWidget::RenderContext::FillTransformForSceneObject(gamelib::scene::SceneObject *sceneObj, ObjectTransformDescription &transformDesc, BoundingBoxDef& bbox)
+	{
+		const auto primId = GetSceneObjectPrimitiveID(Level, sceneObj);
+
+		// Store transform & association
+		const glm::mat4 mWorld = sceneObj->getWorldTransform();
+		transformDesc.Matrix = mWorld;
+		transformDesc.Status.x = 0.f;
+		transformDesc.Status.y = static_cast<float>(primId);
+		transformDesc.Status.z = static_cast<float>(sceneObj->getProperties().getObject<int32_t>("MeshVariantId", 0));
+		transformDesc.Status.w = 0.f;
+
+		// Store bounding box
+		bbox = primId ? gamelib::BoundingBox::toWorld(BoundingBoxes[primId], mWorld) : gamelib::BoundingBox();
+
+		// Store bounds
+		transformDesc.BoundsMin = glm::vec4(bbox.vMin.x, bbox.vMin.y, bbox.vMin.z, 1.f);
+		transformDesc.BoundsMax = glm::vec4(bbox.vMax.x, bbox.vMax.y, bbox.vMax.z, 1.f);
+	}
+
 	bool SceneRenderWidget::RenderContext::buildTransformCache()
 	{
 		// Here we need to visit whole scene object by object (in hierarchy order)
@@ -1611,23 +1731,13 @@ namespace widgets
 
 		auto Visitor = [this](const gamelib::scene::SceneObject::Ptr& pObject) -> gamelib::scene::SceneObject::EVisitResult {
 			using VR = gamelib::scene::SceneObject::EVisitResult;
-			const auto primId = GetSceneObjectPrimitiveID(Level, pObject);
 
-			// Store transform & association
-			const glm::mat4 mWorld = pObject->getWorldTransform();
 			ObjectTransformDescription& transformDescription = Transforms.emplace_back();
-			transformDescription.Matrix = mWorld;
-			transformDescription.Status.x = 0.f;
-			transformDescription.Status.y = static_cast<float>(primId);
-			transformDescription.Status.z = transformDescription.Status.w = 0.f;
 
-			// Store bounding box
-			gamelib::BoundingBox worldBBox = primId ? gamelib::BoundingBox::toWorld(BoundingBoxes[primId], mWorld) : gamelib::BoundingBox();
-			WorldBoundingBoxes.emplace_back(worldBBox); // Store empty bbox if no primId presented at all
+			BoundingBoxDef bbox;
+			FillTransformForSceneObject(pObject.get(), transformDescription, bbox);
 
-			// Store bounds
-			transformDescription.BoundsMin = glm::vec4(worldBBox.min, 1.f);
-			transformDescription.BoundsMax = glm::vec4(worldBBox.max, 1.f);
+			WorldBoundingBoxes.emplace_back(bbox);// Store empty bbox if no primId presented at all
 
 			// Store identity
 			ObjectToTransformIndex[pObject.get()] = (Transforms.size() - 1);
@@ -1653,7 +1763,7 @@ namespace widgets
 	}
 
 	/// ------------------------------ RenderCommon
-	SceneRenderWidget::RenderCommon::RenderCommon(widgets::GLFunctions *pGLFunctions, GLExtFunctions::Ptr&& pGLExtFunctions)
+	SceneRenderWidget::RenderCommon::RenderCommon(GLFunctions *pGLFunctions, GLExtFunctions::Ptr&& pGLExtFunctions)
 	    : GL(pGLFunctions), GLExt(std::move(pGLExtFunctions))
 	{
 	}
@@ -1695,19 +1805,32 @@ namespace widgets
 			CollectUniforms(&DefaultShaderUniformLocations[0], DefaultShader.get());
 		}
 
-		{
-		    CullingShader.reset(new QOpenGLShaderProgram(nullptr));
-			CullingShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Compute, GetContents(":/bmedit/culling.csh"));
-			if (!CullingShader->link())
-			{
-				QMessageBox::critical(nullptr, "Render error", "Failed to link CullingShader!");
-				return;
-			}
+                {
+                    CullingShader.reset(new QOpenGLShaderProgram(nullptr));
+                        CullingShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Compute, GetContents(":/bmedit/culling.csh"));
+                        if (!CullingShader->link())
+                        {
+                                QMessageBox::critical(nullptr, "Render error", "Failed to link CullingShader!");
+                                return;
+                        }
 
-			// Make cache
-			CollectUniforms(&CullingShaderUniformLocations[0], CullingShader.get());
-		}
+                        // Make cache
+                        CollectUniforms(&CullingShaderUniformLocations[0], CullingShader.get());
+                }
 
-		qDebug() << "GPU: Shaders are ready";
-	}
+                {
+                        GizmoShader.reset(new QOpenGLShaderProgram(nullptr));
+                        GizmoShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Vertex, GetContents(":/bmedit/gizmo_gl33.vsh"));
+                        GizmoShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Fragment, GetContents(":/bmedit/gizmo_gl33.fsh"));
+                        if (!GizmoShader->link())
+                        {
+                                QMessageBox::critical(nullptr, "Render error", "Failed to link GizmoShader!");
+                                return;
+                        }
+
+                        CollectUniforms(&GizmoShaderUniformLocations[0], GizmoShader.get());
+                }
+
+                qDebug() << "GPU: Shaders are ready";
+        }
 }

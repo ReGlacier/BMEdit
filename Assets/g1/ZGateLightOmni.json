@@ -8,27 +8,27 @@
     "parent": "ZOMNILIGHT",
     "properties": [
         {
-            "name": "Type",
+            "name": "m_lType",
             "offset": 28,
             "typename": "ZGateLightOmni.EType"
         },
         {
-            "name": "property_20",
+            "name": "m_RoomsFilter",
             "offset": 32,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "FilterType",
+            "name": "m_lFilterType",
             "offset": 60,
             "typename": "ZGateLightOmni.EFilterType"
         },
         {
-            "name": "property_40",
+            "name": "m_Slaves",
             "offset": 64,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_5C",
+            "name": "m_Gates",
             "offset": 92,
             "typename": "ZREFTAB32"
         }

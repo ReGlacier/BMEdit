@@ -8,42 +8,42 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "property_C",
+            "name": "m_fDirectionScale",
             "offset": 12,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_1C",
+            "name": "m_vSize",
             "offset": 28,
             "typename": "ZVector3F"
         },
         {
-            "name": "property_28",
+            "name": "m_lNrParticles",
             "offset": 40,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_2C",
+            "name": "m_fParticleSize",
             "offset": 44,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_30",
+            "name": "m_fParticleDepth",
             "offset": 48,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_34",
+            "name": "m_lParticlePrim",
             "offset": 52,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_38",
+            "name": "m_vSpawnMul",
             "offset": 56,
             "typename": "ZVector3F"
         },
         {
-            "name": "property_44",
+            "name": "m_vSpawnAdd",
             "offset": 68,
             "typename": "ZVector3F"
         }

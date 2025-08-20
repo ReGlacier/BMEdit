@@ -3,6 +3,6 @@
   "parent": "ZSTDOBJ",
   "kind": "TypeKind.COMPLEX",
   "properties": [
-    { "name": "UpgradeType", "typename": "ZHM3WeaponUpgrade.EUpgradeType", "__comment": "Original code declares new enum for this, but who cares" }
+    { "name": "m_eType", "typename": "ZHM3WeaponUpgrade.EUpgradeType", "__comment": "Original code declares new enum for this, but who cares" }
   ]
 }

@@ -24,10 +24,10 @@ namespace models
 		void resetGeom();
 
 	signals:
-		void objectPropertiesChanged(const gamelib::scene::SceneObject*);
+		void objectPropertiesChanged(const QString& propertyId, const gamelib::scene::SceneObject* pObject);
 
 	private slots:
-		void onValueChanged();
+		void onValueChanged(const QString& propertyName);
 
 	private:
 		std::optional<std::size_t> m_geomIndex {};

@@ -3,9 +3,9 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "ZAUDIOREF", "offset": 44 },
+        { "name": "m_rClickSound", "typename": "ZAUDIOREF", "offset": 44 },
         { "name": "Targets", "typename": "ZGEOMREF" },
-        { "name": "property_60", "typename": "ZGEOMREF", "offset": 96 },
-        { "name": "property_64", "typename": "ZMsg", "offset": 100 }
+        { "name": "m_rElevatorHouse", "typename": "ZGEOMREF", "offset": 96 },
+        { "name": "m_msgCallElevator", "typename": "ZMsg", "offset": 100 }
     ]
 }

@@ -50,6 +50,7 @@ namespace gamelib
 				// TODO: Need to use proper way to read bytes (endianness)
 				auto header = reinterpret_cast<prm::SPrimHeader*>(chunk.data.get());
 
+				// it's a weird way to recognize models, actually we need to ask size & then read SPrimHeader and then prepare
 				if (m_file.entries[i].size == 0x40 && *reinterpret_cast<std::uint32_t*>(chunk.data.get()) == 0x070100)
 				{
 					chunk.is_model = true;

@@ -8,15 +8,15 @@
     "parent": "ZSTDOBJ",
     "properties": [
         {
-            "name": "ScaleX",
+            "name": "scaleX",
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "ScaleY",
+            "name": "scaleY",
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "ScaleZ",
+            "name": "scaleZ",
             "typename": "PRPOpCode.Float32"
         },
         {
@@ -28,57 +28,57 @@
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "property_C",
+            "name": "m_vXOOffset",
             "offset": 12,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_10",
+            "name": "m_vZOOffset",
             "offset": 16,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_14",
+            "name": "m_vX1OOffset",
             "offset": 20,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "GuardsList",
+            "name": "m_rGuards",
             "offset": 24,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "AllowedToEnterWithoutFriskDisguises",
+            "name": "m_rPerfectHMAs",
             "offset": 52,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "AllowedToEnterWithFriskDisguises",
+            "name": "m_rForbiddenHMAs",
             "offset": 80,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_6C",
+            "name": "m_rModifiableHMAs",
             "offset": 108,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_88",
+            "name": "m_rGuardPoints",
             "offset": 136,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "property_A4",
+            "name": "m_rIgnoredWeapons",
             "offset": 164,
             "typename": "ZREFTAB32"
         },
         {
-            "name": "FriskAreaDoor",
+            "name": "m_rProtectedDoor",
             "offset": 192,
             "typename": "ZGEOMREF"
         },
         {
-            "name": "FriskOp",
+            "name": "m_eOperation",
             "offset": 484,
             "typename": "ZFriskBox.EFriskOp"
         }

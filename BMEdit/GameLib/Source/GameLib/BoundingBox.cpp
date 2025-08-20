@@ -51,9 +51,9 @@ bool BoundingBox::intersect(const gamelib::BoundingBox& another) const
 
 double BoundingBox::getVolume() const
 {
-	static auto w = static_cast<double>(max.x - min.x);
-	static auto h = static_cast<double>(max.y - min.y);
-	static auto d = static_cast<double>(max.z - min.z);
+	auto w = static_cast<double>(max.x - min.x);
+	auto h = static_cast<double>(max.y - min.y);
+	auto d = static_cast<double>(max.z - min.z);
 
 	return w * h * d;
 }

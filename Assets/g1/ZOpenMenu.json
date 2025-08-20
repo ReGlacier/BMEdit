@@ -4,8 +4,8 @@
   "kind": "TypeKind.COMPLEX",
   "properties": [
     { "name": "MenuName", "typename": "PRPOpCode.String" },
-    { "name": "property_AC", "typename": "PRPOpCode.Bool", "offset": 172 },
-    { "name": "property_B0", "typename": "ZSDOwner", "offset": 176 },
-    { "name": "property_C0", "typename": "ZMsg", "offset": 192 }
+    { "name": "m_bAddZWindowsToView", "typename": "PRPOpCode.Bool", "offset": 172 },
+    { "name": "m_SoundDef", "typename": "ZSDOwner", "offset": 176 },
+    { "name": "m_msgOpenMessage", "typename": "ZMsg", "offset": 192 }
   ]
 }

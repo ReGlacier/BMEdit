@@ -3,7 +3,7 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "SecurityZonePatch", "typename": "ZZoneControl.ESecurityZone_PATCH", "offset": 44 },
-        { "name": "property_30", "typename": "ZREFTAB32", "offset": 48 }
+        { "name": "Zone", "typename": "ZZoneControl.ESecurityZone_PATCH", "offset": 44 },
+        { "name": "m_Rooms", "typename": "ZREFTAB32", "offset": 48 }
     ]
 }

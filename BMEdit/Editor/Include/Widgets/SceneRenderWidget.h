@@ -6,6 +6,7 @@
 #include <QString>
 
 #include <Render/RenderEntry.h>
+#include <Render/GizmoRenderer.h>
 
 #include <GameLib/BoundingBox.h>
 #include <GameLib/Level.h>
@@ -56,6 +57,10 @@ namespace widgets
 
 		bool shouldRenderRoomBoundingBox() const;
 		void setShouldRenderRoomBoundingBox(bool bVal);
+
+		void addGizmoLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color) { m_gizmo.addLine(a, b, color); }
+		void addGizmoBox(const gamelib::BoundingBox &box, const glm::vec4 &color, const glm::vec4 &lineColor) { m_gizmo.addAABB(box, color, lineColor); }
+		void clearGizmos() { m_gizmo.clear(); }
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
@@ -64,7 +69,7 @@ namespace widgets
 		void onRedrawRequested();
 
 		// Use when object properties changed and his 'world transform' could be changed.
-		void onObjectMoved(gamelib::scene::SceneObject* sceneObject);
+		void onObjectMoved(const QString &propertyName, gamelib::scene::SceneObject *sceneObject);
 
 	protected:
 		void initializeGL() override;
@@ -83,6 +88,7 @@ namespace widgets
 		void updateViewLists();
 		void generateDrawCommands();
 		void drawScene();
+		void generateGizmosForEntity(gamelib::scene::SceneObject* pSceneObject);
 
 		[[nodiscard]] glm::ivec2 getViewportSize() const {
 			return { widthMM(), heightMM() };
@@ -91,6 +97,7 @@ namespace widgets
 	private:
 		// Data
 		gamelib::Level* m_pLevel { nullptr };
+		gamelib::scene::SceneObject* m_pSelectedObject{nullptr};
 
 		// Render data
 		struct RenderContext;
@@ -112,5 +119,7 @@ namespace widgets
 		bool m_bRenderListDirty { false };
 		bool m_bIgnoreVisibility { false };
 		bool m_bTransformsDirty { false };
+
+		render::GizmoRenderer m_gizmo;
 	};
 }

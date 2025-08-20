@@ -3,14 +3,14 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "Type", "typename": "CBodyContainer.eBCType", "offset": 56 },
-        { "name": "property_44", "typename": "ZAUDIOREF", "offset": 68 },
-        { "name": "property_48", "typename": "ZAUDIOREF", "offset": 72 },
-        { "name": "property_4C", "typename": "ZAUDIOREF", "offset": 76 },
-        { "name": "property_50", "typename": "ZAUDIOREF", "offset": 80 },
-        { "name": "property_54", "typename": "ZGEOMREF", "offset": 84 },
-        { "name": "property_58", "typename": "ZGEOMREF", "offset": 88 },
-        { "name": "State", "typename": "CBodyContainer.eBCState", "offset": 96 },
-        { "name": "property_64", "typename": "PRPOpCode.Bool", "offset": 100 }
+        { "name": "m_eType", "typename": "CBodyContainer.eBCType", "offset": 56 },
+        { "name": "m_sndOpen", "typename": "ZAUDIOREF", "offset": 68 },
+        { "name": "m_sndOpened", "typename": "ZAUDIOREF", "offset": 72 },
+        { "name": "m_sndClose", "typename": "ZAUDIOREF", "offset": 76 },
+        { "name": "m_sndClosed", "typename": "ZAUDIOREF", "offset": 80 },
+        { "name": "m_rDoor", "typename": "ZGEOMREF", "offset": 84 },
+        { "name": "m_rOperatePoint", "typename": "ZGEOMREF", "offset": 88 },
+        { "name": "m_eInitialState", "typename": "CBodyContainer.eBCState", "offset": 96 },
+        { "name": "m_bRemoveBodies", "typename": "PRPOpCode.Bool", "offset": 100 }
     ]
 }

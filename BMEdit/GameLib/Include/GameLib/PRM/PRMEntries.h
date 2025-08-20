@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
+#include <glm/gtc/type_precision.hpp>
 
 
 namespace ZBio::ZBinaryReader
@@ -32,6 +33,15 @@ namespace gamelib::prm
 		VF_34 = 0x34
 	};
 
+	enum SUBTYPE : uint8_t
+	{
+		SUBTYPE_STANDARD = 0,
+		SUBTYPE_TWEENED = 1,
+		SUBTYPE_RIGID = 2,
+		SUBTYPE_WEIGHTED = 3,
+		SUBTYPE_COUNT = 4
+	};
+
 #pragma pack(push, 1)   // TODO: Need to use some sort of macro to make this place cross-compiler supportable
 	struct PrmFile;
 
@@ -44,6 +54,51 @@ namespace gamelib::prm
 		static void deserialize(Index& index, ZBio::ZBinaryReader::BinaryReader* binaryReader);
 	};
 
+	// VF_10
+	struct SVertexStaticShadowWintel {
+		glm::vec3 p;
+		uint32_t c;
+
+		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexStaticShadowWintel &vertex);
+	};
+
+	// VF_24
+	struct SVertexWintel {
+		glm::vec3 p;
+		glm::vec3 n;
+		glm::uint32 c;
+		glm::vec2 uv;
+
+		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexWintel &vertex);
+	};
+
+	struct SVertexWintelDP3 
+	{
+		glm::vec3 p;
+		uint32_t n; // packed normal
+		uint32_t c; // color RGBA/ARGB?
+		glm::vec2 uv;
+		uint32_t T; // tangent packed
+		uint32_t B; // binormal packed
+		uint32_t S; // ???
+
+		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexWintelDP3 &vertex);
+	};
+
+	struct SVertexW4WintelDP3 
+	{
+		glm::vec3 p;
+		glm::vec3 w; // weights
+		glm::u8vec4 bi; // bone indices
+		uint32_t n; // normal packed
+		uint32_t c; // rgba/argb
+		glm::vec2 uv;
+		uint32_t T; // tangent packed
+		uint32_t B; // binormal packed
+		
+		static void deserialize(ZBio::ZBinaryReader::BinaryReader *binaryReader, SVertexW4WintelDP3 &vertex);
+	};
+
 	struct BoundingBox
 	{
 		glm::vec3 vMin;
@@ -54,14 +109,14 @@ namespace gamelib::prm
 
 	struct Mesh
 	{
-		uint8_t boneDecl = 0;
+		uint8_t drawDestination = 0;
 		uint8_t packType = 0;
-		uint16_t kind = 0;
+		uint16_t type = 0;
 		uint16_t textureId = 0;
-		uint16_t unk6 = 0;
-		uint32_t nextVariation = 0;
-		uint8_t unkC = 0;
-		uint8_t unkD = 0;
+		uint16_t drawEntryId = 0;
+		uint32_t nextPrim = 0;
+		uint8_t subType = 0;
+		uint8_t properties = 0;
 		uint8_t lod = 0;
 		uint16_t material_id = 0;
 		uint8_t variationId = 0;

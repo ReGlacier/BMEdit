@@ -3,7 +3,7 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "property_2C", "typename": "PRPOpCode.String", "offset": 44 },
-        { "name": "property_30", "typename": "ZGEOMREF", "offset": 48 }
+        { "name": "m_szName", "typename": "PRPOpCode.String", "offset": 44 },
+        { "name": "m_rWorldGroup", "typename": "ZGEOMREF", "offset": 48 }
     ]
 }

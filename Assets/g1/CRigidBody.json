@@ -4,7 +4,7 @@
     "kind": "TypeKind.COMPLEX",
     "properties": [
         { "name": "RemoveAfterUse", "typename": "PRPOpCode.Bool" },
-        { "name": "property_0E0", "typename": "ZAUDIOREF", "offset": 224 },
+        { "name": "m_rMaterial", "typename": "ZAUDIOREF", "offset": 224 },
         { "name": "Frozen", "typename": "PRPOpCode.Bool" }
     ]
 }

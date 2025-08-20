@@ -8,45 +8,45 @@
     "parent": "ZGEOM",
     "properties": [
         {
-            "name": "property_44",
+            "name": "m_TargetLen",
             "offset": 68,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_48",
+            "name": "Near",
             "offset": 72,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_4C",
+            "name": "Far",
             "offset": 76,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_54",
+            "name": "m_uBorderColor",
             "offset": 84,
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_58",
+            "name": "m_fFogNear",
             "offset": 88,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "property_5C",
+            "name": "m_fFogFar",
             "offset": 92,
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "AspectRatioParams",
+            "name": "Aspect",
             "typename": "ZCAMERA.ZCamAspectParms"
         },
         {
-            "name": "DisableGates",
+            "name": "bDisableGates",
             "typename": "PRPOpCode.Bool"
         },
         {
-            "name": "FogEnabled",
+            "name": "bFogEnabled",
             "typename": "PRPOpCode.Bool"
         },
         {
@@ -54,7 +54,7 @@
             "typename": "PRPOpCode.Float32"
         },
         {
-            "name": "WinPos",
+            "name": "winpos",
             "typename": "ZViewport"
         },
         {
@@ -62,11 +62,11 @@
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "WindowListPrio",
+            "name": "WindowListPri",
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "BackColor",
+            "name": "BackCol",
             "typename": "ZRGB"
         }
     ],

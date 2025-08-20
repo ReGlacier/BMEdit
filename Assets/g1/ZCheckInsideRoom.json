@@ -3,10 +3,10 @@
     "parent": "ZEventBase",
     "kind": "TypeKind.COMPLEX",
     "properties": [
-        { "name": "Property_2C", "typename": "ZREFTAB32", "offset": 44 },
-        { "name": "Property_48", "typename": "ZGEOMREF", "offset": 72 },
-        { "name": "Property_4C", "typename": "ZREFTAB32", "offset": 76 },
-        { "name": "Property_68", "typename": "ZMsg", "offset": 104 },
-        { "name": "Property_6A", "typename": "ZMsg", "offset": 106 }
+        { "name": "m_rtRooms", "typename": "ZREFTAB32", "offset": 44 },
+        { "name": "m_rTrackObj", "typename": "ZGEOMREF", "offset": 72 },
+        { "name": "m_rtTargets", "typename": "ZREFTAB32", "offset": 76 },
+        { "name": "m_msgEnter", "typename": "ZMsg", "offset": 104 },
+        { "name": "m_msgLeave", "typename": "ZMsg", "offset": 106 }
     ]
 }

@@ -8,7 +8,7 @@
     "parent": "ZActor",
     "properties": [
         {
-            "name": "rDisguise",
+            "name": "m_rHitmanAs",
             "offset": 2304,
             "typename": "ZGEOMREF"
         },
@@ -17,7 +17,7 @@
             "typename": "PRPOpCode.Int32"
         },
         {
-            "name": "property_9D8",
+            "name": "m_rActorProperties",
             "offset": 2520,
             "typename": "ZGEOMREF"
         }

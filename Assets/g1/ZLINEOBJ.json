@@ -7,11 +7,11 @@
     "kind": "TypeKind.COMPLEX",
     "parent": "ZCHAROBJ",
     "properties": [
-        {
-            "name": "property_A0",
-            "offset": 160,
-            "typename": "PRPOpCode.Int32"
-        }
+      {
+        "name": "m_iWidth",
+        "offset": 160,
+        "typename": "PRPOpCode.Int32"
+      }
     ],
     "typename": "ZLINEOBJ"
 }
