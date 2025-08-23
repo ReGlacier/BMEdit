@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <chrono>
 #include <set>
+#include <sstream>
 
 
 #ifdef BMEDIT_DEBUG
@@ -280,6 +281,7 @@ namespace widgets
                 QSharedPointer<QOpenGLShaderProgram> DefaultShader = nullptr;
                 QSharedPointer<QOpenGLShaderProgram> CullingShader = nullptr;
                 QSharedPointer<QOpenGLShaderProgram> GizmoShader = nullptr;
+                QSharedPointer<QOpenGLShaderProgram> GizmoTextShader = nullptr;
                 GLuint DefaultShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
                 GLuint CullingShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
                 GLuint GizmoShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
@@ -346,7 +348,7 @@ namespace widgets
 		}
 
                 m_pCommon->setup();
-                m_gizmo.setup(m_pCommon->GL);
+                m_gizmo.setup(m_pCommon->GL, width(), height());
 
                 qDebug() << "Base render stubs are inited";
         }
@@ -386,14 +388,12 @@ namespace widgets
 		}
 	}
 
-	void SceneRenderWidget::resizeGL(int w, int h)
-	{
-		Q_UNUSED(w)
-		Q_UNUSED(h)
-
-		// Update projection
-		m_camera.setViewport(w, h);
-	}
+        void SceneRenderWidget::resizeGL(int w, int h)
+        {
+                // Update projection
+                m_camera.setViewport(w, h);
+                m_gizmo.setScreenSize(w, h);
+        }
 
 	void SceneRenderWidget::keyPressEvent(QKeyEvent* event)
 	{
@@ -563,11 +563,18 @@ namespace widgets
 		// bool isBit4Set = flags & (1 << 4);
 	}
 
-	void SceneRenderWidget::resetSelectedObject()
-	{
-		m_pSelectedObject = nullptr;
-		repaint();
-	}
+        void SceneRenderWidget::resetSelectedObject()
+        {
+                m_pSelectedObject = nullptr;
+                repaint();
+        }
+
+        bool SceneRenderWidget::setGizmoFont(QFile &file, int pixelSize)
+        {
+                if (!m_pCommon)
+                        return false;
+                return m_gizmo.setFont(m_pCommon->GL, file, pixelSize);
+        }
 
 	void SceneRenderWidget::moveCameraTo(const glm::vec3& position)
 	{
@@ -1145,7 +1152,8 @@ namespace widgets
                 m_gizmo.render(m_pCommon->GL,
                                m_pCommon->GizmoShader.get(),
                                static_cast<GLint>(m_pCommon->GizmoShaderUniformLocations[RenderCommon::EUniformID::U_CAMERA_PROJ_VIEW]),
-                               m_camera.getProjView());
+                               m_camera.getProjView(),
+                               m_pCommon->GizmoTextShader.get());
                 // Stage #5: Transparent commands
                 if (m_pContext->IndirectDrawTransparentCommandsCount)
                 {
@@ -1165,9 +1173,25 @@ namespace widgets
 	{
 		if (auto objectToIndexIt = m_pContext->ObjectToTransformIndex.find(pSceneObject); objectToIndexIt != m_pContext->ObjectToTransformIndex.end()) 
 		{
-			// Main gizmo (AABB)
-			const auto &bounds = m_pContext->WorldBoundingBoxes[*objectToIndexIt];
-			addGizmoBox(bounds.AsBoundsOrCube(pSceneObject->getPosition(), 50.0f), glm::vec4(0.f, 1.f, 0.0f, 0.15f), glm::vec4(0.f, 1.f, 0.0f, 1.0f));
+                        // Main gizmo (AABB)
+                        const auto &bounds = m_pContext->WorldBoundingBoxes[*objectToIndexIt];
+                        auto bbox = bounds.AsBoundsOrCube(pSceneObject->getPosition(), 50.0f);
+                        addGizmoBox(bbox, glm::vec4(0.f, 1.f, 0.0f, 0.15f), glm::vec4(0.f, 1.f, 0.0f, 1.0f));
+
+                        glm::vec3 topCenter{(bbox.min.x + bbox.max.x) * 0.5f,
+                                            bbox.max.y,
+                                            (bbox.min.z + bbox.max.z) * 0.5f};
+                        glm::vec4 clip = m_camera.getProjView() * glm::vec4(topCenter, 1.0f);
+                        if (clip.w > 0.0f)
+                        {
+                                glm::vec3 ndc = glm::vec3(clip) / clip.w;
+                                float sx = (ndc.x * 0.5f + 0.5f) * width();
+                                float sy = (1.0f - (ndc.y * 0.5f + 0.5f)) * height();
+                                std::ostringstream ss;
+                                const auto &pos = pSceneObject->getPosition();
+                                ss << "<p color=\"ffff00ff\">" << pSceneObject->getName() << " (" << pos.x << ' ' << pos.y << ' ' << pos.z << ")</p>";
+                                addGizmoText(ss.str(), glm::vec2(sx, sy), 24.0f);
+                        }
 
 			// PathFollower gizmo
 			auto pathFolloweIt = std::find_if(pSceneObject->getControllers().begin(), pSceneObject->getControllers().end(), [](const gamelib::scene::SceneObject::Controller& sc) -> bool {
@@ -1829,6 +1853,17 @@ namespace widgets
                         }
 
                         CollectUniforms(&GizmoShaderUniformLocations[0], GizmoShader.get());
+                }
+
+                {
+                        GizmoTextShader.reset(new QOpenGLShaderProgram(nullptr));
+                        GizmoTextShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Vertex, GetContents(":/bmedit/gizmo_text_gl33.vsh"));
+                        GizmoTextShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Fragment, GetContents(":/bmedit/gizmo_text_gl33.fsh"));
+                        if (!GizmoTextShader->link())
+                        {
+                                QMessageBox::critical(nullptr, "Render error", "Failed to link GizmoTextShader!");
+                                return;
+                        }
                 }
 
                 qDebug() << "GPU: Shaders are ready";
