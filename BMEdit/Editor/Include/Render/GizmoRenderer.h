@@ -11,11 +11,9 @@
 #include <string>
 #include <GameLib/BoundingBox.h>
 #include <Render/GL.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 
 namespace render
 {
@@ -29,7 +27,6 @@ namespace render
                 void addLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color);
                 void addAABB(const gamelib::BoundingBox& box, const glm::vec4& fillColor, const glm::vec4& lineColor);
                 void addText(const std::string& text, const glm::vec2& screenPos, float size);
-                void addMesh(const std::string& path, const glm::vec4& color);
                 void render(GLFunctions *gapi,
                             QOpenGLShaderProgram *shader,
                             GLint cameraProjViewLoc,
@@ -48,25 +45,24 @@ namespace render
                 std::vector<Vertex> m_lines;
                 std::vector<Vertex> m_tris;
 
-                struct Glyph
-                {
-                        GLuint texture {0};
-                        glm::ivec2 size {0};
-                        glm::ivec2 bearing {0};
-                        GLuint advance {0};
-                };
+                struct Glyph {
+			        glm::vec2 texCoordMin;// Top-left UV coordinate
+			        glm::vec2 texCoordMax;// Bottom-right UV coordinate
+			        glm::ivec2 size;      // Width and height in pixels
+			        glm::ivec2 bearing;   // Offset from baseline to glyph origin
+			        GLuint advance;       // Horizontal advance to next glyph
+		        };
 
                 struct TextVertex
                 {
-                        glm::vec2 pos;
-                        glm::vec2 uv;
-                        glm::vec4 color;
+                    glm::vec2 pos;
+                    glm::vec2 uv;
+                    glm::vec4 color;
                 };
 
                 struct TextGlyph
                 {
-                        GLuint texture;
-                        TextVertex verts[6];
+                    TextVertex verts[6];
                 };
 
                 std::vector<TextGlyph> m_text;
@@ -75,5 +71,8 @@ namespace render
                 FT_Face m_face { nullptr };
                 GLuint m_textVao {0}, m_textVbo {0};
                 int m_screenW {1}, m_screenH {1};
+
+                GLuint m_atlasTexture = 0;
+		        QByteArray m_fontData;
         };
 }

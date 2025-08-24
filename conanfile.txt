@@ -3,7 +3,12 @@ zlib/1.2.13
 libzip/1.8.0
 libsquish/1.15
 freetype/2.13.3
-assimp/5.4.3
+
+[options]
+freetype/*:with_png=False
+freetype/*:with_brotli=False
+freetype/*:with_bzip2=False
+freetype/*:with_zlib=False
 
 [generators]
 CMakeDeps

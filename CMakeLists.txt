@@ -11,7 +11,6 @@ find_package(zstd REQUIRED HINTS ${CMAKE_BINARY_DIR})
 find_package(libzip REQUIRED HINTS ${CMAKE_BINARY_DIR})
 find_package(libsquish REQUIRED HINTS ${CMAKE_BINARY_DIR})
 find_package(Freetype REQUIRED HINTS ${CMAKE_BINARY_DIR})
-find_package(assimp REQUIRED HINTS ${CMAKE_BINARY_DIR})
 
 # --- Global dependencies
 add_subdirectory(ThirdParty/fmt)
