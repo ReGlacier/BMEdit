@@ -4,6 +4,7 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QString>
+#include <QFile>
 
 #include <Render/RenderEntry.h>
 #include <Render/GizmoRenderer.h>
@@ -21,6 +22,7 @@
 #include <memory>
 #include <vector>
 #include <list>
+#include <string>
 
 
 class QOpenGLFunctions_3_3_Core;
@@ -60,7 +62,9 @@ namespace widgets
 
 		void addGizmoLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color) { m_gizmo.addLine(a, b, color); }
 		void addGizmoBox(const gamelib::BoundingBox &box, const glm::vec4 &color, const glm::vec4 &lineColor) { m_gizmo.addAABB(box, color, lineColor); }
+		void addGizmoText(const std::string& text, const glm::vec2& pos, float size) { m_gizmo.addText(text, pos, size); }
 		void clearGizmos() { m_gizmo.clear(); }
+		bool setGizmoFont(QFile &file, int pixelSize);
 	signals:
 		void resourcesReady();
 		void resourceLoadFailed(const QString& reason);
@@ -88,6 +92,7 @@ namespace widgets
 		void updateViewLists();
 		void generateDrawCommands();
 		void drawScene();
+		void drawGizmo();
 		void generateGizmosForEntity(gamelib::scene::SceneObject* pSceneObject);
 
 		[[nodiscard]] glm::ivec2 getViewportSize() const {

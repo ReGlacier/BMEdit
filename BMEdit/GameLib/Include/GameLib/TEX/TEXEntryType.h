@@ -24,5 +24,6 @@ namespace gamelib::tex
 		ET_BITMAP_U8V8     = 0x55385638u, //V8U8
 		ET_BITMAP_DXT1     = 0x44585431u, //DXT1
 		ET_BITMAP_DXT3     = 0x44585433u, //DXT3
+		ET_BITMAP_DXT5     = 0x44585435u, //DXT5 [since K&L]
 	};
 }

@@ -106,6 +106,7 @@ void ImportTextureDialog::resetState()
 		ui->destinationFormatCombo->addItem("U8V8", static_cast<uint32_t>(gamelib::tex::TEXEntryType::ET_BITMAP_U8V8));
 		ui->destinationFormatCombo->addItem("DXT1", static_cast<uint32_t>(gamelib::tex::TEXEntryType::ET_BITMAP_DXT1));
 		ui->destinationFormatCombo->addItem("DXT3", static_cast<uint32_t>(gamelib::tex::TEXEntryType::ET_BITMAP_DXT3));
+		ui->destinationFormatCombo->addItem("DXT5", static_cast<uint32_t>(gamelib::tex::TEXEntryType::ET_BITMAP_DXT5));
 	}
 
 	// Reset mip level

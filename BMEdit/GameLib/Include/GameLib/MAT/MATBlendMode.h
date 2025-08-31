@@ -14,6 +14,9 @@ namespace gamelib::mat
 		BM_ADD_ON_OPAQUE,
 		BM_ADD,
 		BM_SHADOW,
-		BM_STATICSHADOW
+		BM_STATICSHADOW,
+
+		BM_MUL, // Since K&L
+		BM_SCREEN// Since K&L
 	};
 }

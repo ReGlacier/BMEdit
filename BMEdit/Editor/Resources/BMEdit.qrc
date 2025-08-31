@@ -22,5 +22,9 @@
     <file alias="culling.csh">Shaders/Culling.csh</file>
     <file alias="gizmo_gl33.vsh">Shaders/Gizmo_GL33.vsh</file>
     <file alias="gizmo_gl33.fsh">Shaders/Gizmo_GL33.fsh</file>
+    <file alias="gizmo_text_gl33.vsh">Shaders/GizmoText_GL33.vsh</file>
+    <file alias="gizmo_text_gl33.fsh">Shaders/GizmoText_GL33.fsh</file>
+
+    <file alias="gizmo_font_main.ttf">Fonts/DejaVuSansMono.ttf</file>
 </qresource>
 </RCC>

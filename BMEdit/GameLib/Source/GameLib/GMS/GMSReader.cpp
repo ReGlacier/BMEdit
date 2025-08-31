@@ -10,9 +10,10 @@ namespace gamelib::gms
 {
 	GMSReader::GMSReader() = default;
 
-	bool GMSReader::parse(const GMSHeader *header, const uint8_t *gmsBuffer, int64_t gmsBufferSize, const uint8_t *bufBuffer, int64_t bufBufferSize)
+	bool GMSReader::parse(const GMSHeader *header, const uint8_t *gmsBuffer, int64_t gmsBufferSize, const uint8_t *bufBuffer, int64_t bufBufferSize, LevelLoadCompatibilityLevel eLevelCompat)
 	{
 		m_header = header;
+		m_eLevelCompat = eLevelCompat;
 
 		// Read RAW header (first 9 bytes)
 		ZBio::ZBinaryReader::BinaryReader reader(reinterpret_cast<const char *>(gmsBuffer), gmsBufferSize);
@@ -88,7 +89,7 @@ namespace gamelib::gms
 		ZBio::ZBinaryReader::BinaryReader bufBinaryReader { reinterpret_cast<const char *>(bufBuffer), bufBufferSize };
 
 		// Now we have a pure GMS body and we are ready to read all data
-		GMSHeader::deserialize(*const_cast<GMSHeader *>(m_header), &gmsBinaryReader, &bufBinaryReader);
+		GMSHeader::deserialize(*const_cast<GMSHeader *>(m_header), &gmsBinaryReader, &bufBinaryReader, m_eLevelCompat);
 		return true;
 	}
 }

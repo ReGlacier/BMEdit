@@ -4,6 +4,7 @@
 #include <GameLib/GMS/GMSGeomStats.h>
 #include <GameLib/GMS/GMSGroupsCluster.h>
 #include <GameLib/GMS/GMSEntries.h>
+#include <GameLib/LevelCompat.h>
 #include <cstdint>
 #include <vector>
 
@@ -25,7 +26,7 @@ namespace gamelib::gms
 		[[nodiscard]] const GMSGeomStats &getGeomStats() const;
 		[[nodiscard]] const GMSGroupsCluster &getGeomClusters() const;
 
-		static void deserialize(GMSHeader &header, ZBio::ZBinaryReader::BinaryReader *binaryReader, ZBio::ZBinaryReader::BinaryReader *bufFileReader);
+		static void deserialize(GMSHeader &header, ZBio::ZBinaryReader::BinaryReader *binaryReader, ZBio::ZBinaryReader::BinaryReader *bufFileReader, LevelLoadCompatibilityLevel eLevelCompat);
 
 	private:
 		static void buildSceneHierarchy(GMSHeader &header);

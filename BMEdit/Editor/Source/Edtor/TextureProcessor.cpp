@@ -29,13 +29,15 @@ namespace editor
 			std::memcpy(result.get(), textureEntry.m_mipLevels.at(mipLevel).m_buffer.get(), realWidth * realHeight * 4);
 			return result;
 		}
-		else if (format == EntryType::ET_BITMAP_DXT1 || format == EntryType::ET_BITMAP_DXT3)
+		else if (format == EntryType::ET_BITMAP_DXT1 || format == EntryType::ET_BITMAP_DXT3 || format == EntryType::ET_BITMAP_DXT5)
 		{
 			// DXT1, DXT3: Process via squish
 			int flags = 0;
 
 			flags |= (format == EntryType::ET_BITMAP_DXT1 ? squish::kDxt1 : 0);
 			flags |= (format == EntryType::ET_BITMAP_DXT3 ? squish::kDxt3 : 0);
+			flags |= (format == EntryType::ET_BITMAP_DXT5 ? squish::kDxt5 : 0);
+
 			auto result = std::make_unique<uint8_t[]>(static_cast<int>(realWidth) * static_cast<int>(realHeight) * 4);
 			squish::DecompressImage(result.get(), realWidth, realHeight, textureEntry.m_mipLevels.at(mipLevel).m_buffer.get(), flags);
 
@@ -304,7 +306,8 @@ namespace editor
 					break;
 				case gamelib::tex::TEXEntryType::ET_BITMAP_DXT1:
 				case gamelib::tex::TEXEntryType::ET_BITMAP_DXT3:
-					// Use libsquish to create DXT1/DXT3 buffers
+				case gamelib::tex::TEXEntryType::ET_BITMAP_DXT5:
+					// Use libsquish to create DXT1/DXT3/DXT5 buffers
 				    {
 					    uint32_t w = sourceMIP.width();
 					    uint32_t h = sourceMIP.height();
@@ -312,6 +315,7 @@ namespace editor
 
 					    flags |= (targetFormat == gamelib::tex::TEXEntryType::ET_BITMAP_DXT1 ? squish::kDxt1 : 0);
 					    flags |= (targetFormat == gamelib::tex::TEXEntryType::ET_BITMAP_DXT3 ? squish::kDxt3 : 0);
+					    flags |= (targetFormat == gamelib::tex::TEXEntryType::ET_BITMAP_DXT5 ? squish::kDxt5 : 0);
 
 					    // Calculate & allocate space
 					    textureMIP.m_mipLevelSize = squish::GetStorageRequirements(static_cast<int>(w), static_cast<int>(h), flags);

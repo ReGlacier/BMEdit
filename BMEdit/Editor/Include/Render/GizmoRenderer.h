@@ -1,24 +1,37 @@
 #pragma once
 
-#include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
+#include <QFile>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
 #include <vector>
+#include <map>
+#include <string>
 #include <GameLib/BoundingBox.h>
 #include <Render/GL.h>
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 namespace render
 {
         class GizmoRenderer
         {
         public:
-                bool setup(GLFunctions *gapi);
+                bool setup(GLFunctions *gapi, int screenWidth, int screenHeight);
+                bool setFont(GLFunctions *gapi, QFile &fontFile, int pixelSize);
+                void setScreenSize(int w, int h);
                 void clear();
                 void addLine(const glm::vec3& a, const glm::vec3& b, const glm::vec4& color);
                 void addAABB(const gamelib::BoundingBox& box, const glm::vec4& fillColor, const glm::vec4& lineColor);
-                void render(GLFunctions *gapi, QOpenGLShaderProgram *shader, GLint cameraProjViewLoc, const glm::mat4 &projView);
+                void addText(const std::string& text, const glm::vec2& screenPos, float size);
+                void render(GLFunctions *gapi,
+                            QOpenGLShaderProgram *shader,
+                            GLint cameraProjViewLoc,
+                            const glm::mat4 &projView,
+                            QOpenGLShaderProgram *textShader);
 
         private:
                 struct Vertex
@@ -31,5 +44,35 @@ namespace render
                 GLuint m_triVao {0},  m_triVbo {0};
                 std::vector<Vertex> m_lines;
                 std::vector<Vertex> m_tris;
+
+                struct Glyph {
+			        glm::vec2 texCoordMin;// Top-left UV coordinate
+			        glm::vec2 texCoordMax;// Bottom-right UV coordinate
+			        glm::ivec2 size;      // Width and height in pixels
+			        glm::ivec2 bearing;   // Offset from baseline to glyph origin
+			        GLuint advance;       // Horizontal advance to next glyph
+		        };
+
+                struct TextVertex
+                {
+                    glm::vec2 pos;
+                    glm::vec2 uv;
+                    glm::vec4 color;
+                };
+
+                struct TextGlyph
+                {
+                    TextVertex verts[6];
+                };
+
+                std::vector<TextGlyph> m_text;
+                std::map<char, Glyph> m_glyphs;
+                FT_Library m_ft { nullptr };
+                FT_Face m_face { nullptr };
+                GLuint m_textVao {0}, m_textVbo {0};
+                int m_screenW {1}, m_screenH {1};
+
+                GLuint m_atlasTexture = 0;
+		        QByteArray m_fontData;
         };
 }

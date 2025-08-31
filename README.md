@@ -30,7 +30,7 @@ First of all you need to install [conan](https://conan.io) dependencies manager 
 Download (or git clone) this repository and do
 ```
 conan profile detect --force
-conan install . --output-folder=cmake-build-debug --build=missing -s build_type=Debug
+conan install . --output-folder=cmake-build-debug --build=missing -s build_type=Debug -s compiler.cppstd=20
 ```
 
 (replace `cmake-build-debug` to your <build_folder>; replace Debug to Release for release build)

@@ -34,7 +34,10 @@
 #include <algorithm>
 #include <chrono>
 #include <set>
+#include <sstream>
 
+
+#define ON_SCREEN_GIZMO_FONT_SIZE 24.0f
 
 #ifdef BMEDIT_DEBUG
 void BMEdit_OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -280,6 +283,7 @@ namespace widgets
                 QSharedPointer<QOpenGLShaderProgram> DefaultShader = nullptr;
                 QSharedPointer<QOpenGLShaderProgram> CullingShader = nullptr;
                 QSharedPointer<QOpenGLShaderProgram> GizmoShader = nullptr;
+                QSharedPointer<QOpenGLShaderProgram> GizmoTextShader = nullptr;
                 GLuint DefaultShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
                 GLuint CullingShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
                 GLuint GizmoShaderUniformLocations[EUniformID::MAX_UNIFORM_INDEX] { 0 };
@@ -345,16 +349,36 @@ namespace widgets
 			return;
 		}
 
-                m_pCommon->setup();
-                m_gizmo.setup(m_pCommon->GL);
+        m_pCommon->setup();
+        m_gizmo.setup(m_pCommon->GL, width(), height());
 
-                qDebug() << "Base render stubs are inited";
-        }
+        qDebug() << "Base render stubs are inited";
+    }
 
 	void SceneRenderWidget::paintGL()
 	{
-		if (!m_pLevel) return; // Do nothing when level not presented yet
-		if (m_eLoaderState == ELevelLoadState::LLS_FAILED_TO_LOAD) return; // Don't render anything
+		if (!m_pLevel)
+		{
+			addGizmoText("<p color=\"ffff00ff\">No selected level</p>", glm::vec2(45.f), ON_SCREEN_GIZMO_FONT_SIZE);
+			drawGizmo();
+			return;// Do nothing when level not presented yet
+		}
+
+		if (m_eLoaderState == ELevelLoadState::LLS_FAILED_TO_LOAD)
+		{
+			addGizmoText("<p color=\"ff0000ff\">Failed to load level</p>", glm::vec2(45.f), ON_SCREEN_GIZMO_FONT_SIZE);
+			drawGizmo();
+			
+			return;// Don't render anything
+		}
+
+		// preapre mainscreen gizmos
+		QString gizmoText = QString("<p color=\"ffff00ff\">Camera %1;%2;%3</p>")
+			.arg(m_camera.getPosition().x)
+			.arg(m_camera.getPosition().y)
+			.arg(m_camera.getPosition().z);
+
+		addGizmoText(gizmoText.toStdString(), glm::vec2(45.0), ON_SCREEN_GIZMO_FONT_SIZE);
 
 		if (m_eLoaderState == ELevelLoadState::LLS_READY)
 		{
@@ -371,28 +395,28 @@ namespace widgets
 				m_bTransformsDirty = false;
 			}
 
-			// Fill gizmo
-			if (m_pSelectedObject != nullptr)
-			{
-				generateGizmosForEntity(m_pSelectedObject);
-			}
-
 			// Perform commands
 			drawScene();
+
+			// Fill gizmo
+			if (m_pSelectedObject != nullptr) {
+				generateGizmosForEntity(m_pSelectedObject);
+			}
 		}
 		else if (m_eLoaderState == ELevelLoadState::LLS_NONE)
 		{
 			loadLevelImpl();
 		}
+
+		// And gizmo itself
+		drawGizmo();
 	}
 
 	void SceneRenderWidget::resizeGL(int w, int h)
 	{
-		Q_UNUSED(w)
-		Q_UNUSED(h)
-
-		// Update projection
-		m_camera.setViewport(w, h);
+			// Update projection
+			m_camera.setViewport(w, h);
+			m_gizmo.setScreenSize(w, h);
 	}
 
 	void SceneRenderWidget::keyPressEvent(QKeyEvent* event)
@@ -563,11 +587,18 @@ namespace widgets
 		// bool isBit4Set = flags & (1 << 4);
 	}
 
-	void SceneRenderWidget::resetSelectedObject()
-	{
-		m_pSelectedObject = nullptr;
-		repaint();
-	}
+        void SceneRenderWidget::resetSelectedObject()
+        {
+                m_pSelectedObject = nullptr;
+                repaint();
+        }
+
+        bool SceneRenderWidget::setGizmoFont(QFile &file, int pixelSize)
+        {
+            if (!m_pCommon)
+                return false;
+            return m_gizmo.setFont(m_pCommon->GL, file, pixelSize);
+        }
 
 	void SceneRenderWidget::moveCameraTo(const glm::vec3& position)
 	{
@@ -1140,25 +1171,32 @@ namespace widgets
 			                                            (const void *) (m_pContext->IndirectDrawNonTransparentCommands * sizeof(IndirectRenderDrawCommand)),
 			                                            static_cast<GLint>(m_pContext->IndirectDrawNonTransparentCommandsCount),
 			                                            0 /* stride */);
-                }
-                // Stage #4: Gizmo
-                m_gizmo.render(m_pCommon->GL,
-                               m_pCommon->GizmoShader.get(),
-                               static_cast<GLint>(m_pCommon->GizmoShaderUniformLocations[RenderCommon::EUniformID::U_CAMERA_PROJ_VIEW]),
-                               m_camera.getProjView());
-                // Stage #5: Transparent commands
-                if (m_pContext->IndirectDrawTransparentCommandsCount)
-                {
+        }
+
+		// Stage #4: Transparent commands
+		if (m_pContext->IndirectDrawTransparentCommandsCount)
+		{
 			m_pContext->GL->glDepthMask(GL_TRUE);
 			m_pContext->GL->glEnable(GL_BLEND);
 			m_pContext->GL->glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 			m_pContext->GL->glMultiDrawElementsIndirect(GL_TRIANGLES,
-			                                            GL_UNSIGNED_INT,
-			                                            (const void *) (m_pContext->IndirectDrawTransparentCommands * sizeof(IndirectRenderDrawCommand)),
-			                                            static_cast<GLint>(m_pContext->IndirectDrawTransparentCommandsCount),
-			                                            0 /* stride */);
+														GL_UNSIGNED_INT,
+														(const void *) (m_pContext->IndirectDrawTransparentCommands * sizeof(IndirectRenderDrawCommand)),
+														static_cast<GLint>(m_pContext->IndirectDrawTransparentCommandsCount),
+														0 /* stride */);
 		}
+	}
+
+	void SceneRenderWidget::drawGizmo()
+	{
+		// Stage #5: Gizmo
+		m_gizmo.render(
+		    m_pCommon->GL,
+		    m_pCommon->GizmoShader.get(),
+		    static_cast<GLint>(m_pCommon->GizmoShaderUniformLocations[RenderCommon::EUniformID::U_CAMERA_PROJ_VIEW]),
+		    m_camera.getProjView(),
+		    m_pCommon->GizmoTextShader.get());
 	}
 
 	void SceneRenderWidget::generateGizmosForEntity(gamelib::scene::SceneObject* pSceneObject)
@@ -1167,17 +1205,23 @@ namespace widgets
 		{
 			// Main gizmo (AABB)
 			const auto &bounds = m_pContext->WorldBoundingBoxes[*objectToIndexIt];
-			addGizmoBox(bounds.AsBoundsOrCube(pSceneObject->getPosition(), 50.0f), glm::vec4(0.f, 1.f, 0.0f, 0.15f), glm::vec4(0.f, 1.f, 0.0f, 1.0f));
+			auto bbox = bounds.AsBoundsOrCube(pSceneObject->getPosition(), 50.0f);
 
-			// PathFollower gizmo
-			auto pathFolloweIt = std::find_if(pSceneObject->getControllers().begin(), pSceneObject->getControllers().end(), [](const gamelib::scene::SceneObject::Controller& sc) -> bool {
-				return sc.type->getName() == "ZPathFollower";
-			});
+			addGizmoBox(bbox, glm::vec4(0.f, 1.f, 0.0f, 0.15f), glm::vec4(0.f, 1.f, 0.0f, 1.0f));
 
-			if (pathFolloweIt != pSceneObject->getControllers().end())
+			glm::vec3 topCenter{(bbox.min.x + bbox.max.x) * 0.5f,
+								bbox.max.y,
+								(bbox.min.z + bbox.max.z) * 0.5f};
+			glm::vec4 clip = m_camera.getProjView() * glm::vec4(topCenter, 1.0f);
+			if (clip.w > 0.0f)
 			{
-				// Nice, we have path follower and a lot of gizmos!
-				// TODO: Extract "m_WayPointLists" property
+				glm::vec3 ndc = glm::vec3(clip) / clip.w;
+				float sx = (ndc.x * 0.5f + 0.5f) * width();
+				float sy = (1.0f - (ndc.y * 0.5f + 0.5f)) * height();
+				std::ostringstream ss;
+				const auto &pos = pSceneObject->getPosition();
+				ss << "<p color=\"ffff00ff\">" << pSceneObject->getName() << " (" << pos.x << ' ' << pos.y << ' ' << pos.z << ")</p>";
+				addGizmoText(ss.str(), glm::vec2(sx, sy), ON_SCREEN_GIZMO_FONT_SIZE);
 			}
 		}
 	}
@@ -1432,8 +1476,29 @@ namespace widgets
 			{
 				if (!binder.renderStates.empty())
 				{
-					materialInstance.ZBiasOffset.x = static_cast<float>(binder.renderStates[0].getZBias()); // NOTE: Need to convert it correctly (see PS2 build, method ZOldDrawPS2::BiasToScale)
-					materialInstance.ZBiasOffset.y = binder.renderStates[0].getZOffset();
+					// exists 0, 1, 2, 3, 6, 7
+					// actually, it's not reversed, just random offsets like in ZOldDrawPS2::BiasToScale but PS3, PC, XBox, iOS, Android and PS4 versions has different rendering core
+					const uint32_t zbias = binder.renderStates[0].getZBias();
+					float zoffset = 0.0f;
+
+					switch (zbias)
+					{
+					case 0: zoffset = 0.0f;
+					case 1: zoffset = 8.0f;
+					case 2: zoffset = 10.0f;
+					case 3: zoffset = 12.0f;
+					case 4: zoffset = 14.0f;
+					case 5: zoffset = 20.0f;
+					case 6: zoffset = 24.0f;
+					case 7: zoffset = 30.0f;
+					case 8:
+					default:
+						zoffset = 40.0f;
+						break;
+					}
+
+					materialInstance.ZBiasOffset.x = binder.renderStates[0].isEnabled() ? 1.0f : 0.0f;
+					materialInstance.ZBiasOffset.y = zoffset + binder.renderStates[0].getZOffset();
 				}
 
 				if (!binder.textures.empty())
@@ -1829,6 +1894,17 @@ namespace widgets
                         }
 
                         CollectUniforms(&GizmoShaderUniformLocations[0], GizmoShader.get());
+                }
+
+                {
+                        GizmoTextShader.reset(new QOpenGLShaderProgram(nullptr));
+                        GizmoTextShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Vertex, GetContents(":/bmedit/gizmo_text_gl33.vsh"));
+                        GizmoTextShader->addShaderFromSourceCode(QOpenGLShader::ShaderTypeBit::Fragment, GetContents(":/bmedit/gizmo_text_gl33.fsh"));
+                        if (!GizmoTextShader->link())
+                        {
+                                QMessageBox::critical(nullptr, "Render error", "Failed to link GizmoTextShader!");
+                                return;
+                        }
                 }
 
                 qDebug() << "GPU: Shaders are ready";

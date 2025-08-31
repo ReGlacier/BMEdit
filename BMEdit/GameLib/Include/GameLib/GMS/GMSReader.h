@@ -4,6 +4,7 @@
 #include <memory>
 
 #include <GameLib/GMS/GMSHeader.h>
+#include <GameLib/LevelCompat.h>
 
 
 namespace gamelib::gms
@@ -13,7 +14,7 @@ namespace gamelib::gms
 	public:
 		GMSReader();
 
-		bool parse(const GMSHeader *header, const uint8_t *gmsBuffer, int64_t gmsBufferSize, const uint8_t *bufBuffer, int64_t bufBufferSize);
+		bool parse(const GMSHeader *header, const uint8_t *gmsBuffer, int64_t gmsBufferSize, const uint8_t *bufBuffer, int64_t bufBufferSize, LevelLoadCompatibilityLevel eLevelCompat);
 
 	private:
 		[[nodiscard]] static std::unique_ptr<uint8_t[]> decompressGmsBuffer(const uint8_t *rawBuffer, uint32_t rawBufferSize, uint32_t uncompressedSize);
@@ -21,5 +22,6 @@ namespace gamelib::gms
 
 	private:
 		const GMSHeader *m_header;
+		LevelLoadCompatibilityLevel m_eLevelCompat;
 	};
 }

@@ -31,6 +31,7 @@ static QString convertTextureTypeToQString(gamelib::tex::TEXEntryType entry)
 		case gamelib::tex::TEXEntryType::ET_BITMAP_U8V8: return "U8V8";
 		case gamelib::tex::TEXEntryType::ET_BITMAP_DXT1: return "DXT1";
 		case gamelib::tex::TEXEntryType::ET_BITMAP_DXT3: return "DXT3";
+		case gamelib::tex::TEXEntryType::ET_BITMAP_DXT5: return "DXT5";
 	}
 
 	return "Unknown";
