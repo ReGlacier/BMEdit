@@ -66,7 +66,7 @@ namespace gamelib::tex
 			    type != TEXEntryType::ET_BITMAP_DOT3 && type != TEXEntryType::ET_BITMAP_CUBE && type != TEXEntryType::ET_BITMAP_DMAP &&
 			    type != TEXEntryType::ET_BITMAP_PAL && type != TEXEntryType::ET_BITMAP_PAL_OPAC &&
 			    type != TEXEntryType::ET_BITMAP_32 && type != TEXEntryType::ET_BITMAP_U8V8 &&
-			    type != TEXEntryType::ET_BITMAP_DXT1 && type != TEXEntryType::ET_BITMAP_DXT3
+			    type != TEXEntryType::ET_BITMAP_DXT1 && type != TEXEntryType::ET_BITMAP_DXT3 && type != TEXEntryType::ET_BITMAP_DXT5
 			) {
 				return false;
 			}

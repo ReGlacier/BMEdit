@@ -166,7 +166,7 @@ namespace models
 		{
 			const auto& root = m_level->getLevelLocalization()->localizationRoot;
 
-			return root->children.empty() ? 0 : static_cast<int>(root->children.size());
+			return !root || root->children.empty() ? 0 : static_cast<int>(root->children.size());
 		}
 
 		if (auto node = static_cast<gamelib::loc::LOCTreeNode*>(parent.internalPointer()))

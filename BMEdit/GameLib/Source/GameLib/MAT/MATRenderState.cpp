@@ -112,6 +112,8 @@ namespace gamelib::mat
 				    else if (temp == "ADD") blendMode = MATBlendMode::BM_ADD;
 				    else if (temp == "SHADOW") blendMode = MATBlendMode::BM_SHADOW;
 				    else if (temp == "STATICSHADOW") blendMode = MATBlendMode::BM_STATICSHADOW;
+				    else if (temp == "MUL") blendMode = MATBlendMode::BM_MUL;
+				    else if (temp == "SCREEN") blendMode = MATBlendMode::BM_SCREEN;
 				    else
 				    {
 					    assert(false && "Unsupported mode!");

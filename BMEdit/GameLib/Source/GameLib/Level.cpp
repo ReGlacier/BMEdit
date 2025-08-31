@@ -48,47 +48,55 @@ namespace gamelib
 	{
 	}
 
-	bool Level::loadSceneData()
+	bool Level::loadSceneData(LevelLoadCompatibilityLevel eCompatLevel)
 	{
 		if (!m_assetProvider || !m_assetProvider->isValid())
 		{
 			return false;
 		}
 
-		if (!loadLevelProperties())
+		if (eCompatLevel == LevelLoadCompatibilityLevel::CL_HitmanBloodMoney)
+		{
+			if (!loadLevelProperties()) 
+			{
+				return false;
+			}
+		} // otherwise need to fetch properties in loadLevelScene
+
+		if (!loadLevelScene(eCompatLevel))
 		{
 			return false;
 		}
 
-		if (!loadLevelScene())
-		{
-			return false;
-		}
+		if (eCompatLevel == LevelLoadCompatibilityLevel::CL_HitmanBloodMoney) {
+			if (!loadLevelPrimitives()) {
+				return false;
+			}
 
-		if (!loadLevelPrimitives())
-		{
-			return false;
-		}
+			if (!loadLevelTextures()) {
+				return false;
+			}
 
-		if (!loadLevelTextures())
-		{
-			return false;
-		}
+			if (!loadLevelMaterials()) {
+				return false;
+			}
 
-		if (!loadLevelMaterials())
-		{
-			return false;
-		}
+			if (!loadLevelRooms()) {
+				return false;
+			}
 
-		if (!loadLevelRooms())
-		{
-			return false;
+			if (!loadLevelLocalization()) {
+				return false;
+			}
 		}
-
-		if (!loadLevelLocalization())
-		{
-			return false;
+		else if (eCompatLevel == LevelLoadCompatibilityLevel::CL_HitmanContracts) {
+			// At least this supported well
+			if (!loadLevelTextures()) {
+				return false;
+			}
 		}
+		else // unsupported
+			return false;
 
 		// TODO: Load things (it's time to combine GMS, PRP & BUF files)
 		m_isLevelLoaded = true;
@@ -307,7 +315,7 @@ namespace gamelib
 		return true;
 	}
 
-	bool Level::loadLevelScene()
+	bool Level::loadLevelScene(LevelLoadCompatibilityLevel eCompatLevel)
 	{
 		int64_t gmsFileSize = 0;
 
@@ -325,7 +333,7 @@ namespace gamelib
 		}
 
 		gms::GMSReader reader;
-		if (!reader.parse(&m_sceneProperties.header, gmsFileBuffer.get(), gmsFileSize, m_buf.data.get(), m_buf.size))
+		if (!reader.parse(&m_sceneProperties.header, gmsFileBuffer.get(), gmsFileSize, m_buf.data.get(), m_buf.size, eCompatLevel))
 		{
 			return false;
 		}
@@ -337,10 +345,9 @@ namespace gamelib
 			m_sceneObjects.resize(entities.size());
 
 			// Create objects
-			for (std::size_t sceneObjectIndex = 0; sceneObjectIndex < entities.size(); ++sceneObjectIndex)
-			{
-				scene::SceneObject::Instructions propertyInstructions {};
-				auto& currentGeom = entities[sceneObjectIndex];
+			for (std::size_t sceneObjectIndex = 0; sceneObjectIndex < entities.size(); ++sceneObjectIndex) {
+				scene::SceneObject::Instructions propertyInstructions{};
+				auto &currentGeom = entities[sceneObjectIndex];
 
 				auto geomTypeId = currentGeom.getTypeId();
 				auto geomType = TypeRegistry::getInstance().findTypeByHash(geomTypeId);
@@ -350,46 +357,31 @@ namespace gamelib
 				    geomTypeId,
 				    geomType,
 				    currentGeom,
-				    propertyInstructions
-			    );
+				    propertyInstructions);
 			}
 
 			// Visit properties
-			using scene::SceneObject;
-			using scene::SceneObject;
+			if (eCompatLevel == LevelLoadCompatibilityLevel::CL_HitmanBloodMoney)
+			{
+				using scene::SceneObject;
 
-			scene::SceneObjectPropertiesLoader::load(Span(m_sceneObjects), Span(m_levelProperties.rawProperties));
+				scene::SceneObjectPropertiesLoader::load(Span(m_sceneObjects), Span(m_levelProperties.rawProperties));
+			}
+			else if (eCompatLevel == LevelLoadCompatibilityLevel::CL_HitmanContracts)
+			{
+				// Need to visit GMS again, lookup for lExtraData and parse that extra data
+				// TODO: Support me
+			}
 
 			// Scene hierarchy setup
-			for (const auto& sceneObject : m_sceneObjects)
-			{
-				auto parentIndex= sceneObject->getGeomInfo().getParentGeomIndex();
-				if (parentIndex == gms::GMSGeomEntity::kInvalidParent)
-				{
-					continue; // No parent, probably ROOT
+			for (const auto &sceneObject : m_sceneObjects) {
+				auto parentIndex = sceneObject->getGeomInfo().getParentGeomIndex();
+				if (parentIndex == gms::GMSGeomEntity::kInvalidParent) {
+					continue;// No parent, probably ROOT
 				}
 
 				sceneObject->setParent(m_sceneObjects[parentIndex]);
 			}
-
-#if 0       //TODO: Remove this code later
-			std::int32_t lowestPrimId = 0xFFFF;
-
-			for (const auto& sceneObj: m_sceneObjects)
-			{
-				if (TypeRegistry::canCast<"ZGEOM">(sceneObj->getType()))
-				{
-					auto primId = sceneObj->getProperties()["PrimId"][0].getOperand().get<std::int32_t>();
-
-					if (primId == 0)
-						continue;
-
-					if (primId < lowestPrimId)
-						lowestPrimId = primId;
-				}
-			}
-			printf("Found minimal primId: %d\n", lowestPrimId);
-#endif
 		}
 
 		return true;

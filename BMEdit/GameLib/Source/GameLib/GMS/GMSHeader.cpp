@@ -34,7 +34,7 @@ namespace gamelib::gms
 		return m_geomClusters;
 	}
 
-	void GMSHeader::deserialize(GMSHeader &header, ZBio::ZBinaryReader::BinaryReader *gmsFileReader, ZBio::ZBinaryReader::BinaryReader *bufFileReader)
+	void GMSHeader::deserialize(GMSHeader &header, ZBio::ZBinaryReader::BinaryReader *gmsFileReader, ZBio::ZBinaryReader::BinaryReader *bufFileReader, LevelLoadCompatibilityLevel eLevelCompat)
 	{
 		//TODO: https://github.com/ReGlacier/ReHitmanTools/issues/3#issuecomment-769654029
 
@@ -43,18 +43,33 @@ namespace gamelib::gms
 			BinaryReaderSeekScope rootScope { gmsFileReader };
 			gmsFileReader->seek(4); // skip first block (Entities)
 
-			static constexpr std::array<uint32_t, 3> kExpectedSignature = { 0, 0, 4 };
+			bool bIsOK = false;
 			std::array<uint32_t, 3> sections = { 0, 0, 0 };
 
 			gmsFileReader->read<uint32_t, ZBio::Endianness::LE>(sections.data(), 3);
 
-			if (sections != kExpectedSignature)
+			if (eLevelCompat == LevelLoadCompatibilityLevel::CL_HitmanBloodMoney)
+			{
+				// +0x0 - zero
+				// +0x4 - zero
+				static constexpr std::array<uint32_t, 3> kExpectedSignature = {0, 0, 4};
+				bIsOK = sections == kExpectedSignature;
+			}
+			if (eLevelCompat == LevelLoadCompatibilityLevel::CL_HitmanContracts)
+			{
+				// +0x0 - offset
+				// +0x4 - offset
+				bIsOK = sections[2] == 4;
+			}
+
+			if (!bIsOK)
 			{
 				// Invalid format, stop deserialization
 				throw GMSStructureError("Invalid GMS format: expected 0x4=0, 0x8=0, 0xC=4");
 			}
 		}
 
+		if (eLevelCompat == LevelLoadCompatibilityLevel::CL_HitmanBloodMoney)
 		{
 			// Check physics data tag (for Hitman Blood Money should be 0xFFFFFFFFu)
 			BinaryReaderSeekScope physicsScope { gmsFileReader };

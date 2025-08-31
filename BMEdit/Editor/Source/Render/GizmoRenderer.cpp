@@ -56,7 +56,7 @@ namespace render
 
             // Setup gizmo font
 		    QFile fontFile{":/bmedit/gizmo_font_main.ttf"};
-		    setFont(gapi, fontFile, 36);
+		    setFont(gapi, fontFile, 24);
 
             return true;
     }
@@ -347,7 +347,6 @@ namespace render
 		float x = screenPos.x;
 		float y = screenPos.y;
 
-		// Fixed version of the text positioning code
 		auto Flush = [&]() {
 			float scale = size / 48.f;
 			for (char ch : buffer) {
@@ -440,10 +439,15 @@ namespace render
 	{
 		if (!gapi || !shader) return;
 
+		gapi->glEnable(GL_BLEND);
+		gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		gapi->glDisable(GL_DEPTH_TEST);
+
 		shader->bind();
 		shader->setUniformValue(cameraProjViewLoc, QMatrix4x4(glm::value_ptr(projView)).transposed());
 
-		if (!m_tris.empty()) {
+		if (!m_tris.empty()) 
+		{
 			gapi->glBindVertexArray(m_triVao);
 			gapi->glBindBuffer(GL_ARRAY_BUFFER, m_triVbo);
 			gapi->glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * m_tris.size()), m_tris.data(), GL_DYNAMIC_DRAW);
@@ -453,7 +457,8 @@ namespace render
 			gapi->glDisable(GL_BLEND);
 		}
 
-		if (!m_lines.empty()) {
+		if (!m_lines.empty()) 
+		{
 			gapi->glBindVertexArray(m_lineVao);
 			gapi->glBindBuffer(GL_ARRAY_BUFFER, m_lineVbo);
 			gapi->glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(Vertex) * m_lines.size()), m_lines.data(), GL_DYNAMIC_DRAW);
@@ -461,11 +466,16 @@ namespace render
 		}
 
 		gapi->glBindVertexArray(0);
-		shader->release();
 
 		// Text rendering
 		if (textShader && !m_text.empty() && m_atlasTexture != 0) {
+			gapi->glEnable(GL_BLEND);
+			gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			gapi->glDisable(GL_DEPTH_TEST);
+
 			textShader->bind();
+
+			gapi->glBindVertexArray(m_textVao);
 
 			// Bind the single atlas texture once
 			gapi->glActiveTexture(GL_TEXTURE0);
@@ -474,13 +484,6 @@ namespace render
 			// Setup vars
 			textShader->setUniformValue("outlineThickness", kTextOutlineThickness);
 			textShader->setUniformValue("textAtlas", 0);
-
-			gapi->glBindVertexArray(m_textVao);
-			gapi->glEnable(GL_BLEND);
-			gapi->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-			// Disable depth testing for text (optional, depending on your needs)
-			gapi->glDisable(GL_DEPTH_TEST);
 
 			for (const auto &textQuad : m_text) 
 			{
@@ -493,7 +496,6 @@ namespace render
 			gapi->glDisable(GL_BLEND);
 			gapi->glBindVertexArray(0);
 			gapi->glBindTexture(GL_TEXTURE_2D, 0);
-			textShader->release();
 		}
 
 		clear();

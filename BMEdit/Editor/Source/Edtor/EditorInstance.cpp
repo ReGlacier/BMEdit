@@ -102,7 +102,7 @@ namespace editor {
 		try
 #endif
 		{
-			if (!m_currentLevel->loadSceneData())
+			if (!m_currentLevel->loadSceneData(gamelib::LevelLoadCompatibilityLevel::CL_HitmanBloodMoney))
 			{
 				levelLoadFailed(QString("Unable to load scene data!"));
 				return;

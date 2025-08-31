@@ -37,7 +37,7 @@
 #include <sstream>
 
 
-#define ON_SCREEN_GIZMO_FONT_SIZE 28.0f
+#define ON_SCREEN_GIZMO_FONT_SIZE 24.0f
 
 #ifdef BMEDIT_DEBUG
 void BMEdit_OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -395,14 +395,13 @@ namespace widgets
 				m_bTransformsDirty = false;
 			}
 
-			// Fill gizmo
-			if (m_pSelectedObject != nullptr)
-			{
-				generateGizmosForEntity(m_pSelectedObject);
-			}
-
 			// Perform commands
 			drawScene();
+
+			// Fill gizmo
+			if (m_pSelectedObject != nullptr) {
+				generateGizmosForEntity(m_pSelectedObject);
+			}
 		}
 		else if (m_eLoaderState == ELevelLoadState::LLS_NONE)
 		{
@@ -413,12 +412,12 @@ namespace widgets
 		drawGizmo();
 	}
 
-        void SceneRenderWidget::resizeGL(int w, int h)
-        {
-                // Update projection
-                m_camera.setViewport(w, h);
-                m_gizmo.setScreenSize(w, h);
-        }
+	void SceneRenderWidget::resizeGL(int w, int h)
+	{
+			// Update projection
+			m_camera.setViewport(w, h);
+			m_gizmo.setScreenSize(w, h);
+	}
 
 	void SceneRenderWidget::keyPressEvent(QKeyEvent* event)
 	{
@@ -1207,6 +1206,7 @@ namespace widgets
 			// Main gizmo (AABB)
 			const auto &bounds = m_pContext->WorldBoundingBoxes[*objectToIndexIt];
 			auto bbox = bounds.AsBoundsOrCube(pSceneObject->getPosition(), 50.0f);
+
 			addGizmoBox(bbox, glm::vec4(0.f, 1.f, 0.0f, 0.15f), glm::vec4(0.f, 1.f, 0.0f, 1.0f));
 
 			glm::vec3 topCenter{(bbox.min.x + bbox.max.x) * 0.5f,
@@ -1221,18 +1221,7 @@ namespace widgets
 				std::ostringstream ss;
 				const auto &pos = pSceneObject->getPosition();
 				ss << "<p color=\"ffff00ff\">" << pSceneObject->getName() << " (" << pos.x << ' ' << pos.y << ' ' << pos.z << ")</p>";
-				addGizmoText(ss.str(), glm::vec2(sx, sy), 24.0f);
-			}
-
-			// PathFollower gizmo
-			auto pathFolloweIt = std::find_if(pSceneObject->getControllers().begin(), pSceneObject->getControllers().end(), [](const gamelib::scene::SceneObject::Controller& sc) -> bool {
-				return sc.type->getName() == "ZPathFollower";
-			});
-
-			if (pathFolloweIt != pSceneObject->getControllers().end())
-			{
-				// Nice, we have path follower and a lot of gizmos!
-				// TODO: Extract "m_WayPointLists" property
+				addGizmoText(ss.str(), glm::vec2(sx, sy), ON_SCREEN_GIZMO_FONT_SIZE);
 			}
 		}
 	}
@@ -1487,8 +1476,29 @@ namespace widgets
 			{
 				if (!binder.renderStates.empty())
 				{
-					materialInstance.ZBiasOffset.x = static_cast<float>(binder.renderStates[0].getZBias()); // NOTE: Need to convert it correctly (see PS2 build, method ZOldDrawPS2::BiasToScale)
-					materialInstance.ZBiasOffset.y = binder.renderStates[0].getZOffset();
+					// exists 0, 1, 2, 3, 6, 7
+					// actually, it's not reversed, just random offsets like in ZOldDrawPS2::BiasToScale but PS3, PC, XBox, iOS, Android and PS4 versions has different rendering core
+					const uint32_t zbias = binder.renderStates[0].getZBias();
+					float zoffset = 0.0f;
+
+					switch (zbias)
+					{
+					case 0: zoffset = 0.0f;
+					case 1: zoffset = 8.0f;
+					case 2: zoffset = 10.0f;
+					case 3: zoffset = 12.0f;
+					case 4: zoffset = 14.0f;
+					case 5: zoffset = 20.0f;
+					case 6: zoffset = 24.0f;
+					case 7: zoffset = 30.0f;
+					case 8:
+					default:
+						zoffset = 40.0f;
+						break;
+					}
+
+					materialInstance.ZBiasOffset.x = binder.renderStates[0].isEnabled() ? 1.0f : 0.0f;
+					materialInstance.ZBiasOffset.y = zoffset + binder.renderStates[0].getZOffset();
 				}
 
 				if (!binder.textures.empty())

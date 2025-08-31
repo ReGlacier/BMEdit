@@ -9,6 +9,7 @@
 #include <GameLib/MAT/MAT.h>
 #include <GameLib/OCT/OCT.h>
 #include <GameLib/LOC/LOC.h>
+#include <GameLib/LevelCompat.h>
 
 #include <functional>
 #include <memory>
@@ -79,7 +80,7 @@ namespace gamelib
 	public:
 		explicit Level(std::unique_ptr<io::IOLevelAssetsProvider> &&levelAssetsProvider);
 
-		[[nodiscard]] bool loadSceneData();
+		[[nodiscard]] bool loadSceneData(LevelLoadCompatibilityLevel eCompatLevel = LevelLoadCompatibilityLevel::CL_Default);
 
 		[[nodiscard]] const std::string &getLevelName() const;
 		[[nodiscard]] const LevelProperties *getLevelProperties() const;
@@ -111,7 +112,7 @@ namespace gamelib
 
 	private:
 		bool loadLevelProperties();
-		bool loadLevelScene();
+		bool loadLevelScene(LevelLoadCompatibilityLevel eCompatLevel);
 		bool loadLevelPrimitives();
 		bool loadLevelTextures();
 		bool loadLevelMaterials();
