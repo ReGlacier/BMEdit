@@ -8,7 +8,7 @@
     "parent": "ZItemContainer",
     "properties": [
         {
-            "name": "property_C8",
+            "name": "HideAction",
             "offset": 200,
             "typename": "PRPOpCode.Bool"
         }
